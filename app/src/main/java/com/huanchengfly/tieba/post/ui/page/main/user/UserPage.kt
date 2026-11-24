@@ -99,6 +99,9 @@ private fun StatCardPlaceholder(modifier: Modifier = Modifier) {
 @Composable
 private fun StatCard(
     account: Account,
+    onFollowClick: () -> Unit,
+    onFansClick: () -> Unit,
+    onPostsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val postNum by animateIntAsState(targetValue = account.postNum?.toIntOrNull() ?: 0)
@@ -110,17 +113,20 @@ private fun StatCard(
     ) {
         StatCardItem(
             statNum = concernNum,
-            statText = stringResource(id = R.string.text_stat_follow)
+            statText = stringResource(id = R.string.text_stat_follow),
+            onClick = onFollowClick,
         )
         HorizontalDivider(color = Color(if (ExtendedTheme.colors.isNightMode) 0xFF808080 else 0xFFDEDEDE))
         StatCardItem(
             statNum = fansNum,
-            statText = stringResource(id = R.string.text_stat_fans)
+            statText = stringResource(id = R.string.text_stat_fans),
+            onClick = onFansClick,
         )
         HorizontalDivider(color = Color(if (ExtendedTheme.colors.isNightMode) 0xFF808080 else 0xFFDEDEDE))
         StatCardItem(
             statNum = postNum,
-            statText = stringResource(id = R.string.title_stat_posts_num)
+            statText = stringResource(id = R.string.title_stat_posts_num),
+            onClick = onPostsClick,
         )
     }
 }
@@ -177,10 +183,14 @@ private fun InfoCard(
 @Composable
 private fun RowScope.StatCardItem(
     statNum: Int,
-    statText: String
+    statText: String,
+    onClick: (() -> Unit)? = null,
 ) {
     Column(
-        modifier = Modifier.weight(1f),
+        modifier = Modifier
+            .weight(1f)
+            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
+            .padding(vertical = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -298,11 +308,32 @@ fun UserPage(
                     )
                     StatCard(
                         account = account!!,
+                        onFollowClick = {
+                            navigator.navigate(
+                                WebViewPageDestination(
+                                    initialUrl = "https://tieba.baidu.com/home/concern?id=${account!!.portrait}&fr=home"
+                                )
+                            )
+                        },
+                        onFansClick = {
+                            navigator.navigate(
+                                WebViewPageDestination(
+                                    initialUrl = "https://tieba.baidu.com/home/fans?id=${account!!.portrait}&fr=home"
+                                )
+                            )
+                        },
+                        onPostsClick = {
+                            navigator.navigate(
+                                UserProfilePageDestination(
+                                    uid = account!!.uid.toLong(),
+                                    initialTab = 1,
+                                )
+                            )
+                        },
                         modifier = Modifier
                             .padding(16.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(color = ExtendedTheme.colors.chip)
-                            .padding(vertical = 18.dp)
                     )
                 } else if (isLoading) {
                     InfoCard(
@@ -316,7 +347,6 @@ fun UserPage(
                             .padding(16.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(color = ExtendedTheme.colors.chip)
-                            .padding(vertical = 18.dp)
                     )
                 } else {
                     LoginTipCard(

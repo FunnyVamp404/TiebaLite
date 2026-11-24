@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,7 +82,9 @@ import com.huanchengfly.tieba.post.models.database.Block
 import com.huanchengfly.tieba.post.toastShort
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.common.windowsizeclass.WindowWidthSizeClass
+import com.huanchengfly.tieba.post.ui.page.LocalNavigator
 import com.huanchengfly.tieba.post.ui.page.ProvideNavigator
+import com.huanchengfly.tieba.post.ui.page.destinations.WebViewPageDestination
 import com.huanchengfly.tieba.post.ui.page.user.edit.EditProfileActivity
 import com.huanchengfly.tieba.post.ui.page.user.likeforum.UserLikeForumPage
 import com.huanchengfly.tieba.post.ui.page.user.post.UserPostPage
@@ -121,6 +124,7 @@ import kotlin.math.min
 @Composable
 fun UserProfilePage(
     uid: Long,
+    initialTab: Int = 0,
     navigator: DestinationsNavigator,
     viewModel: UserProfileViewModel = pageViewModel(),
 ) {
@@ -174,6 +178,7 @@ fun UserProfilePage(
                     showActionBtn = account != null,
                     disableButton = disableButton,
                     isSelf = isSelf,
+                    initialTab = initialTab,
                     onBack = { navigator.navigateUp() },
                     onFollow = {
                         viewModel.send(
@@ -203,6 +208,7 @@ private fun UserProfileContent(
     showActionBtn: Boolean,
     disableButton: Boolean,
     isSelf: Boolean,
+    initialTab: Int = 0,
     onBack: () -> Unit,
     onFollow: () -> Unit,
     onUnfollow: () -> Unit,
@@ -214,6 +220,7 @@ private fun UserProfileContent(
                 showActionBtn = showActionBtn,
                 disableButton = disableButton,
                 isSelf = isSelf,
+                initialTab = initialTab,
                 onBack = onBack,
                 onFollow = onFollow,
                 onUnfollow = onUnfollow
@@ -226,6 +233,7 @@ private fun UserProfileContent(
                 showActionBtn = showActionBtn,
                 disableButton = disableButton,
                 isSelf = isSelf,
+                initialTab = initialTab,
                 onBack = onBack,
                 onFollow = onFollow,
                 onUnfollow = onUnfollow
@@ -317,6 +325,7 @@ private fun UserProfileContentNormal(
     showActionBtn: Boolean,
     disableButton: Boolean,
     isSelf: Boolean,
+    initialTab: Int = 0,
     onBack: () -> Unit,
     onFollow: () -> Unit,
     onUnfollow: () -> Unit,
@@ -461,7 +470,9 @@ private fun UserProfileContentNormal(
                             ),
                         ).toImmutableList()
                     }
-                    val pagerState = rememberPagerState { pages.size }
+                    val pagerState = rememberPagerState(
+                        initialPage = initialTab.coerceIn(0, (pages.size - 1).coerceAtLeast(0))
+                    ) { pages.size }
 
                     val containerHeight by remember {
                         derivedStateOf {
@@ -542,6 +553,7 @@ private fun UserProfileContentExpanded(
     showActionBtn: Boolean,
     disableButton: Boolean,
     isSelf: Boolean,
+    initialTab: Int = 0,
     onBack: () -> Unit,
     onFollow: () -> Unit,
     onUnfollow: () -> Unit,
@@ -625,7 +637,9 @@ private fun UserProfileContentExpanded(
                             ),
                         ).toImmutableList()
                     }
-                    val pagerState = rememberPagerState { pages.size }
+                    val pagerState = rememberPagerState(
+                        initialPage = initialTab.coerceIn(0, (pages.size - 1).coerceAtLeast(0))
+                    ) { pages.size }
 
                     UserProfileDetail(
                         user = user,
@@ -833,6 +847,7 @@ private fun UserProfileDetail(
             overflow = TextOverflow.Ellipsis,
             fontWeight = FontWeight.Bold
         )
+        val navigator = LocalNavigator.current
         ProvideTextStyle(value = MaterialTheme.typography.body2) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -841,7 +856,14 @@ private fun UserProfileDetail(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.clickable {
+                        navigator.navigate(
+                            WebViewPageDestination(
+                                initialUrl = "https://tieba.baidu.com/home/concern?id=${user.get { portrait }}&fr=home"
+                            )
+                        )
+                    }
                 ) {
                     Text(
                         text = stringResource(id = R.string.text_stat_follow),
@@ -856,7 +878,14 @@ private fun UserProfileDetail(
                 HorizontalDivider(modifier = Modifier.fillMaxHeight())
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.clickable {
+                        navigator.navigate(
+                            WebViewPageDestination(
+                                initialUrl = "https://tieba.baidu.com/home/fans?id=${user.get { portrait }}&fr=home"
+                            )
+                        )
+                    }
                 ) {
                     Text(
                         text = stringResource(id = R.string.text_stat_fans),

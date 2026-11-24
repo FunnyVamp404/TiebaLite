@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +27,6 @@ import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Text
@@ -60,7 +61,14 @@ import com.huanchengfly.tieba.post.ui.page.destinations.LoginPageDestination
 import com.huanchengfly.tieba.post.utils.AccountUtil
 import com.huanchengfly.tieba.post.utils.AccountUtil.LocalAccount
 import com.huanchengfly.tieba.post.utils.StringUtil
-import com.huanchengfly.tieba.post.utils.compose.calcStatusBarColor
+import com.huanchengfly.tieba.post.utils.appPreferences
+
+@Composable
+private fun editorialTopBarColor(): Color {
+    val colors = ExtendedTheme.colors
+    val usePrimary = LocalContext.current.appPreferences.toolbarPrimaryColor
+    return if (colors.isNightMode || !usePrimary) feedBackdropColor() else colors.topBar
+}
 
 @Composable
 fun accountNavIconIfCompact(): (@Composable () -> Unit)? =
@@ -159,16 +167,46 @@ fun AccountNavIcon(
 }
 
 @Composable
+private fun FloatingCircleIconButton(onClick: () -> Unit, content: @Composable () -> Unit) {
+    val colors = ExtendedTheme.colors
+    Box(
+        modifier = Modifier.padding(horizontal = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(
+                    if (colors.isNightMode) Color.White.copy(alpha = 0.08f)
+                    else Color.Black.copy(alpha = 0.045f)
+                )
+                .border(
+                    width = 0.75.dp,
+                    color = if (colors.isNightMode) Color.White.copy(alpha = 0.13f)
+                    else Color.Black.copy(alpha = 0.07f),
+                    shape = CircleShape
+                )
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
 fun ActionItem(
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit
 ) {
     ProvideContentColor(color = ExtendedTheme.colors.onTopBar) {
-        IconButton(onClick = onClick) {
+        FloatingCircleIconButton(onClick = onClick) {
             Icon(
                 imageVector = icon,
-                contentDescription = contentDescription
+                contentDescription = contentDescription,
+                modifier = Modifier.size(20.dp)
             )
         }
     }
@@ -177,10 +215,11 @@ fun ActionItem(
 @Composable
 fun BackNavigationIcon(onBackPressed: () -> Unit) {
     ProvideContentColor(color = ExtendedTheme.colors.onTopBar) {
-        IconButton(onClick = onBackPressed) {
+        FloatingCircleIconButton(onClick = onBackPressed) {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_round_arrow_back),
-                contentDescription = stringResource(id = R.string.button_back)
+                contentDescription = stringResource(id = R.string.button_back),
+                modifier = Modifier.size(20.dp)
             )
         }
     }
@@ -230,10 +269,11 @@ fun TitleCentredToolbar(
     actions: @Composable RowScope.() -> Unit = {},
     content: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
+    val barBg = editorialTopBarColor()
     TopAppBarContainer(
         topBar = {
             TopAppBar(
-                backgroundColor = ExtendedTheme.colors.topBar,
+                backgroundColor = barBg,
                 contentColor = ExtendedTheme.colors.onTopBar,
                 elevation = 0.dp
             ) {
@@ -259,7 +299,7 @@ fun TitleCentredToolbar(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.SemiBold)) {
+                        ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Medium)) {
                             ProvideContentColor(color = ExtendedTheme.colors.onTopBar) {
                                 title()
                             }
@@ -270,6 +310,7 @@ fun TitleCentredToolbar(
         },
         modifier = modifier,
         insets = insets,
+        backgroundColor = barBg,
         content = content
     )
 }
@@ -296,7 +337,7 @@ fun Toolbar(
     title: @Composable (() -> Unit),
     navigationIcon: (@Composable () -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
-    backgroundColor: Color = ExtendedTheme.colors.topBar,
+    backgroundColor: Color = editorialTopBarColor(),
     contentColor: Color = ExtendedTheme.colors.onTopBar,
     content: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
@@ -304,7 +345,7 @@ fun Toolbar(
         topBar = {
             TopAppBar(
                 title = {
-                    ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.SemiBold)) {
+                    ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Medium)) {
                         ProvideContentColor(color = contentColor, content = title)
                     }
                 },
@@ -323,6 +364,7 @@ fun Toolbar(
                 elevation = 0.dp
             )
         },
+        backgroundColor = backgroundColor,
         content = content
     )
 }
@@ -334,6 +376,7 @@ fun TopAppBarContainer(
     topBar: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
     insets: Boolean = true,
+    backgroundColor: Color = editorialTopBarColor(),
     content: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val statusBarModifier = if (insets) {
@@ -346,7 +389,7 @@ fun TopAppBarContainer(
         Spacer(
             modifier = statusBarModifier
                 .fillMaxWidth()
-                .background(color = ExtendedTheme.colors.topBar.calcStatusBarColor())
+                .background(color = backgroundColor)
         )
         Column(
             modifier = Modifier
@@ -366,7 +409,7 @@ fun TopAppBarContainer(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = ExtendedTheme.colors.topBar),
+                    .background(color = backgroundColor),
             ) {
                 content()
             }

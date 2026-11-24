@@ -6,6 +6,7 @@ import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -19,14 +20,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -44,8 +47,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.layoutId
@@ -388,116 +393,129 @@ fun BottomNavigation(
     navigationItems: ImmutableList<NavigationItem>,
     themeColors: ExtendedColors = ExtendedTheme.colors
 ) {
-    Surface(
-        modifier = Modifier
-            .background(themeColors.bottomBar)
-            .navigationBarsPadding(),
-        color = themeColors.bottomBar,
-    ) {
-        Column {
-            BottomNavigationDivider(themeColors)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(horizontal = 8.dp)
-                    .selectableGroup(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                navigationItems.fastForEachIndexed { index, navigationItem ->
-                    val isSelected = index == currentPosition
-                    val indicatorWidth by animateDpAsState(
-                        targetValue = if (isSelected) 56.dp else 32.dp,
-                        label = "Navigation indicator width",
-                    )
-                    val indicatorColor by animateColorAsState(
-                        targetValue = if (isSelected) {
-                            themeColors.primary.copy(alpha = if (themeColors.isNightMode) 0.22f else 0.12f)
-                        } else {
-                            Color.Transparent
-                        },
-                        label = "Navigation indicator color",
-                    )
-                    val animatedContentColor by animateColorAsState(
-                        targetValue = if (isSelected) themeColors.primary else themeColors.unselected,
-                        label = "Navigation content color",
-                    )
+    val dockColor = if (themeColors.isNightMode) {
+        lerp(themeColors.card, Color(0xFF1E222A), 0.45f).copy(alpha = 0.90f)
+    } else {
+        Color.White.copy(alpha = 0.92f)
+    }
+    val rimColor = if (themeColors.isNightMode) {
+        Color.White.copy(alpha = 0.14f)
+    } else {
+        Color.Black.copy(alpha = 0.08f)
+    }
 
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(12.dp))
-                            .semantics { selected = isSelected }
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                                role = Role.Tab,
-                            ) {
-                                if (isSelected) {
-                                    onReselected(index)
-                                } else {
-                                    onChangePosition(index)
-                                }
-                                navigationItem.onClick?.invoke()
-                            },
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(
+            modifier = Modifier
+                .widthIn(min = 240.dp, max = 336.dp)
+                .fillMaxWidth()
+                .height(58.dp)
+                .shadow(
+                    elevation = if (themeColors.isNightMode) 14.dp else 10.dp,
+                    shape = CircleShape,
+                    ambientColor = Color.Black.copy(alpha = 0.45f),
+                    spotColor = Color.Black.copy(alpha = 0.45f),
+                )
+                .clip(CircleShape)
+                .background(dockColor)
+                .border(width = 0.75.dp, color = rimColor, shape = CircleShape)
+                .padding(horizontal = 10.dp)
+                .selectableGroup(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            navigationItems.fastForEachIndexed { index, navigationItem ->
+                val isSelected = index == currentPosition
+                val indicatorWidth by animateDpAsState(
+                    targetValue = if (isSelected) 14.dp else 0.dp,
+                    label = "NavIndicatorWidth",
+                )
+                val animatedContentColor by animateColorAsState(
+                    targetValue = if (isSelected) {
+                        themeColors.primary
+                    } else {
+                        themeColors.textSecondary.copy(
+                            alpha = if (themeColors.isNightMode) 0.65f else 0.70f
+                        )
+                    },
+                    label = "Navigation content color",
+                )
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(CircleShape)
+                        .semantics { selected = isSelected }
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            role = Role.Tab,
+                        ) {
+                            if (isSelected) {
+                                onReselected(index)
+                            } else {
+                                onChangePosition(index)
+                            }
+                            navigationItem.onClick?.invoke()
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Box(modifier = Modifier.size(20.dp)) {
+                        Icon(
+                            painter = rememberAnimatedVectorPainter(
+                                animatedImageVector = navigationItem.icon(),
+                                atEnd = isSelected,
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = animatedContentColor,
+                        )
+                        if (navigationItem.badge) {
                             Box(
                                 modifier = Modifier
-                                    .width(indicatorWidth)
-                                    .height(30.dp)
-                                    .clip(CircleShape)
-                                    .background(indicatorColor),
+                                    .align(Alignment.TopStart)
+                                    .offset(x = 14.dp, y = (-5).dp)
+                                    .wrapContentWidth(Alignment.Start, unbounded = true)
+                                    .defaultMinSize(minWidth = 16.dp, minHeight = 16.dp)
+                                    .background(color = themeColors.accent, shape = CircleShape)
+                                    .padding(horizontal = 4.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Icon(
-                                    painter = rememberAnimatedVectorPainter(
-                                        animatedImageVector = navigationItem.icon(),
-                                        atEnd = isSelected,
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(22.dp),
-                                    tint = animatedContentColor,
+                                Text(
+                                    text = navigationItem.badgeText.orEmpty(),
+                                    color = White,
+                                    fontSize = 10.sp,
+                                    lineHeight = 12.sp,
+                                    maxLines = 1,
                                 )
                             }
-                            if (navigationItem.badge) {
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopCenter)
-                                        .width(32.dp),
-                                    contentAlignment = Alignment.TopEnd,
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .defaultMinSize(minWidth = 16.dp, minHeight = 16.dp)
-                                            .background(color = themeColors.accent, shape = CircleShape)
-                                            .padding(horizontal = 4.dp),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        Text(
-                                            text = navigationItem.badgeText.orEmpty(),
-                                            color = White,
-                                            fontSize = 10.sp,
-                                            lineHeight = 12.sp,
-                                            maxLines = 1,
-                                        )
-                                    }
-                                }
-                            }
                         }
-                        Spacer(Modifier.height(3.dp))
-                        Text(
-                            text = navigationItem.title(isSelected),
-                            fontSize = 11.sp,
-                            maxLines = 1,
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                            color = animatedContentColor,
-                            style = MaterialTheme.typography.caption,
-                        )
                     }
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = navigationItem.title(isSelected),
+                        fontSize = 10.sp,
+                        lineHeight = 12.sp,
+                        maxLines = 1,
+                        fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                        color = animatedContentColor,
+                        style = MaterialTheme.typography.caption,
+                    )
+                    Spacer(Modifier.height(3.dp))
+                    Box(
+                        modifier = Modifier
+                            .width(indicatorWidth)
+                            .height(2.dp)
+                            .clip(CircleShape)
+                            .background(if (isSelected) animatedContentColor else Color.Transparent),
+                    )
                 }
             }
         }

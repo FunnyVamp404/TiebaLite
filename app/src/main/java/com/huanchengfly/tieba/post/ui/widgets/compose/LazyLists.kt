@@ -4,6 +4,8 @@ import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -14,11 +16,15 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import com.huanchengfly.tieba.post.arch.GlobalEvent
 import com.huanchengfly.tieba.post.arch.onGlobalEvent
+
+val LocalFloatingBottomBarPadding = compositionLocalOf { 0.dp }
 
 @Composable
 fun MyLazyColumn(
@@ -37,10 +43,23 @@ fun MyLazyColumn(
         state.animateScrollToItem(0)
     }
 
+    val extraBottom = LocalFloatingBottomBarPadding.current
+    val mergedPadding = if (extraBottom > 0.dp) {
+        val layoutDirection = LocalLayoutDirection.current
+        PaddingValues(
+            start = contentPadding.calculateStartPadding(layoutDirection),
+            top = contentPadding.calculateTopPadding(),
+            end = contentPadding.calculateEndPadding(layoutDirection),
+            bottom = contentPadding.calculateBottomPadding() + extraBottom,
+        )
+    } else {
+        contentPadding
+    }
+
     LazyColumn(
         modifier = modifier,
         state = state,
-        contentPadding = contentPadding,
+        contentPadding = mergedPadding,
         reverseLayout = reverseLayout,
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
@@ -68,11 +87,24 @@ fun MyLazyVerticalGrid(
         state.animateScrollToItem(0)
     }
 
+    val extraBottom = LocalFloatingBottomBarPadding.current
+    val mergedPadding = if (extraBottom > 0.dp) {
+        val layoutDirection = LocalLayoutDirection.current
+        PaddingValues(
+            start = contentPadding.calculateStartPadding(layoutDirection),
+            top = contentPadding.calculateTopPadding(),
+            end = contentPadding.calculateEndPadding(layoutDirection),
+            bottom = contentPadding.calculateBottomPadding() + extraBottom,
+        )
+    } else {
+        contentPadding
+    }
+
     LazyVerticalGrid(
         columns = columns,
         modifier = modifier,
         state = state,
-        contentPadding = contentPadding,
+        contentPadding = mergedPadding,
         reverseLayout = reverseLayout,
         verticalArrangement = verticalArrangement,
         horizontalArrangement = horizontalArrangement,

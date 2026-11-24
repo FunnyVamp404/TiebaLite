@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -34,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -63,9 +61,11 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
 import com.huanchengfly.tieba.post.ui.widgets.compose.ConfirmDialog
 import com.huanchengfly.tieba.post.ui.widgets.compose.HorizontalDivider
 import com.huanchengfly.tieba.post.ui.widgets.compose.ListMenuItem
+import com.huanchengfly.tieba.post.ui.widgets.compose.LocalFloatingBottomBarPadding
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.Switch
-import com.huanchengfly.tieba.post.ui.widgets.compose.VerticalDivider
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.placeholder.placeholder
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberDialogState
 import com.huanchengfly.tieba.post.utils.CuidUtils
@@ -275,10 +275,8 @@ fun UserPage(
     }
 
     Scaffold(
-        backgroundColor = Color.Transparent,
-        modifier = Modifier
-            .statusBarsPadding()
-            .fillMaxSize()
+        backgroundColor = feedBackdropColor(),
+        modifier = Modifier.fillMaxSize()
     ) { contentPaddings ->
         val pullRefreshState = rememberPullRefreshState(
             refreshing = isLoading,
@@ -291,6 +289,7 @@ fun UserPage(
         ) {
             Column(
                 modifier = Modifier
+                    .statusBarsPadding()
                     .verticalScroll(state = rememberScrollState())
                     .fillMaxSize()
             ) {
@@ -332,8 +331,7 @@ fun UserPage(
                         },
                         modifier = Modifier
                             .padding(16.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(color = ExtendedTheme.colors.chip)
+                            .feedCardSurface()
                     )
                 } else if (isLoading) {
                     InfoCard(
@@ -345,8 +343,7 @@ fun UserPage(
                     StatCardPlaceholder(
                         modifier = Modifier
                             .padding(16.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(color = ExtendedTheme.colors.chip)
+                            .feedCardSurface()
                     )
                 } else {
                     LoginTipCard(
@@ -358,78 +355,90 @@ fun UserPage(
                             .padding(horizontal = 16.dp, vertical = 16.dp),
                     )
                 }
-                if (account != null) {
-                    ListMenuItem(
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_favorite),
-                        text = stringResource(id = R.string.title_my_collect),
-                        onClick = {
-                            navigator.navigate(ThreadStorePageDestination)
-                        }
-                    )
-                }
-                ListMenuItem(
-                    icon = ImageVector.vectorResource(id = R.drawable.ic_outline_watch_later_24),
-                    text = stringResource(id = R.string.title_history),
-                    onClick = {
-                        navigator.navigate(HistoryPageDestination)
-                    }
-                )
-                ListMenuItem(
-                    icon = ImageVector.vectorResource(id = R.drawable.ic_brush_24),
-                    text = stringResource(id = R.string.title_theme),
-                    onClick = {
-                        navigator.navigate(AppThemePageDestination)
-                    }
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .feedCardSurface()
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.my_info_night),
-                        color = ExtendedTheme.colors.textSecondary,
-                        fontSize = 12.sp,
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Switch(
-                        checked = ThemeUtil.isNightMode(ThemeUtil.themeState.value),
-                        onCheckedChange = {
-                            if (context.appPreferences.followSystemNight) {
-                                switchToNightDialogState.show()
-                            } else {
-                                ThemeUtil.switchNightMode()
+                    if (account != null) {
+                        ListMenuItem(
+                            icon = ImageVector.vectorResource(id = R.drawable.ic_favorite),
+                            text = stringResource(id = R.string.title_my_collect),
+                            onClick = {
+                                navigator.navigate(ThreadStorePageDestination)
                             }
+                        )
+                    }
+                    ListMenuItem(
+                        icon = ImageVector.vectorResource(id = R.drawable.ic_outline_watch_later_24),
+                        text = stringResource(id = R.string.title_history),
+                        onClick = {
+                            navigator.navigate(HistoryPageDestination)
                         }
                     )
-                }
-                if (account != null) {
                     ListMenuItem(
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_help_outline_black_24),
-                        text = stringResource(id = R.string.my_info_service_center),
+                        icon = ImageVector.vectorResource(id = R.drawable.ic_brush_24),
+                        text = stringResource(id = R.string.title_theme),
                         onClick = {
-                            navigator.navigate(
-                                WebViewPageDestination(
-                                    initialUrl = "https://tieba.baidu.com/mo/q/hybrid-main-service/uegServiceCenter?cuid=${CuidUtils.getNewCuid()}&cuid_galaxy2=${CuidUtils.getNewCuid()}&cuid_gid=&timestamp=${System.currentTimeMillis()}&_client_version=12.52.1.0&nohead=1"
+                            navigator.navigate(AppThemePageDestination)
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.my_info_night),
+                            color = ExtendedTheme.colors.textSecondary,
+                            fontSize = 12.sp,
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Switch(
+                            checked = ThemeUtil.isNightMode(ThemeUtil.themeState.value),
+                            onCheckedChange = {
+                                if (context.appPreferences.followSystemNight) {
+                                    switchToNightDialogState.show()
+                                } else {
+                                    ThemeUtil.switchNightMode()
+                                }
+                            }
+                        )
+                    }
+                    if (account != null) {
+                        ListMenuItem(
+                            icon = ImageVector.vectorResource(id = R.drawable.ic_help_outline_black_24),
+                            text = stringResource(id = R.string.my_info_service_center),
+                            onClick = {
+                                navigator.navigate(
+                                    WebViewPageDestination(
+                                        initialUrl = "https://tieba.baidu.com/mo/q/hybrid-main-service/uegServiceCenter?cuid=${CuidUtils.getNewCuid()}&cuid_galaxy2=${CuidUtils.getNewCuid()}&cuid_gid=&timestamp=${System.currentTimeMillis()}&_client_version=12.52.1.0&nohead=1"
+                                    )
                                 )
-                            )
-                        },
+                            },
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .feedCardSurface()
+                ) {
+                    ListMenuItem(
+                        icon = ImageVector.vectorResource(id = R.drawable.ic_settings_24),
+                        text = stringResource(id = R.string.my_info_settings),
+                        onClick = { navigator.navigate(SettingsPageDestination) },
+                    )
+                    ListMenuItem(
+                        icon = ImageVector.vectorResource(id = R.drawable.ic_info_black_24),
+                        text = stringResource(id = R.string.my_info_about),
+                        onClick = { navigator.navigate(AboutPageDestination) },
                     )
                 }
-                VerticalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
-                )
-                ListMenuItem(
-                    icon = ImageVector.vectorResource(id = R.drawable.ic_settings_24),
-                    text = stringResource(id = R.string.my_info_settings),
-                    onClick = { navigator.navigate(SettingsPageDestination) },
-                )
-                ListMenuItem(
-                    icon = ImageVector.vectorResource(id = R.drawable.ic_info_black_24),
-                    text = stringResource(id = R.string.my_info_about),
-                    onClick = { navigator.navigate(AboutPageDestination) },
-                )
+                Spacer(modifier = Modifier.height(LocalFloatingBottomBarPadding.current + 12.dp))
             }
 
             PullRefreshIndicator(
                 refreshing = isLoading,
                 state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding(),
                 backgroundColor = ExtendedTheme.colors.pullRefreshIndicator,
                 contentColor = ExtendedTheme.colors.primary,
             )

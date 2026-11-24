@@ -4,6 +4,7 @@ import android.content.pm.ActivityInfo
 import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -203,18 +204,39 @@ fun UserHeader(
 }
 
 
-/** Backdrop color behind feed cards: slightly darker than the card so rounded cards visibly float. */
+/** Canvas color behind feed cards. */
 @Composable
 fun feedBackdropColor(): Color {
     val colors = ExtendedTheme.colors
-    return lerp(colors.background, Color.Black, if (colors.isNightMode) 0.30f else 0.045f)
+    return if (colors.isNightMode) {
+        if (colors.background == Color.Black) Color(0xFF0A0B0E)
+        else lerp(colors.background, Color(0xFF0D0F13), 0.55f)
+    } else {
+        lerp(colors.background, Color(0xFFF6F5F1), 0.65f)
+    }
 }
 
-/** Rounded tonal card surface used by feed items. Spacing between cards must be added by the caller. */
+/** Rounded card surface with a subtle border. Callers add spacing between cards. */
 @Composable
-fun Modifier.feedCardSurface(): Modifier = this
-    .clip(RoundedCornerShape(16.dp))
-    .background(ExtendedTheme.colors.card)
+fun Modifier.feedCardSurface(): Modifier {
+    val colors = ExtendedTheme.colors
+    val shape = RoundedCornerShape(18.dp)
+    val surfaceColor = if (colors.isNightMode) {
+        if (colors.background == Color.Black) Color(0xFF14161B)
+        else lerp(colors.card, Color(0xFF1A1D24), 0.40f).copy(alpha = 0.84f)
+    } else {
+        Color.White.copy(alpha = 0.86f)
+    }
+    val borderColor = if (colors.isNightMode) {
+        Color.White.copy(alpha = 0.09f)
+    } else {
+        Color.Black.copy(alpha = 0.07f)
+    }
+    return this
+        .clip(shape)
+        .background(surfaceColor)
+        .border(width = 0.75.dp, color = borderColor, shape = shape)
+}
 
 @Composable
 fun Card(
@@ -245,7 +267,19 @@ fun Card(
             content()
         }
         if (action != null) {
-            Spacer(modifier = Modifier.height(4.dp))
+            val dividerColor = if (ExtendedTheme.colors.isNightMode) {
+                Color.White.copy(alpha = 0.06f)
+            } else {
+                Color.Black.copy(alpha = 0.05f)
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(0.5.dp)
+                    .background(dividerColor)
+            )
+            Spacer(modifier = Modifier.height(2.dp))
             action.invoke(this)
         }
     }
@@ -725,7 +759,7 @@ fun ThreadReplyBtn(
         },
         modifier = modifier,
         onClick = onClick,
-        color = ExtendedTheme.colors.textSecondary.copy(alpha = 0.85f),
+        color = ExtendedTheme.colors.textSecondary.copy(alpha = 0.72f),
     )
 }
 
@@ -739,7 +773,7 @@ fun ThreadAgreeBtn(
     val contentColor = if (hasAgree) {
         ExtendedTheme.colors.primary
     } else {
-        ExtendedTheme.colors.textSecondary.copy(alpha = 0.85f)
+        ExtendedTheme.colors.textSecondary.copy(alpha = 0.72f)
     }
     val animatedColor by animateColorAsState(contentColor, label = "agreeBtnContentColor")
 
@@ -785,7 +819,7 @@ fun ThreadShareBtn(
         },
         modifier = modifier,
         onClick = onClick,
-        color = ExtendedTheme.colors.textSecondary.copy(alpha = 0.85f),
+        color = ExtendedTheme.colors.textSecondary.copy(alpha = 0.72f),
     )
 }
 
@@ -835,6 +869,15 @@ fun FeedCard(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(ExtendedTheme.colors.floorCard)
+                            .border(
+                                width = 0.75.dp,
+                                color = if (ExtendedTheme.colors.isNightMode) {
+                                    Color.White.copy(alpha = 0.07f)
+                                } else {
+                                    Color.Black.copy(alpha = 0.06f)
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                            )
                             .clickable {
                                 onClickOriginThread(it.get())
                             }
@@ -917,6 +960,15 @@ fun FeedCard(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(ExtendedTheme.colors.floorCard)
+                            .border(
+                                width = 0.75.dp,
+                                color = if (ExtendedTheme.colors.isNightMode) {
+                                    Color.White.copy(alpha = 0.07f)
+                                } else {
+                                    Color.Black.copy(alpha = 0.06f)
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                            )
                             .clickable {
                                 onClickOriginThread(it.get())
                             }
@@ -993,12 +1045,12 @@ private fun ActionBtn(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .then(clickableModifier)
-            .padding(vertical = 10.dp),
+            .padding(vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
         ProvideContentColor(color = color) {
-            Box(modifier = Modifier.size(16.dp)) {
+            Box(modifier = Modifier.size(15.dp)) {
                 icon()
             }
             Spacer(modifier = Modifier.width(6.dp))

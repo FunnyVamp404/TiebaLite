@@ -6,12 +6,17 @@ import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -23,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import com.huanchengfly.tieba.post.LocalDevicePosture
 import com.huanchengfly.tieba.post.LocalNotificationCountFlow
@@ -45,6 +51,7 @@ import com.huanchengfly.tieba.post.ui.utils.DevicePosture
 import com.huanchengfly.tieba.post.ui.utils.MainNavigationContentPosition
 import com.huanchengfly.tieba.post.ui.utils.MainNavigationType
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoadHorizontalPager
+import com.huanchengfly.tieba.post.ui.widgets.compose.LocalFloatingBottomBarPadding
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.utils.appPreferences
 import com.ramcosta.composedestinations.annotation.Destination
@@ -218,6 +225,13 @@ fun MainPage(
         }
     }
 
+    val navBarBottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val floatingBottomPadding = if (navigationType == MainNavigationType.BOTTOM_NAVIGATION) {
+        86.dp + navBarBottomPadding
+    } else {
+        0.dp
+    }
+
     /**
      * Content inside Navigation Rail/Drawer can also be positioned at top, bottom or center for
      * ergonomics and reachability depending upon the height of the device.
@@ -254,32 +268,37 @@ fun MainPage(
             navigationType = navigationType,
             navigationContentPosition = navigationContentPosition
         ) {
-            MyScaffold(
-                backgroundColor = Color.Transparent,
-                modifier = Modifier.fillMaxSize(),
-                bottomBar = {
-                    AnimatedVisibility(visible = navigationType == MainNavigationType.BOTTOM_NAVIGATION) {
-                        BottomNavigation(
-                            currentPosition = pagerState.currentPage,
-                            onChangePosition = {
-                                coroutineScope.launch { pagerState.scrollToPage(it) }
-                            },
-                            onReselected = onReselected,
-                            navigationItems = navigationItems,
-                            themeColors = themeColors,
-                        )
-                    }
-                }
-            ) { paddingValues ->
-                LazyLoadHorizontalPager(
-                    contentPadding = paddingValues,
-                    state = pagerState,
-                    key = { navigationItems[it].id },
+            CompositionLocalProvider(LocalFloatingBottomBarPadding provides floatingBottomPadding) {
+                MyScaffold(
+                    backgroundColor = Color.Transparent,
                     modifier = Modifier.fillMaxSize(),
-                    verticalAlignment = Alignment.Top,
-                    userScrollEnabled = false
-                ) {
-                    navigationItems[it].content()
+                ) { paddingValues ->
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LazyLoadHorizontalPager(
+                            contentPadding = paddingValues,
+                            state = pagerState,
+                            key = { navigationItems[it].id },
+                            modifier = Modifier.fillMaxSize(),
+                            verticalAlignment = Alignment.Top,
+                            userScrollEnabled = false
+                        ) {
+                            navigationItems[it].content()
+                        }
+                        AnimatedVisibility(
+                            visible = navigationType == MainNavigationType.BOTTOM_NAVIGATION,
+                            modifier = Modifier.align(Alignment.BottomCenter),
+                        ) {
+                            BottomNavigation(
+                                currentPosition = pagerState.currentPage,
+                                onChangePosition = {
+                                    coroutineScope.launch { pagerState.scrollToPage(it) }
+                                },
+                                onReselected = onReselected,
+                                navigationItems = navigationItems,
+                                themeColors = themeColors,
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -1,14 +1,20 @@
 package com.huanchengfly.tieba.post.ui.page.main.explore
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Tab
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
@@ -18,8 +24,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,8 +47,6 @@ import com.huanchengfly.tieba.post.ui.page.main.explore.hot.HotPage
 import com.huanchengfly.tieba.post.ui.page.main.explore.personalized.PersonalizedPage
 import com.huanchengfly.tieba.post.ui.widgets.compose.ActionItem
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoadHorizontalPager
-import com.huanchengfly.tieba.post.ui.widgets.compose.PagerTabIndicator
-import com.huanchengfly.tieba.post.ui.widgets.compose.TabRow
 import com.huanchengfly.tieba.post.ui.widgets.compose.Toolbar
 import com.huanchengfly.tieba.post.ui.widgets.compose.accountNavIconIfCompact
 import com.huanchengfly.tieba.post.utils.AccountUtil.LocalAccount
@@ -61,36 +69,49 @@ private fun ColumnScope.ExplorePageTab(
     pages: ImmutableList<ExplorePageItem>
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val colors = ExtendedTheme.colors
 
-    TabRow(
-        selectedTabIndex = pagerState.currentPage,
-        indicator = { tabPositions ->
-            PagerTabIndicator(
-                pagerState = pagerState,
-                tabPositions = tabPositions
-            )
-        },
-        divider = {},
-        backgroundColor = Color.Transparent,
-        contentColor = ExtendedTheme.colors.onTopBar,
+    Row(
         modifier = Modifier
             .align(Alignment.CenterHorizontally)
-            .width(76.dp * pages.size),
+            .padding(top = 2.dp, bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         pages.fastForEachIndexed { index, item ->
-            Tab(
-                text = { item.name(pagerState.currentPage == index) },
-                selected = pagerState.currentPage == index,
-                onClick = {
-                    coroutineScope.launch {
-                        if (pagerState.currentPage == index) {
-                            emitGlobalEvent(GlobalEvent.Refresh(item.id))
-                        } else {
-                            pagerState.animateScrollToPage(index)
+            val isSelected = pagerState.currentPage == index
+            val pill = Modifier.clip(CircleShape)
+            val pillStyle = if (isSelected) {
+                pill
+                    .background(
+                        if (colors.isNightMode) Color.White.copy(alpha = 0.11f)
+                        else colors.primary.copy(alpha = 0.10f)
+                    )
+                    .border(
+                        width = 0.75.dp,
+                        color = if (colors.isNightMode) Color.White.copy(alpha = 0.16f)
+                        else colors.primary.copy(alpha = 0.22f),
+                        shape = CircleShape
+                    )
+            } else {
+                pill
+            }
+            Box(
+                modifier = pillStyle
+                    .semantics { selected = isSelected }
+                    .clickable(role = Role.Tab) {
+                        coroutineScope.launch {
+                            if (pagerState.currentPage == index) {
+                                emitGlobalEvent(GlobalEvent.Refresh(item.id))
+                            } else {
+                                pagerState.animateScrollToPage(index)
+                            }
                         }
                     }
-                },
-            )
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+            ) {
+                item.name(isSelected)
+            }
         }
     }
 }
@@ -100,12 +121,18 @@ private fun TabText(
     text: String,
     selected: Boolean
 ) {
+    val colors = ExtendedTheme.colors
     val style = MaterialTheme.typography.button.copy(
+        fontSize = 14.sp,
         letterSpacing = 0.75.sp,
-        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
         textAlign = TextAlign.Center
     )
-    Text(text = text, style = style)
+    Text(
+        text = text,
+        color = if (selected) colors.onTopBar else colors.onTopBarSecondary.copy(alpha = 0.78f),
+        style = style
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)

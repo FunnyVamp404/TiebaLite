@@ -83,12 +83,12 @@ private fun StatCardPlaceholder(modifier: Modifier = Modifier) {
             statNum = 0,
             statText = stringResource(id = R.string.text_stat_follow)
         )
-        HorizontalDivider(color = Color(if (ExtendedTheme.colors.isNightMode) 0xFF808080 else 0xFFDEDEDE))
+        HorizontalDivider(color = ExtendedTheme.colors.divider.copy(alpha = 0.6f))
         StatCardItem(
             statNum = 0,
             statText = stringResource(id = R.string.text_stat_fans)
         )
-        HorizontalDivider(color = Color(if (ExtendedTheme.colors.isNightMode) 0xFF808080 else 0xFFDEDEDE))
+        HorizontalDivider(color = ExtendedTheme.colors.divider.copy(alpha = 0.6f))
         StatCardItem(
             statNum = 0,
             statText = stringResource(id = R.string.title_stat_posts_num)
@@ -116,13 +116,13 @@ private fun StatCard(
             statText = stringResource(id = R.string.text_stat_follow),
             onClick = onFollowClick,
         )
-        HorizontalDivider(color = Color(if (ExtendedTheme.colors.isNightMode) 0xFF808080 else 0xFFDEDEDE))
+        HorizontalDivider(color = ExtendedTheme.colors.divider.copy(alpha = 0.6f))
         StatCardItem(
             statNum = fansNum,
             statText = stringResource(id = R.string.text_stat_fans),
             onClick = onFansClick,
         )
-        HorizontalDivider(color = Color(if (ExtendedTheme.colors.isNightMode) 0xFF808080 else 0xFFDEDEDE))
+        HorizontalDivider(color = ExtendedTheme.colors.divider.copy(alpha = 0.6f))
         StatCardItem(
             statNum = postNum,
             statText = stringResource(id = R.string.title_stat_posts_num),
@@ -332,7 +332,7 @@ fun UserPage(
                         },
                         modifier = Modifier
                             .padding(16.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(16.dp))
                             .background(color = ExtendedTheme.colors.chip)
                     )
                 } else if (isLoading) {
@@ -345,7 +345,7 @@ fun UserPage(
                     StatCardPlaceholder(
                         modifier = Modifier
                             .padding(16.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(16.dp))
                             .background(color = ExtendedTheme.colors.chip)
                     )
                 } else {

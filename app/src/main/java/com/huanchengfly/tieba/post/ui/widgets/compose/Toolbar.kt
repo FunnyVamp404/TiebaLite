@@ -190,15 +190,13 @@ fun BackNavigationIcon(onBackPressed: () -> Unit) {
     "Use the non deprecated overload",
     ReplaceWith(
         """TitleCentredToolbar(
-                title = { Text(text = title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.h6) },
+                title = { Text(text = title) },
                 modifier = modifier,
                 insets = insets,
                 navigationIcon = navigationIcon,
                 actions = actions,
                 content = content
             )""",
-        "androidx.compose.ui.text.font.FontWeight",
-        "androidx.compose.material.MaterialTheme",
         "androidx.compose.material.Text"
     )
 )
@@ -261,7 +259,7 @@ fun TitleCentredToolbar(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Bold)) {
+                        ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.SemiBold)) {
                             ProvideContentColor(color = ExtendedTheme.colors.onTopBar) {
                                 title()
                             }
@@ -306,7 +304,7 @@ fun Toolbar(
         topBar = {
             TopAppBar(
                 title = {
-                    ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Bold)) {
+                    ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.SemiBold)) {
                         ProvideContentColor(color = contentColor, content = title)
                     }
                 },

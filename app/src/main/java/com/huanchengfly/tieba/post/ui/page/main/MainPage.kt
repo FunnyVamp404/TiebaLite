@@ -284,9 +284,9 @@ fun MainPage(
             }
         }
     }
-    BackHandler(enabled = pagerState.currentPage != 0) {
+    BackHandler(enabled = pagerState.currentPage != initialPage) {
         coroutineScope.launch {
-            pagerState.scrollToPage(0)
+            pagerState.scrollToPage(initialPage)
         }
     }
 }

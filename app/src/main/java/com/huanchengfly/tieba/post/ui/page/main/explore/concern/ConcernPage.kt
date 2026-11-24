@@ -1,7 +1,7 @@
 package com.huanchengfly.tieba.post.ui.page.main.explore.concern
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -33,7 +33,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.FeedCard
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.LoadMoreLayout
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyColumn
-import com.huanchengfly.tieba.post.ui.widgets.compose.VerticalDivider
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import kotlinx.collections.immutable.persistentListOf
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -86,18 +87,19 @@ fun ConcernPage(
             MyLazyColumn(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().background(feedBackdropColor()),
             ) {
                 itemsIndexed(
                     items = data,
                     key = { _, item -> "${item.recommendType}_${item.threadList?.id}" },
                     contentType = { _, item -> item.recommendType }
-                ) { index, item ->
+                ) { _, item ->
                     Container {
                         if (item.recommendType == 1) {
-                            Column {
+                            Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
                                 FeedCard(
                                     item = wrapImmutable(item.threadList!!),
+                                    modifier = Modifier.feedCardSurface(),
                                     onClick = {
                                         navigator.navigate(
                                             ThreadPageDestination(
@@ -128,13 +130,6 @@ fun ConcernPage(
                                     onClickForum = { navigator.navigate(ForumPageDestination(it.name)) },
                                     onClickUser = { navigator.navigate(UserProfilePageDestination(it.id)) },
                                 )
-                                if (index < data.size - 1) {
-                                    VerticalDivider(
-                                        modifier = Modifier.padding(horizontal = 16.dp),
-                                        color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
-                                        thickness = 0.5.dp
-                                    )
-                                }
                             }
                         } else {
                             Box {}

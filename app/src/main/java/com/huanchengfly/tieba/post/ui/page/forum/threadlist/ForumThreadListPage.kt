@@ -1,17 +1,16 @@
 package com.huanchengfly.tieba.post.ui.page.forum.threadlist
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
@@ -64,7 +63,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.LoadMoreLayout
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalSnackbarHostState
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyColumn
-import com.huanchengfly.tieba.post.ui.widgets.compose.VerticalDivider
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -182,7 +182,9 @@ private fun ThreadList(
     MyLazyColumn(
         state = state,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(feedBackdropColor()),
         contentPadding = WindowInsets.navigationBars.asPaddingValues()
     ) {
         if (!forumRuleTitle.isNullOrEmpty()) {
@@ -192,7 +194,7 @@ private fun ThreadList(
                     onClick = {
                         onOpenForumRule?.invoke()
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().feedCardSurface(),
                     type = stringResource(id = R.string.desc_forum_rule)
                 )
             }
@@ -214,13 +216,13 @@ private fun ThreadList(
                     else ItemType.PlainText
                 }
             }
-        ) { index, (holder, blocked) ->
+        ) { _, (holder, blocked) ->
             BlockableContent(
                 blocked = blocked,
                 blockedTip = { BlockTip(text = { Text(text = stringResource(id = R.string.tip_blocked_thread)) }) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 16.dp),
+                    .padding(vertical = 6.dp, horizontal = 12.dp),
             ) {
                 val (item) = holder
                 Column(
@@ -231,21 +233,12 @@ private fun ThreadList(
                         TopThreadItem(
                             title = title,
                             onClick = { onItemClicked(item) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().feedCardSurface(),
                         )
                     } else {
-                        if (index > 0) {
-                            if (items[index - 1].thread.get { isTop } == 1) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                            VerticalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
-                                thickness = 0.5.dp
-                            )
-                        }
                         FeedCard(
                             item = holder,
+                            modifier = Modifier.feedCardSurface(),
                             onClick = onItemClicked,
                             onClickReply = onItemReplyClicked,
                             onAgree = onAgree,

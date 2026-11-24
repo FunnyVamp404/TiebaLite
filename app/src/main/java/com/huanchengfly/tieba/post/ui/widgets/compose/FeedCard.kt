@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -202,6 +203,19 @@ fun UserHeader(
 }
 
 
+/** Backdrop color behind feed cards: slightly darker than the card so rounded cards visibly float. */
+@Composable
+fun feedBackdropColor(): Color {
+    val colors = ExtendedTheme.colors
+    return lerp(colors.background, Color.Black, if (colors.isNightMode) 0.30f else 0.045f)
+}
+
+/** Rounded tonal card surface used by feed items. Spacing between cards must be added by the caller. */
+@Composable
+fun Modifier.feedCardSurface(): Modifier = this
+    .clip(RoundedCornerShape(16.dp))
+    .background(ExtendedTheme.colors.card)
+
 @Composable
 fun Card(
     modifier: Modifier = Modifier,
@@ -217,8 +231,9 @@ fun Card(
     else Modifier.padding(vertical = 14.dp)
 
     Column(
-        modifier = cardModifier
+        modifier = Modifier
             .then(modifier)
+            .then(cardModifier)
             .then(paddingModifier)
             .padding(contentPadding)
     ) {

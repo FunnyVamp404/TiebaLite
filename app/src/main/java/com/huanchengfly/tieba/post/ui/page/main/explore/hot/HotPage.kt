@@ -61,6 +61,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyColumn
 import com.huanchengfly.tieba.post.ui.widgets.compose.ProvideContentColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.VerticalDivider
 import com.huanchengfly.tieba.post.ui.widgets.compose.VerticalGrid
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.items
 import com.huanchengfly.tieba.post.ui.widgets.compose.itemsIndexed
 import com.huanchengfly.tieba.post.ui.widgets.compose.placeholder.placeholder
@@ -113,7 +115,8 @@ fun HotPage(
     Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
         MyLazyColumn(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .background(feedBackdropColor()),
         ) {
             if (topicList.isNotEmpty()) {
                 item(key = "TopicHeader") {
@@ -235,7 +238,7 @@ fun HotPage(
                                 column = 5,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(ExtendedTheme.colors.background)
+                                    .background(feedBackdropColor())
                                     .padding(vertical = 8.dp)
                                     .padding(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -291,9 +294,10 @@ fun HotPage(
                         key = { _, item -> "Thread_${item.get { threadId }}" }
                     ) { index, item ->
                         Container {
-                            Column {
+                            Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
                                 FeedCard(
                                     item = item,
+                                    modifier = Modifier.feedCardSurface(),
                                     onClick = {
                                         navigator.navigate(
                                             ThreadPageDestination(
@@ -349,13 +353,6 @@ fun HotPage(
                                             color = color
                                         )
                                     }
-                                }
-                                if (index < threadList.size - 1) {
-                                    VerticalDivider(
-                                        modifier = Modifier.padding(horizontal = 16.dp),
-                                        color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
-                                        thickness = 0.5.dp
-                                    )
                                 }
                             }
                         }

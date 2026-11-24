@@ -221,7 +221,8 @@ fun HotPage(
                             modifier = Modifier
                                 .padding(top = 16.dp, bottom = 8.dp)
                                 .padding(horizontal = 16.dp),
-                            thickness = 2.dp
+                            color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
+                            thickness = 0.5.dp
                         )
                     }
                 }
@@ -290,61 +291,70 @@ fun HotPage(
                         key = { _, item -> "Thread_${item.get { threadId }}" }
                     ) { index, item ->
                         Container {
-                            FeedCard(
-                                item = item,
-                                onClick = {
-                                    navigator.navigate(
-                                        ThreadPageDestination(
-                                            threadId = it.id,
-                                            threadInfo = it
+                            Column {
+                                FeedCard(
+                                    item = item,
+                                    onClick = {
+                                        navigator.navigate(
+                                            ThreadPageDestination(
+                                                threadId = it.id,
+                                                threadInfo = it
+                                            )
                                         )
-                                    )
-                                },
-                                onClickReply = {
-                                    navigator.navigate(
-                                        ThreadPageDestination(
-                                            threadId = it.id,
-                                            scrollToReply = true
+                                    },
+                                    onClickReply = {
+                                        navigator.navigate(
+                                            ThreadPageDestination(
+                                                threadId = it.id,
+                                                scrollToReply = true
+                                            )
                                         )
-                                    )
-                                },
-                                onAgree = {
-                                    viewModel.send(
-                                        HotUiIntent.Agree(
-                                            threadId = it.threadId,
-                                            postId = it.firstPostId,
-                                            hasAgree = it.hasAgree
+                                    },
+                                    onAgree = {
+                                        viewModel.send(
+                                            HotUiIntent.Agree(
+                                                threadId = it.threadId,
+                                                postId = it.firstPostId,
+                                                hasAgree = it.hasAgree
+                                            )
                                         )
-                                    )
-                                },
-                                onClickForum = { navigator.navigate(ForumPageDestination(it.name)) },
-                                onClickUser = { navigator.navigate(UserProfilePageDestination(it.id)) },
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.End,
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    },
+                                    onClickForum = { navigator.navigate(ForumPageDestination(it.name)) },
+                                    onClickUser = { navigator.navigate(UserProfilePageDestination(it.id)) },
                                 ) {
-                                    val color = when (index) {
-                                        0 -> RedA700
-                                        1 -> OrangeA700
-                                        2 -> Yellow
-                                        else -> MaterialTheme.colors.onBackground.copy(
-                                            ContentAlpha.medium
+                                    Column(
+                                        horizontalAlignment = Alignment.End,
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        val color = when (index) {
+                                            0 -> RedA700
+                                            1 -> OrangeA700
+                                            2 -> Yellow
+                                            else -> MaterialTheme.colors.onBackground.copy(
+                                                ContentAlpha.medium
+                                            )
+                                        }
+                                        Text(
+                                            text = "${index + 1}",
+                                            color = color,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp
+                                        )
+                                        Text(
+                                            text = stringResource(
+                                                id = R.string.hot_num,
+                                                item.get { hotNum }.getShortNumString()
+                                            ),
+                                            style = MaterialTheme.typography.caption,
+                                            color = color
                                         )
                                     }
-                                    Text(
-                                        text = "${index + 1}",
-                                        color = color,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    )
-                                    Text(
-                                        text = stringResource(
-                                            id = R.string.hot_num,
-                                            item.get { hotNum }.getShortNumString()
-                                        ),
-                                        style = MaterialTheme.typography.caption,
-                                        color = color
+                                }
+                                if (index < threadList.size - 1) {
+                                    VerticalDivider(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                        color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
+                                        thickness = 0.5.dp
                                     )
                                 }
                             }

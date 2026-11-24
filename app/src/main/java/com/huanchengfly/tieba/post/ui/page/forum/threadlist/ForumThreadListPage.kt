@@ -143,13 +143,13 @@ private fun TopThreadItem(
     Row(
         modifier = modifier
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Chip(
             text = type,
-            shape = RoundedCornerShape(3.dp)
+            shape = RoundedCornerShape(6.dp)
         )
         Text(
             text = title,
@@ -238,7 +238,11 @@ private fun ThreadList(
                             if (items[index - 1].thread.get { isTop } == 1) {
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
-                            VerticalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                            VerticalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
+                                thickness = 0.5.dp
+                            )
                         }
                         FeedCard(
                             item = holder,

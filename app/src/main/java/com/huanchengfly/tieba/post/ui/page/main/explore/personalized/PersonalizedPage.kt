@@ -365,7 +365,8 @@ private fun FeedList(
                                 if (showDivider) {
                                     VerticalDivider(
                                         modifier = Modifier.padding(horizontal = 16.dp),
-                                        thickness = 2.dp
+                                        color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
+                                        thickness = 0.5.dp
                                     )
                                 }
                             }

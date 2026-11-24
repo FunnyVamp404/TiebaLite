@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -81,7 +82,7 @@ fun UserHeader(
         ) {
             avatar()
         }
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -90,7 +91,8 @@ fun UserHeader(
                 value = MaterialTheme.typography.subtitle1.merge(
                     TextStyle(
                         color = ExtendedTheme.colors.text,
-                        fontSize = 13.sp
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 )
             ) {
@@ -100,8 +102,8 @@ fun UserHeader(
                 ProvideTextStyle(
                     value = MaterialTheme.typography.caption.merge(
                         TextStyle(
-                            color = ExtendedTheme.colors.textSecondary,
-                            fontSize = 11.sp
+                            color = ExtendedTheme.colors.textSecondary.copy(alpha = 0.85f),
+                            fontSize = 11.5.sp
                         )
                     )
                 ) {

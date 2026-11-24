@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -214,8 +213,8 @@ fun Card(
 ) {
     val cardModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
 
-    val paddingModifier = if (action != null) Modifier.padding(top = 16.dp)
-    else Modifier.padding(vertical = 16.dp)
+    val paddingModifier = if (action != null) Modifier.padding(top = 14.dp, bottom = 4.dp)
+    else Modifier.padding(vertical = 14.dp)
 
     Column(
         modifier = cardModifier
@@ -225,12 +224,15 @@ fun Card(
     ) {
         header()
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(top = 8.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.padding(top = 10.dp)
         ) {
             content()
         }
-        action?.invoke(this)
+        if (action != null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            action.invoke(this)
+        }
     }
 }
 
@@ -273,44 +275,65 @@ fun ThreadContent(
     maxLines: Int = 5,
     highlightKeywords: ImmutableList<String> = persistentListOf(),
 ) {
-    val content = buildAnnotatedString {
+    Column(
+        modifier = Modifier.fillMaxWidth().then(modifier),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
         if (showTitle) {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                if (isGood) {
-                    withStyle(style = SpanStyle(color = ExtendedTheme.colors.accent)) {
-                        append(stringResource(id = R.string.tip_good))
+            val titleAnnotatedString = buildAnnotatedString {
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.SemiBold,
+                        color = ExtendedTheme.colors.text
+                    )
+                ) {
+                    if (isGood) {
+                        withStyle(style = SpanStyle(color = ExtendedTheme.colors.accent)) {
+                            append(stringResource(id = R.string.tip_good))
+                            append(" ")
+                        }
                     }
-                    append(" ")
-                }
 
-                if (tabName.isNotBlank()) {
-                    append(tabName)
-                    append(" | ")
-                }
+                    if (tabName.isNotBlank()) {
+                        withStyle(
+                            style = SpanStyle(
+                                color = ExtendedTheme.colors.textSecondary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        ) {
+                            append(tabName)
+                            append(" · ")
+                        }
+                    }
 
-                append(title)
+                    append(title)
+                }
             }
-        }
-        if (showTitle && showAbstract) {
-            append('\n')
+            HighlightText(
+                text = titleAnnotatedString,
+                fontSize = 16.sp,
+                lineHeight = 23.sp,
+                maxLines = if (showAbstract) 2 else maxLines,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.subtitle1,
+                highlightKeywords = highlightKeywords,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
         if (showAbstract) {
-            append(abstractText.emoticonString)
+            HighlightText(
+                text = abstractText.emoticonString,
+                color = ExtendedTheme.colors.textSecondary,
+                fontSize = 14.sp,
+                lineHeight = 21.sp,
+                maxLines = if (showTitle) (maxLines - 2).coerceAtLeast(2) else maxLines,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.body2,
+                highlightKeywords = highlightKeywords,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
-
-    HighlightText(
-        text = content,
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(modifier),
-        fontSize = 15.sp,
-        lineSpacing = 0.8.sp,
-        overflow = TextOverflow.Ellipsis,
-        maxLines = maxLines,
-        style = MaterialTheme.typography.body1,
-        highlightKeywords = highlightKeywords
-    )
 }
 
 @Composable
@@ -368,22 +391,24 @@ fun ForumInfoChip(
     val name = nameProvider()
     Row(
         modifier = Modifier
-            .height(IntrinsicSize.Min)
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(100))
             .background(color = ExtendedTheme.colors.chip)
             .clickable(onClick = onClick)
-            .padding(4.dp),
+            .padding(
+                start = if (imageUri != null) 4.dp else 10.dp,
+                end = 10.dp,
+                top = 4.dp,
+                bottom = 4.dp
+            ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         imageUri?.let {
             Avatar(
                 data = imageUri,
                 contentDescription = null,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .aspectRatio(1f),
-                shape = RoundedCornerShape(4.dp)
+                modifier = Modifier.size(18.dp),
+                shape = RoundedCornerShape(100)
             )
         }
         Text(
@@ -391,6 +416,7 @@ fun ForumInfoChip(
             style = MaterialTheme.typography.body2,
             color = ExtendedTheme.colors.onChip,
             fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
         )
     }
 }
@@ -404,12 +430,12 @@ private fun MediaPlaceholder(
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(6.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(ExtendedTheme.colors.chip)
             .clickable(
                 enabled = onClick != null
             ) { onClick?.invoke() }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -495,7 +521,7 @@ private fun ThreadMedia(
                             modifier = Modifier
                                 .fillMaxWidth(singleMediaFraction)
                                 .aspectRatio(aspectRatio)
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(12.dp))
                         )
                     }
                 }
@@ -547,7 +573,7 @@ private fun ThreadMedia(
                             modifier = Modifier
                                 .fillMaxWidth(mediaWidthFraction)
                                 .aspectRatio(mediaAspectRatio)
-                                .clip(RoundedCornerShape(8.dp)),
+                                .clip(RoundedCornerShape(12.dp)),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             showMedias.fastForEachIndexed { index, media ->
@@ -684,7 +710,7 @@ fun ThreadReplyBtn(
         },
         modifier = modifier,
         onClick = onClick,
-        color = ExtendedTheme.colors.textSecondary,
+        color = ExtendedTheme.colors.textSecondary.copy(alpha = 0.85f),
     )
 }
 
@@ -695,8 +721,11 @@ fun ThreadAgreeBtn(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val contentColor =
-        if (hasAgree) ExtendedTheme.colors.primary else ExtendedTheme.colors.textSecondary
+    val contentColor = if (hasAgree) {
+        ExtendedTheme.colors.primary
+    } else {
+        ExtendedTheme.colors.textSecondary.copy(alpha = 0.85f)
+    }
     val animatedColor by animateColorAsState(contentColor, label = "agreeBtnContentColor")
 
     ActionBtn(
@@ -741,7 +770,7 @@ fun ThreadShareBtn(
         },
         modifier = modifier,
         onClick = onClick,
-        color = ExtendedTheme.colors.textSecondary,
+        color = ExtendedTheme.colors.textSecondary.copy(alpha = 0.85f),
     )
 }
 
@@ -789,12 +818,12 @@ fun FeedCard(
                     OriginThreadCard(
                         originThreadInfo = it,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
+                            .clip(RoundedCornerShape(12.dp))
                             .background(ExtendedTheme.colors.floorCard)
                             .clickable {
                                 onClickOriginThread(it.get())
                             }
-                            .padding(16.dp)
+                            .padding(12.dp)
                     )
                 }
 
@@ -871,12 +900,12 @@ fun FeedCard(
                     OriginThreadCard(
                         originThreadInfo = it,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
+                            .clip(RoundedCornerShape(12.dp))
                             .background(ExtendedTheme.colors.floorCard)
                             .clickable {
                                 onClickOriginThread(it.get())
                             }
-                            .padding(16.dp)
+                            .padding(12.dp)
                     )
                 }
 
@@ -919,7 +948,7 @@ private fun ActionBtnPlaceholder(
 ) {
     Row(
         modifier = Modifier
-            .padding(vertical = 16.dp)
+            .padding(vertical = 10.dp)
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
@@ -946,17 +975,18 @@ private fun ActionBtn(
 ) {
     val clickableModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
     Row(
-        modifier = clickableModifier
-            .padding(vertical = 16.dp)
-            .then(modifier),
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .then(clickableModifier)
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
         ProvideContentColor(color = color) {
-            Box(modifier = Modifier.size(18.dp)) {
+            Box(modifier = Modifier.size(16.dp)) {
                 icon()
             }
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             ProvideTextStyle(value = MaterialTheme.typography.caption) {
                 text()
             }

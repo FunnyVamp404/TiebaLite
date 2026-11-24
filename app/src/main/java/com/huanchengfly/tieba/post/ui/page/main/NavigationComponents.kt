@@ -3,7 +3,6 @@ package com.huanchengfly.tieba.post.ui.page.main
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
-import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,7 +31,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.NavigationRail
@@ -56,6 +54,7 @@ import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +70,7 @@ import com.huanchengfly.tieba.post.ui.common.theme.compose.White
 import com.huanchengfly.tieba.post.ui.utils.MainNavigationContentPosition
 import com.huanchengfly.tieba.post.ui.widgets.compose.AccountNavIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialNavIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.utils.AccountUtil.LocalAccount
 import kotlinx.collections.immutable.ImmutableList
@@ -144,7 +144,6 @@ fun NavigationDrawerItem(
     }
 }
 
-@OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
 fun NavigationDrawerContent(
     currentPosition: Int,
@@ -222,13 +221,11 @@ fun NavigationDrawerContent(
                         label = { Text(text = navigationItem.title(index == currentPosition)) },
                         icon = {
                             Box {
-                                Icon(
-                                    painter = rememberAnimatedVectorPainter(
-                                        animatedImageVector = navigationItem.icon(),
-                                        atEnd = index == currentPosition
-                                    ),
-                                    contentDescription = navigationItem.title(index == currentPosition),
-                                    modifier = Modifier.size(24.dp),
+                                EditorialNavIcon(
+                                    id = navigationItem.id,
+                                    selected = index == currentPosition,
+                                    tint = LocalContentColor.current,
+                                    modifier = Modifier.size(22.dp),
                                 )
                                 if (navigationItem.badge) {
                                     Text(
@@ -302,7 +299,6 @@ private fun PositionLayout(
     )
 }
 
-@OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
 fun NavigationRail(
     currentPosition: Int,
@@ -338,13 +334,14 @@ fun NavigationRail(
                     },
                     icon = {
                         Box {
-                            Icon(
-                                painter = rememberAnimatedVectorPainter(
-                                    animatedImageVector = navigationItem.icon(),
-                                    atEnd = index == currentPosition
-                                ),
-                                contentDescription = navigationItem.title(index == currentPosition),
-                                modifier = Modifier.size(16.dp),
+                            val title = navigationItem.title(index == currentPosition)
+                            EditorialNavIcon(
+                                id = navigationItem.id,
+                                selected = index == currentPosition,
+                                tint = LocalContentColor.current,
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .semantics { contentDescription = title },
                             )
                             if (navigationItem.badge) {
                                 Text(
@@ -384,7 +381,6 @@ fun BottomNavigationDivider(
     )
 }
 
-@OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
 fun BottomNavigation(
     currentPosition: Int,
@@ -467,15 +463,12 @@ fun BottomNavigation(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Box(modifier = Modifier.size(20.dp)) {
-                        Icon(
-                            painter = rememberAnimatedVectorPainter(
-                                animatedImageVector = navigationItem.icon(),
-                                atEnd = isSelected,
-                            ),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
+                    Box(modifier = Modifier.size(21.dp)) {
+                        EditorialNavIcon(
+                            id = navigationItem.id,
+                            selected = isSelected,
                             tint = animatedContentColor,
+                            modifier = Modifier.size(21.dp),
                         )
                         if (navigationItem.badge) {
                             Box(

@@ -44,7 +44,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -214,14 +215,14 @@ fun ActionItem(
 
 @Composable
 fun BackNavigationIcon(onBackPressed: () -> Unit) {
-    ProvideContentColor(color = ExtendedTheme.colors.onTopBar) {
-        FloatingCircleIconButton(onClick = onBackPressed) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_round_arrow_back),
-                contentDescription = stringResource(id = R.string.button_back),
-                modifier = Modifier.size(20.dp)
-            )
-        }
+    val backLabel = stringResource(id = R.string.button_back)
+    FloatingCircleIconButton(onClick = onBackPressed) {
+        EditorialBackIcon(
+            tint = ExtendedTheme.colors.onTopBar,
+            modifier = Modifier
+                .size(18.dp)
+                .semantics { contentDescription = backLabel }
+        )
     }
 }
 

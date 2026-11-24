@@ -34,10 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,6 +57,7 @@ import com.huanchengfly.tieba.post.ui.page.destinations.UserProfilePageDestinati
 import com.huanchengfly.tieba.post.ui.page.destinations.WebViewPageDestination
 import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
 import com.huanchengfly.tieba.post.ui.widgets.compose.ConfirmDialog
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialMenuIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.HorizontalDivider
 import com.huanchengfly.tieba.post.ui.widgets.compose.ListMenuItem
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalFloatingBottomBarPadding
@@ -362,7 +361,7 @@ fun UserPage(
                 ) {
                     if (account != null) {
                         ListMenuItem(
-                            icon = ImageVector.vectorResource(id = R.drawable.ic_favorite),
+                            iconContent = { EditorialMenuIcon(kind = "collect", tint = ExtendedTheme.colors.primary) },
                             text = stringResource(id = R.string.title_my_collect),
                             onClick = {
                                 navigator.navigate(ThreadStorePageDestination)
@@ -370,14 +369,14 @@ fun UserPage(
                         )
                     }
                     ListMenuItem(
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_outline_watch_later_24),
+                        iconContent = { EditorialMenuIcon(kind = "history", tint = ExtendedTheme.colors.primary) },
                         text = stringResource(id = R.string.title_history),
                         onClick = {
                             navigator.navigate(HistoryPageDestination)
                         }
                     )
                     ListMenuItem(
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_brush_24),
+                        iconContent = { EditorialMenuIcon(kind = "theme", tint = ExtendedTheme.colors.primary) },
                         text = stringResource(id = R.string.title_theme),
                         onClick = {
                             navigator.navigate(AppThemePageDestination)
@@ -402,7 +401,7 @@ fun UserPage(
                     }
                     if (account != null) {
                         ListMenuItem(
-                            icon = ImageVector.vectorResource(id = R.drawable.ic_help_outline_black_24),
+                            iconContent = { EditorialMenuIcon(kind = "service", tint = ExtendedTheme.colors.primary) },
                             text = stringResource(id = R.string.my_info_service_center),
                             onClick = {
                                 navigator.navigate(
@@ -420,12 +419,12 @@ fun UserPage(
                         .feedCardSurface()
                 ) {
                     ListMenuItem(
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_settings_24),
+                        iconContent = { EditorialMenuIcon(kind = "settings", tint = ExtendedTheme.colors.primary) },
                         text = stringResource(id = R.string.my_info_settings),
                         onClick = { navigator.navigate(SettingsPageDestination) },
                     )
                     ListMenuItem(
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_info_black_24),
+                        iconContent = { EditorialMenuIcon(kind = "about", tint = ExtendedTheme.colors.primary) },
                         text = stringResource(id = R.string.my_info_about),
                         onClick = { navigator.navigate(AboutPageDestination) },
                     )

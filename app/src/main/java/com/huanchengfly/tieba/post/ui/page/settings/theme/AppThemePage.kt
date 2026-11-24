@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,6 +24,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -56,11 +60,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.github.panpf.sketch.compose.AsyncImage
 import com.github.panpf.sketch.fetch.newFileUri
 import com.github.panpf.sketch.fetch.newResourceUri
@@ -75,6 +82,8 @@ import com.huanchengfly.tieba.post.goToActivity
 import com.huanchengfly.tieba.post.rememberPreferenceAsMutableState
 import com.huanchengfly.tieba.post.rememberPreferenceAsState
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
+import com.huanchengfly.tieba.post.ui.common.theme.compose.KEY_MONET_PRESET
+import com.huanchengfly.tieba.post.ui.common.theme.compose.MonetPreset
 import com.huanchengfly.tieba.post.ui.common.theme.compose.dynamicTonalPalette
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.Dialog
@@ -83,6 +92,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.DialogPositiveButton
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.ProvideContentColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberDialogState
 import com.huanchengfly.tieba.post.utils.ThemeUtil
 import com.huanchengfly.tieba.post.utils.appPreferences
@@ -102,6 +113,10 @@ fun AppThemePage(
     val isDynamicTheme by rememberPreferenceAsState(
         key = booleanPreferencesKey("useDynamicColorTheme"),
         defaultValue = false
+    )
+    var monetPresetId by rememberPreferenceAsMutableState(
+        key = stringPreferencesKey(KEY_MONET_PRESET),
+        defaultValue = MonetPreset.GRAPHITE.id,
     )
     val customPrimaryColorDialogState = rememberDialogState()
     var customPrimaryColor by remember {
@@ -299,7 +314,7 @@ fun AppThemePage(
     }
 
     MyScaffold(
-        backgroundColor = Color.Transparent,
+        backgroundColor = feedBackdropColor(),
         topBar = {
             TitleCentredToolbar(
                 title = {
@@ -322,6 +337,12 @@ fun AppThemePage(
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()
             ) {
+                item {
+                    MonetPaletteSection(
+                        selectedPreset = MonetPreset.fromId(monetPresetId),
+                        onPresetSelected = { monetPresetId = it.id },
+                    )
+                }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     item {
                         val tonalPalette = remember { dynamicTonalPalette(context) }
@@ -343,6 +364,7 @@ fun AppThemePage(
                                     )
                                 )
                                 .clickable {
+                                    monetPresetId = MonetPreset.NONE.id
                                     ThemeUtil.setUseDynamicTheme(true)
                                 }
                                 .padding(all = 16.dp)
@@ -543,6 +565,136 @@ fun AppThemePage(
                                 ThemeUtil.setUseDynamicTheme(false)
                             }
                         )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonetPaletteSection(
+    selectedPreset: MonetPreset,
+    onPresetSelected: (MonetPreset) -> Unit,
+) {
+    val colors = ExtendedTheme.colors
+    val hairline = if (colors.isNightMode) {
+        Color.White.copy(alpha = 0.10f)
+    } else {
+        Color.Black.copy(alpha = 0.08f)
+    }
+    val originalSelected = selectedPreset == MonetPreset.NONE
+    val originalBackground = if (originalSelected) {
+        colors.primary.copy(alpha = 0.12f)
+    } else {
+        Color.Transparent
+    }
+    val swatchCardShape = RoundedCornerShape(10.dp)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .feedCardSurface()
+            .selectableGroup()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "01 / MONET PALETTE",
+                fontSize = 11.sp,
+                letterSpacing = 1.sp,
+                color = colors.textSecondary,
+            )
+            Box(Modifier.weight(1f).height(0.5.dp).background(hairline))
+            Box(Modifier.size(4.dp).background(colors.primary))
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "莫奈配色",
+                modifier = Modifier.weight(1f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                color = colors.text,
+            )
+            Text(
+                text = "恢复原色",
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(originalBackground)
+                    .border(0.75.dp, if (originalSelected) colors.primary else hairline, CircleShape)
+                    .selectable(
+                        selected = originalSelected,
+                        role = Role.RadioButton,
+                        onClick = { onPresetSelected(MonetPreset.NONE) },
+                    )
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                fontSize = 12.sp,
+                color = if (originalSelected) colors.primary else colors.textSecondary,
+            )
+        }
+        Text(
+            text = "低饱和东方色板，深色与浅色自动配套",
+            fontSize = 12.sp,
+            color = colors.textSecondary,
+        )
+        Column(
+            modifier = Modifier.padding(top = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            MonetPreset.selectablePresets.chunked(2).forEach { presets ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    presets.forEach { preset ->
+                        val selected = selectedPreset == preset
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(swatchCardShape)
+                                .border(
+                                    width = if (selected) 1.5.dp else 0.75.dp,
+                                    color = if (selected) colors.primary else hairline,
+                                    shape = swatchCardShape,
+                                )
+                                .selectable(
+                                    selected = selected,
+                                    role = Role.RadioButton,
+                                    onClick = { onPresetSelected(preset) },
+                                ),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(46.dp)
+                                    .padding(4.dp),
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(6.dp)),
+                                ) {
+                                    val stripe = Modifier.weight(1f).fillMaxHeight()
+                                    Box(stripe.background(preset.swatch1))
+                                    Box(stripe.background(preset.swatch2))
+                                    Box(stripe.background(preset.swatch3))
+                                }
+                            }
+                            Text(
+                                text = preset.label,
+                                modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
+                                fontSize = 12.sp,
+                                fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                                color = colors.text,
+                            )
+                        }
                     }
                 }
             }

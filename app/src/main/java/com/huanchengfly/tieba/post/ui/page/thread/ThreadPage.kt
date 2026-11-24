@@ -5,6 +5,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,14 +24,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.ButtonDefaults
@@ -79,7 +81,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -125,7 +129,6 @@ import com.huanchengfly.tieba.post.ui.common.theme.compose.invertChipBackground
 import com.huanchengfly.tieba.post.ui.common.theme.compose.invertChipContent
 import com.huanchengfly.tieba.post.ui.common.theme.compose.loadMoreIndicator
 import com.huanchengfly.tieba.post.ui.common.theme.compose.pullRefreshIndicator
-import com.huanchengfly.tieba.post.ui.common.theme.compose.threadBottomBar
 import com.huanchengfly.tieba.post.ui.page.LocalNavigator
 import com.huanchengfly.tieba.post.ui.page.ProvideNavigator
 import com.huanchengfly.tieba.post.ui.page.destinations.CopyTextDialogPageDestination
@@ -162,6 +165,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.UserHeader
 import com.huanchengfly.tieba.post.ui.widgets.compose.VerticalDivider
 import com.huanchengfly.tieba.post.ui.widgets.compose.VerticalGrid
 import com.huanchengfly.tieba.post.ui.widgets.compose.buildChipInlineContent
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberDialogState
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberMenuState
 import com.huanchengfly.tieba.post.ui.widgets.compose.states.StateScreen
@@ -255,86 +259,40 @@ private fun BottomBarAgreeBtn(
     val color = if (hasAgreed) ExtendedTheme.colors.accent else ExtendedTheme.colors.textSecondary
     val animatedColor by animateColorAsState(color, label = "agreeBtnColor")
 
-    Button(
-        onClick = onClick,
-        shape = RoundedCornerShape(0),
-        contentPadding = PaddingValues(horizontal = 4.dp),
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = ExtendedTheme.colors.bottomBar,
-            contentColor = animatedColor
-        ),
+    Row(
         modifier = modifier
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Row(
-            modifier = Modifier.align(Alignment.CenterVertically),
-            verticalAlignment = Alignment.Top
-        ) {
-            Icon(
-                imageVector = if (hasAgreed) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                contentDescription = stringResource(id = R.string.title_agree),
-                tint = animatedColor
+        Icon(
+            imageVector = if (hasAgreed) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+            contentDescription = stringResource(id = R.string.title_agree),
+            tint = animatedColor,
+            modifier = Modifier.size(19.dp)
+        )
+        if (agreeNum > 0) {
+            Text(
+                text = agreeNum.getShortNumString(),
+                style = MaterialTheme.typography.caption,
+                color = animatedColor,
+                fontSize = 12.sp
             )
-            if (agreeNum > 0) {
-                Text(
-                    text = agreeNum.getShortNumString(),
-                    style = MaterialTheme.typography.caption,
-                    color = animatedColor,
-                    fontSize = 12.sp
-                )
-            }
         }
     }
 }
 
 @Composable
 private fun BottomBarPlaceholder() {
-    Row(
+    Spacer(
         modifier = Modifier
-            .height(IntrinsicSize.Min)
-            .background(ExtendedTheme.colors.bottomBar)
-            // 拦截点击事件
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = {}
-            )
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(vertical = 8.dp)
-                .weight(1f)
-                .clip(RoundedCornerShape(6.dp))
-                .background(ExtendedTheme.colors.bottomBarSurface)
-                .padding(8.dp),
-        ) {
-            Text(
-                text = stringResource(id = R.string.tip_reply_thread),
-                style = MaterialTheme.typography.caption,
-                color = ExtendedTheme.colors.onBottomBarSurface,
-            )
-        }
-
-        BottomBarAgreeBtn(
-            hasAgreed = false,
-            agreeNum = 1,
-            onClick = {},
-            modifier = Modifier.fillMaxHeight()
-        )
-
-        Box(
-            modifier = Modifier.fillMaxHeight(),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.MoreVert,
-                contentDescription = stringResource(id = R.string.btn_more),
-                tint = ExtendedTheme.colors.textSecondary,
-            )
-        }
-    }
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .height(52.dp)
+    )
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -415,8 +373,10 @@ private fun ThreadLoadMoreIndicator(
     loadMoreEnd: Boolean,
     willLoad: Boolean,
     hasMore: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     Surface(
+        modifier = modifier,
         elevation = 8.dp,
         shape = RoundedCornerShape(100),
         color = ExtendedTheme.colors.loadMoreIndicator,
@@ -1111,6 +1071,7 @@ fun ThreadPage(
             }
         ) {
             MyScaffold(
+                backgroundColor = feedBackdropColor(),
                 scaffoldState = scaffoldState,
                 topBar = {
                     TopBar(
@@ -1124,48 +1085,6 @@ fun ThreadPage(
                                 )
                             )
                         }
-                    )
-                },
-                bottomBar = {
-                    BottomBar(
-                        user = user,
-                        onClickReply = {
-                            navigator.navigate(
-                                ReplyPageDestination(
-                                    forumId = curForumId ?: 0,
-                                    forumName = forum?.get { name }.orEmpty(),
-                                    threadId = threadId,
-                                )
-                            )
-                        },
-                        onAgree = {
-                            val firstPostId =
-                                thread?.get { firstPostId }.takeIf { it != 0L }
-                                    ?: firstPost?.get { id }
-                                    ?: 0L
-                            if (firstPostId != 0L) viewModel.send(
-                                ThreadUiIntent.AgreeThread(
-                                    threadId,
-                                    firstPostId,
-                                    !hasThreadAgreed
-                                )
-                            )
-                        },
-                        onClickMore = {
-                            if (bottomSheetState.isVisible) {
-                                closeBottomSheet()
-                            } else {
-                                openBottomSheet()
-                            }
-                        },
-                        hasAgreed = hasThreadAgreed,
-                        agreeNum = threadAgreeNum,
-                        modifier = Modifier
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                                onClick = {}
-                            )
                     )
                 },
             ) { paddingValues ->
@@ -1290,8 +1209,12 @@ fun ThreadPage(
                 ) {
                     Box(
                         modifier = Modifier
+                            .fillMaxSize()
                             .pullRefresh(state = pullRefreshState, enabled = enablePullRefresh)
                     ) {
+                        val dockClearance = 84.dp + WindowInsets.navigationBars.asPaddingValues()
+                            .calculateBottomPadding()
+
                         LoadMoreLayout(
                             isLoading = isLoadingMore,
                             onLoadMore = {
@@ -1326,7 +1249,8 @@ fun ThreadPage(
                                     isLoading,
                                     loadMoreEnd,
                                     willLoad,
-                                    hasMore
+                                    hasMore,
+                                    modifier = Modifier.padding(bottom = dockClearance)
                                 )
                             },
                             lazyListState = lazyListState,
@@ -1335,7 +1259,8 @@ fun ThreadPage(
                         ) {
                             MyLazyColumn(
                                 state = lazyListState,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                contentPadding = PaddingValues(bottom = dockClearance)
                             ) {
                                 item(key = "FirstPost") {
                                     if (firstPost != null) {
@@ -1603,6 +1528,43 @@ fun ThreadPage(
                             backgroundColor = ExtendedTheme.colors.pullRefreshIndicator,
                             contentColor = ExtendedTheme.colors.primary,
                         )
+
+                        Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                            BottomBar(
+                                user = user,
+                                onClickReply = {
+                                    navigator.navigate(
+                                        ReplyPageDestination(
+                                            forumId = curForumId ?: 0,
+                                            forumName = forum?.get { name }.orEmpty(),
+                                            threadId = threadId,
+                                        )
+                                    )
+                                },
+                                onAgree = {
+                                    val firstPostId =
+                                        thread?.get { firstPostId }.takeIf { it != 0L }
+                                            ?: firstPost?.get { id }
+                                            ?: 0L
+                                    if (firstPostId != 0L) viewModel.send(
+                                        ThreadUiIntent.AgreeThread(
+                                            threadId,
+                                            firstPostId,
+                                            !hasThreadAgreed
+                                        )
+                                    )
+                                },
+                                onClickMore = {
+                                    if (bottomSheetState.isVisible) {
+                                        closeBottomSheet()
+                                    } else {
+                                        openBottomSheet()
+                                    }
+                                },
+                                hasAgreed = hasThreadAgreed,
+                                agreeNum = threadAgreeNum,
+                            )
+                        }
                     }
                 }
             }
@@ -1668,14 +1630,40 @@ private fun BottomBar(
     hasAgreed: Boolean = false,
     agreeNum: Long = 0,
 ) {
-    Column(
-        modifier = Modifier.background(ExtendedTheme.colors.threadBottomBar)
+    val colors = ExtendedTheme.colors
+    val dockColor = if (colors.isNightMode) {
+        lerp(colors.card, Color(0xFF1E222A), 0.45f).copy(alpha = 0.90f)
+    } else {
+        Color.White.copy(alpha = 0.92f)
+    }
+    val rimColor = if (colors.isNightMode) {
+        Color.White.copy(alpha = 0.14f)
+    } else {
+        Color.Black.copy(alpha = 0.08f)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center
     ) {
         Row(
             modifier = Modifier
-                .height(IntrinsicSize.Min)
+                .fillMaxWidth()
+                .height(52.dp)
+                .shadow(
+                    elevation = if (colors.isNightMode) 14.dp else 10.dp,
+                    shape = CircleShape,
+                    ambientColor = Color.Black.copy(alpha = 0.45f),
+                    spotColor = Color.Black.copy(alpha = 0.45f)
+                )
+                .clip(CircleShape)
+                .background(dockColor)
+                .border(0.75.dp, rimColor, CircleShape)
                 .then(modifier)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -1684,61 +1672,49 @@ private fun BottomBar(
                     data = StringUtil.getAvatarUrl(user.get { portrait }),
                     size = Sizes.Tiny,
                     contentDescription = user.get { name },
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
                 )
 
                 Row(
                     modifier = Modifier
-                        .padding(vertical = 8.dp)
                         .weight(1f)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(ExtendedTheme.colors.bottomBarSurface)
+                        .clip(CircleShape)
+                        .background(
+                            if (colors.isNightMode) Color.White.copy(alpha = 0.06f)
+                            else Color.Black.copy(alpha = 0.04f)
+                        )
                         .clickable(onClick = onClickReply)
-                        .padding(8.dp),
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
                 ) {
                     Text(
                         text = stringResource(id = R.string.tip_reply_thread),
                         style = MaterialTheme.typography.caption,
-                        color = ExtendedTheme.colors.onBottomBarSurface,
+                        color = colors.textSecondary,
                     )
                 }
             } else {
-                Spacer(modifier = Modifier
-                    .weight(1f)
-                    .height(40.dp))
+                Spacer(modifier = Modifier.weight(1f))
             }
 
             BottomBarAgreeBtn(
                 hasAgreed = hasAgreed,
                 agreeNum = agreeNum,
                 onClick = onAgree,
-                modifier = Modifier.fillMaxHeight()
             )
 
             Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .clickable(onClick = onClickMore)
-                    .padding(horizontal = 4.dp),
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onClickMore),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Rounded.MoreVert,
                     contentDescription = stringResource(id = R.string.btn_more),
-                    tint = ExtendedTheme.colors.textSecondary,
+                    tint = colors.textSecondary,
+                    modifier = Modifier.size(20.dp),
                 )
             }
-        }
-
-        Box(
-            modifier = Modifier
-                .requiredHeightIn(min = if (LocalContext.current.appPreferences.liftUpBottomBar) 16.dp else 0.dp)
-        ) {
-            Spacer(
-                modifier = Modifier
-                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
-            )
         }
     }
 }

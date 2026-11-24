@@ -148,6 +148,90 @@ private fun DrawScope.drawUserIcon(scale: Float, stroke: Stroke, tint: Color, wa
 }
 
 @Composable
+fun EditorialMenuIcon(kind: String, tint: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(20.dp)) {
+        val scale = size.minDimension / 24f
+        val stroke = Stroke(width = 1.65.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+
+        fun point(x: Float, y: Float) = Offset(x * scale, y * scale)
+
+        fun drawOutlineCircle() {
+            drawCircle(tint, radius = 8.5f * scale, center = point(12f, 12f), style = stroke)
+        }
+
+        when (kind) {
+            "collect" -> {
+                val bookmark = Path().apply {
+                    moveTo(6.5f * scale, 4.5f * scale)
+                    lineTo(17.5f * scale, 4.5f * scale)
+                    lineTo(17.5f * scale, 19.5f * scale)
+                    lineTo(12f * scale, 15.5f * scale)
+                    lineTo(6.5f * scale, 19.5f * scale)
+                    close()
+                }
+                drawPath(bookmark, tint, style = stroke)
+            }
+            "history" -> {
+                drawOutlineCircle()
+                val hands = Path().apply {
+                    moveTo(12f * scale, 7.5f * scale)
+                    lineTo(12f * scale, 12f * scale)
+                    lineTo(15.2f * scale, 13.8f * scale)
+                }
+                drawPath(hands, tint, style = stroke)
+            }
+            "theme" -> {
+                val layers = Path().apply {
+                    moveTo(12f * scale, 4.5f * scale)
+                    lineTo(19.5f * scale, 9.5f * scale)
+                    lineTo(12f * scale, 14.5f * scale)
+                    lineTo(4.5f * scale, 9.5f * scale)
+                    close()
+
+                    moveTo(4.5f * scale, 14.5f * scale)
+                    lineTo(12f * scale, 19.5f * scale)
+                    lineTo(19.5f * scale, 14.5f * scale)
+                }
+                drawPath(layers, tint, style = stroke)
+            }
+            "service" -> {
+                drawOutlineCircle()
+                val questionMark = Path().apply {
+                    moveTo(9.8f * scale, 9.5f * scale)
+                    quadraticTo(10f * scale, 7.5f * scale, 12f * scale, 7.5f * scale)
+                    quadraticTo(14.2f * scale, 7.5f * scale, 14.2f * scale, 9.5f * scale)
+                    cubicTo(
+                        14.2f * scale, 11f * scale,
+                        12f * scale, 11f * scale,
+                        12f * scale, 12.2f * scale,
+                    )
+                    lineTo(12f * scale, 13.4f * scale)
+                }
+                drawPath(questionMark, tint, style = stroke)
+                drawCircle(tint, radius = 0.9f * scale, center = point(12f, 16.2f))
+            }
+            "settings" -> {
+                fun drawSlider(y: Float, knobX: Float) {
+                    val knobRadius = 2f
+                    drawLine(tint, point(4.5f, y), point(knobX - knobRadius, y), stroke.width, stroke.cap)
+                    drawCircle(tint, radius = knobRadius * scale, center = point(knobX, y), style = stroke)
+                    drawLine(tint, point(knobX + knobRadius, y), point(19.5f, y), stroke.width, stroke.cap)
+                }
+
+                drawSlider(y = 7f, knobX = 10.2f)
+                drawSlider(y = 12f, knobX = 15.2f)
+                drawSlider(y = 17f, knobX = 9.2f)
+            }
+            "about" -> {
+                drawOutlineCircle()
+                drawLine(tint, point(12f, 11.2f), point(12f, 16.2f), stroke.width, stroke.cap)
+                drawCircle(tint, radius = 0.9f * scale, center = point(12f, 8.2f))
+            }
+        }
+    }
+}
+
+@Composable
 fun EditorialBackIcon(tint: Color, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier.size(24.dp)) {
         val scale = size.minDimension / 24f

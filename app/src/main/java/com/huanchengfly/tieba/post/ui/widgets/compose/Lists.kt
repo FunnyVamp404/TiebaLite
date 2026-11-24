@@ -27,6 +27,23 @@ fun ListMenuItem(
     onClick: (() -> Unit)? = null,
     customContent: @Composable (RowScope.() -> Unit)? = null,
 ) {
+    ListMenuItem(
+        iconContent = { Icon(imageVector = icon, contentDescription = text, tint = iconColor) },
+        text = text,
+        modifier = modifier,
+        onClick = onClick,
+        customContent = customContent,
+    )
+}
+
+@Composable
+fun ListMenuItem(
+    iconContent: @Composable () -> Unit,
+    text: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    customContent: @Composable (RowScope.() -> Unit)? = null,
+) {
     val menuModifier = if (onClick != null) {
         Modifier.clickable(onClick = onClick)
     } else {
@@ -36,14 +53,14 @@ fun ListMenuItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .then(menuModifier)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 13.dp),
     ) {
-        Icon(imageVector = icon, contentDescription = text, tint = iconColor)
+        iconContent()
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = text,
             fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Medium,
             maxLines = 1,
             modifier = Modifier.weight(1f),
         )

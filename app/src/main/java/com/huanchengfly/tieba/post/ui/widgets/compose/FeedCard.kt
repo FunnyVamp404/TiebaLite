@@ -220,7 +220,7 @@ fun feedBackdropColor(): Color {
 @Composable
 fun Modifier.feedCardSurface(): Modifier {
     val colors = ExtendedTheme.colors
-    val shape = RoundedCornerShape(18.dp)
+    val shape = RoundedCornerShape(10.dp)
     val surfaceColor = if (colors.isNightMode) {
         if (colors.background == Color.Black) Color(0xFF14161B)
         else lerp(colors.card, Color(0xFF1A1D24), 0.40f).copy(alpha = 0.84f)
@@ -479,7 +479,7 @@ private fun MediaPlaceholder(
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(ExtendedTheme.colors.chip)
             .clickable(
                 enabled = onClick != null
@@ -570,7 +570,7 @@ private fun ThreadMedia(
                             modifier = Modifier
                                 .fillMaxWidth(singleMediaFraction)
                                 .aspectRatio(aspectRatio)
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(8.dp))
                         )
                     }
                 }
@@ -622,7 +622,7 @@ private fun ThreadMedia(
                             modifier = Modifier
                                 .fillMaxWidth(mediaWidthFraction)
                                 .aspectRatio(mediaAspectRatio)
-                                .clip(RoundedCornerShape(12.dp)),
+                                .clip(RoundedCornerShape(8.dp)),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             showMedias.fastForEachIndexed { index, media ->
@@ -867,7 +867,7 @@ fun FeedCard(
                     OriginThreadCard(
                         originThreadInfo = it,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(ExtendedTheme.colors.floorCard)
                             .border(
                                 width = 0.75.dp,
@@ -876,7 +876,7 @@ fun FeedCard(
                                 } else {
                                     Color.Black.copy(alpha = 0.06f)
                                 },
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(8.dp),
                             )
                             .clickable {
                                 onClickOriginThread(it.get())
@@ -958,7 +958,7 @@ fun FeedCard(
                     OriginThreadCard(
                         originThreadInfo = it,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(ExtendedTheme.colors.floorCard)
                             .border(
                                 width = 0.75.dp,
@@ -967,7 +967,7 @@ fun FeedCard(
                                 } else {
                                     Color.Black.copy(alpha = 0.06f)
                                 },
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(8.dp),
                             )
                             .clickable {
                                 onClickOriginThread(it.get())

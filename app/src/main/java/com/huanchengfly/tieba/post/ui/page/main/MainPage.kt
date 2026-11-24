@@ -120,12 +120,14 @@ fun MainPage(
         key = booleanPreferencesKey("hideExplore"),
         defaultValue = LocalContext.current.appPreferences.hideExplore
     )
-    val pageCount by remember {
-        derivedStateOf {
-            if (hideExplore) 3 else 4
-        }
+    val tabIds = remember(hideExplore) {
+        if (hideExplore) listOf("home", "notification", "user")
+        else listOf("home", "explore", "notification", "user")
     }
-    val pagerState = rememberPagerState { pageCount }
+    val defaultTab = LocalContext.current.appPreferences.defaultTab ?: "home"
+    val initialPage = tabIds.indexOf(defaultTab).coerceAtLeast(0)
+    val pageCount = tabIds.size
+    val pagerState = rememberPagerState(initialPage = initialPage) { pageCount }
     LaunchedEffect(hideExplore) {
         if (pagerState.currentPage == 3 && hideExplore) {
             pagerState.scrollToPage(2)

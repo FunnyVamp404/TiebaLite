@@ -720,6 +720,10 @@ internal fun ReplyPageContent(
             )
             DialogNegativeButton(text = stringResource(id = R.string.btn_continue_reply))
             DialogNegativeButton(
+                text = stringResource(id = R.string.button_dont_remind_again),
+                onClick = { context.appPreferences.postOrReplyWarning = false }
+            )
+            DialogNegativeButton(
                 text = stringResource(id = R.string.btn_cancel_reply),
                 onClick = { onBack() }
             )

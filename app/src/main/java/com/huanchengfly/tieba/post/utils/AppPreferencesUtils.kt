@@ -97,6 +97,8 @@ open class AppPreferencesUtils private constructor(ctx: Context) {
 
     var darkTheme by DataStoreDelegates.string(key = "dark_theme", defaultValue = "grey_dark")
 
+    var defaultTab by DataStoreDelegates.string(defaultValue = "home")
+
     var doNotUsePhotoPicker by DataStoreDelegates.boolean(defaultValue = false)
 
     var useDynamicColorTheme by DataStoreDelegates.boolean(defaultValue = false)
@@ -160,7 +162,7 @@ open class AppPreferencesUtils private constructor(ctx: Context) {
         key = "pic_watermark_type",
     )
 
-    var postOrReplyWarning by DataStoreDelegates.boolean(defaultValue = true)
+    var postOrReplyWarning by DataStoreDelegates.boolean(defaultValue = false)
 
     var radius by DataStoreDelegates.int(defaultValue = 8)
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">贴吧 Lite</string>
+    <string name="app_name">贴吧 Lite+</string>
     <string name="title_notifications">消息</string>
     <string name="title_explore">动态</string>
     <string name="title_user">我</string>
@@ -170,6 +170,7 @@
     <string name="title_hot_message_list">话题榜</string>
     <string name="toast_photo_saved">图片保存在 %1$s</string>
     <string name="title_settings_default_sort_type">吧默认排序方式</string>
+    <string name="title_default_tab">默认启动页</string>
     <string name="toast_load_failed">加载失败</string>
     <string name="button_undo">撤销</string>
     <string name="title_settings_follow_system_night">跟随系统夜间模式</string>

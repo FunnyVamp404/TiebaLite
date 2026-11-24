@@ -1,6 +1,9 @@
 name: Build, Deploy
 
-on: [ push, pull_request ]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -16,23 +19,25 @@ jobs:
           java-version: "17"
           distribution: "zulu"
 
-      - name: Decode Keystore
-        id: decode_keystore
+      - name: Configure Release Keystore (if provided)
         if: ${{ github.event_name != 'pull_request' || github.ref_type == 'tag' }}
-        uses: timheuer/base64-to-file@v1.2
-        with:
-          fileName: ${{ vars.RELEASE_KEYSTORE }}
-          fileDir: ${{ github.workspace }}
-          encodedString: ${{ secrets.KEYSTORE }}
-
-      - name: Generate keystore.properties
-        if: ${{ github.event_name != 'pull_request' || github.ref_type == 'tag' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
+          RELEASE_KEYSTORE: ${{ vars.RELEASE_KEYSTORE }}
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASESTOREPASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ vars.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASEKEYPASSWORD }}
         run: |
-          if [ -n "${{ secrets.RELEASEKEYPASSWORD }}" ]; then
-            echo keystore.file="${{ vars.RELEASE_KEYSTORE }}" >> keystore.properties
-            echo keystore.password="${{ secrets.RELEASESTOREPASSWORD }}" >> keystore.properties
-            echo keystore.key.alias="${{ vars.RELEASE_KEY_ALIAS }}" >> keystore.properties
-            echo keystore.key.password="${{ secrets.RELEASEKEYPASSWORD }}" >> keystore.properties
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$RELEASE_KEYSTORE" ] && [ -n "$RELEASE_STORE_PASSWORD" ] && [ -n "$RELEASE_KEY_ALIAS" ] && [ -n "$RELEASE_KEY_PASSWORD" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RELEASE_KEYSTORE"
+            printf '%s\n' \
+              "keystore.file=$RELEASE_KEYSTORE" \
+              "keystore.password=$RELEASE_STORE_PASSWORD" \
+              "keystore.key.alias=$RELEASE_KEY_ALIAS" \
+              "keystore.key.password=$RELEASE_KEY_PASSWORD" > keystore.properties
+            echo "Release keystore configured."
+          else
+            echo "Release keystore secrets/vars not configured; falling back to debug signing."
           fi
 
       - name: Setup Gradle

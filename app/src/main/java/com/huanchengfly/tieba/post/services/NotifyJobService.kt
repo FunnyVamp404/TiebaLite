@@ -13,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.huanchengfly.tieba.post.BuildConfig
 import com.huanchengfly.tieba.post.R
 import com.huanchengfly.tieba.post.api.TiebaApi
 import com.huanchengfly.tieba.post.api.models.MsgBean
@@ -150,7 +151,7 @@ class NotifyJobService : JobService() {
 
     companion object {
         val TAG = NotifyJobService::class.java.simpleName
-        const val ACTION_NEW_MESSAGE = "com.huanchengfly.tieba.post.action.NEW_MESSAGE"
+        const val ACTION_NEW_MESSAGE = BuildConfig.APPLICATION_ID + ".action.NEW_MESSAGE"
         const val CHANNEL_GROUP = "20"
         const val CHANNEL_AT = "3"
         const val CHANNEL_AT_NAME = "提到我的"

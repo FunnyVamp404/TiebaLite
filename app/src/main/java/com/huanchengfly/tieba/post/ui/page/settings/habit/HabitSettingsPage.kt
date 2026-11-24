@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.outlined.BrandingWatermark
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.outlined.CalendarViewDay
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.ImageSearch
 import androidx.compose.material.icons.outlined.NightsStay
 import androidx.compose.material.icons.outlined.PhotoSizeSelectActual
@@ -73,6 +74,29 @@ fun HabitSettingsPage(
                 .padding(paddingValues)
                 .fillMaxSize(),
         ) {
+            prefsItem {
+                ListPref(
+                    key = "defaultTab",
+                    title = stringResource(id = R.string.title_default_tab),
+                    entries = mapOf(
+                        "home" to stringResource(id = R.string.title_main),
+                        "explore" to stringResource(id = R.string.title_explore),
+                        "notification" to stringResource(id = R.string.title_notifications),
+                        "user" to stringResource(id = R.string.title_user)
+                    ),
+                    useSelectedAsSummary = true,
+                    defaultValue = "home",
+                    leadingIcon = {
+                        LeadingIcon {
+                            AvatarIcon(
+                                icon = Icons.Outlined.Home,
+                                size = Sizes.Small,
+                                contentDescription = null,
+                            )
+                        }
+                    },
+                )
+            }
             prefsItem {
                 ListPref(
                     key = "image_load_type",
@@ -281,7 +305,7 @@ fun HabitSettingsPage(
                 SwitchPref(
                     key = "postOrReplyWarning",
                     title = stringResource(id = R.string.title_post_or_reply_warning),
-                    defaultChecked = true,
+                    defaultChecked = false,
                 ) {
                     LeadingIcon {
                         AvatarIcon(

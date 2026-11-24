@@ -1046,12 +1046,19 @@ fun ThreadPage(
                 key = { (item) -> "LatestPost_${item.get { id }}" }
             ) { (item, blocked, renders, subPosts) ->
                 Container {
-                    PostCard(
-                        item,
-                        renders,
-                        subPosts,
-                        blocked
-                    )
+                    Column {
+                        PostCard(
+                            item,
+                            renders,
+                            subPosts,
+                            blocked
+                        )
+                        VerticalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
+                            thickness = 0.5.dp
+                        )
+                    }
                 }
             }
             if (desc) {
@@ -1388,7 +1395,7 @@ fun ThreadPage(
                                                             modifier = Modifier
                                                                 .padding(horizontal = 16.dp)
                                                                 .padding(bottom = 16.dp)
-                                                                .clip(RoundedCornerShape(6.dp))
+                                                                .clip(RoundedCornerShape(12.dp))
                                                                 .background(ExtendedTheme.colors.floorCard)
                                                                 .clickable {
                                                                     navigator.navigate(
@@ -1398,7 +1405,7 @@ fun ThreadPage(
                                                                         )
                                                                     )
                                                                 }
-                                                                .padding(16.dp)
+                                                                .padding(12.dp)
                                                         )
                                                     }
 
@@ -1406,7 +1413,8 @@ fun ThreadPage(
                                                     modifier = Modifier
                                                         .padding(horizontal = 16.dp)
                                                         .padding(bottom = 8.dp),
-                                                    thickness = 2.dp
+                                                    color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
+                                                    thickness = 0.5.dp
                                                 )
                                             }
                                         }
@@ -1424,8 +1432,8 @@ fun ThreadPage(
                                                 text = stringResource(
                                                     R.string.title_thread_header,
                                                     "${thread?.get { replyNum - 1 } ?: 0}"),
-                                                fontSize = 13.sp,
-                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.SemiBold,
                                                 color = ExtendedTheme.colors.text,
                                                 modifier = Modifier.padding(horizontal = 8.dp),
                                             )
@@ -1566,12 +1574,19 @@ fun ThreadPage(
                                         key = { (item) -> "Post_${item.get { id }}" }
                                     ) { (item, blocked, renders, subPosts) ->
                                         Container {
-                                            PostCard(
-                                                item,
-                                                renders,
-                                                subPosts,
-                                                blocked
-                                            )
+                                            Column {
+                                                PostCard(
+                                                    item,
+                                                    renders,
+                                                    subPosts,
+                                                    blocked
+                                                )
+                                                VerticalDivider(
+                                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                                    color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
+                                                    thickness = 0.5.dp
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -1779,7 +1794,7 @@ fun PostCard(
         hideBlockedContent = context.appPreferences.hideBlockedContent || immersiveMode,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .padding(vertical = 10.dp, horizontal = 16.dp)
     ) {
         LongClickMenu(
             menuState = menuState,
@@ -1892,7 +1907,7 @@ fun PostCard(
                 },
                 content = {
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = paddingModifier
                             .fillMaxWidth()
                     ) {
@@ -1900,7 +1915,9 @@ fun PostCard(
                             Text(
                                 text = post.title,
                                 style = MaterialTheme.typography.subtitle1,
-                                fontSize = 15.sp
+                                fontSize = 19.sp,
+                                lineHeight = 28.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
 
@@ -1926,10 +1943,10 @@ fun PostCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .then(paddingModifier)
-                                .clip(RoundedCornerShape(6.dp))
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(ExtendedTheme.colors.floorCard)
-                                .padding(vertical = 12.dp),
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                .padding(vertical = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             subPosts.fastForEach { item ->
                                 BlockableContent(
@@ -2043,12 +2060,13 @@ private fun SubPostItem(
         ProvideTextStyle(value = MaterialTheme.typography.body2.copy(color = ExtendedTheme.colors.text)) {
             PbContentText(
                 text = subPostContent,
-                modifier = modifier,
-                fontSize = 13.sp,
+                modifier = modifier.padding(vertical = 3.dp),
+                fontSize = 14.sp,
+                lineHeight = 21.sp,
                 emoticonSize = 0.9f,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 4,
-                lineSpacing = 0.4.sp,
+                lineSpacing = 0.sp,
                 inlineContent = mapOf(
                     "Lz" to buildChipInlineContent(
                         stringResource(id = R.string.tip_lz),

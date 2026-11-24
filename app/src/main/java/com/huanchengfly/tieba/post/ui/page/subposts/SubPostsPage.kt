@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
 import com.huanchengfly.tieba.post.App
 import com.huanchengfly.tieba.post.R
@@ -52,6 +53,8 @@ import com.huanchengfly.tieba.post.arch.collectPartialAsState
 import com.huanchengfly.tieba.post.arch.onEvent
 import com.huanchengfly.tieba.post.arch.pageViewModel
 import com.huanchengfly.tieba.post.arch.wrapImmutable
+import com.huanchengfly.tieba.post.ui.common.PbContentText
+import com.huanchengfly.tieba.post.ui.common.TextContentRender
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.common.theme.compose.threadBottomBar
 import com.huanchengfly.tieba.post.ui.page.LocalNavigator
@@ -362,7 +365,7 @@ internal fun SubPostsContent(
                                 modifier = Modifier
                                     .padding(vertical = 8.dp)
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(6.dp))
+                                    .clip(RoundedCornerShape(100))
                                     .background(ExtendedTheme.colors.bottomBarSurface)
                                     .clickable {
                                         val fid = resolvedForumId
@@ -378,7 +381,7 @@ internal fun SubPostsContent(
                                             )
                                         }
                                     }
-                                    .padding(8.dp),
+                                    .padding(horizontal = 14.dp, vertical = 8.dp),
                             ) {
                                 Text(
                                     text = stringResource(id = R.string.tip_reply_thread),
@@ -465,7 +468,10 @@ internal fun SubPostsContent(
                                     deleteSubPost = null
                                     confirmDeleteDialogState.show()
                                 }
-                                VerticalDivider(thickness = 2.dp)
+                                VerticalDivider(
+                                    color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
+                                    thickness = 0.5.dp
+                                )
                             }
                         }
                     }
@@ -581,7 +587,7 @@ private fun SubPostItem(
         blockedTip = { BlockTip(text = { Text(text = stringResource(id = R.string.tip_blocked_sub_post)) }) },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
         LongClickMenu(
             menuState = menuState,
@@ -679,7 +685,20 @@ private fun SubPostItem(
                             .padding(start = Sizes.Small + 8.dp)
                             .fillMaxWidth()
                     ) {
-                        contentRenders.fastForEach { it.Render() }
+                        contentRenders.fastForEach { render ->
+                            if (render is TextContentRender) {
+                                PbContentText(
+                                    text = render.text,
+                                    fontSize = 15.sp,
+                                    lineHeight = 23.sp,
+                                    lineSpacing = 0.sp,
+                                    color = ExtendedTheme.colors.text,
+                                    style = MaterialTheme.typography.body1
+                                )
+                            } else {
+                                render.Render()
+                            }
+                        }
                     }
                 }
             )

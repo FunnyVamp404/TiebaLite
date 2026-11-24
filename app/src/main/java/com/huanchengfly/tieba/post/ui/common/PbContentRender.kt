@@ -40,6 +40,7 @@ import com.github.panpf.sketch.compose.AsyncImage
 import com.huanchengfly.tieba.post.R
 import com.huanchengfly.tieba.post.arch.BaseComposeActivity.Companion.LocalWindowSizeClass
 import com.huanchengfly.tieba.post.models.PhotoViewData
+import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.common.windowsizeclass.WindowWidthSizeClass
 import com.huanchengfly.tieba.post.ui.page.LocalNavigator
 import com.huanchengfly.tieba.post.ui.page.destinations.UserProfilePageDestination
@@ -75,9 +76,11 @@ data class TextContentRender(
     override fun Render() {
         PbContentText(
             text = text,
-            fontSize = 15.sp,
-            style = MaterialTheme.typography.body1,
-            lineSpacing = 0.8.sp
+            fontSize = 16.sp,
+            lineHeight = 26.sp,
+            lineSpacing = 0.sp,
+            color = ExtendedTheme.colors.text,
+            style = MaterialTheme.typography.body1
         )
     }
 

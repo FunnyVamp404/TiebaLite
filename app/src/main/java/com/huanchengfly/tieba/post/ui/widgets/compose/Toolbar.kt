@@ -214,6 +214,21 @@ fun ActionItem(
 }
 
 @Composable
+fun ActionItem(
+    contentDescription: String,
+    onClick: () -> Unit,
+    iconContent: @Composable () -> Unit,
+) {
+    ProvideContentColor(color = ExtendedTheme.colors.onTopBar) {
+        FloatingCircleIconButton(onClick = onClick) {
+            Box(modifier = Modifier.semantics { this.contentDescription = contentDescription }) {
+                iconContent()
+            }
+        }
+    }
+}
+
+@Composable
 fun BackNavigationIcon(onBackPressed: () -> Unit) {
     val backLabel = stringResource(id = R.string.button_back)
     FloatingCircleIconButton(onClick = onBackPressed) {

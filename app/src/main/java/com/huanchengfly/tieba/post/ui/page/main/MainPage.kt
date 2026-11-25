@@ -18,6 +18,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -60,6 +61,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
+
+val LocalMainTabActive = compositionLocalOf { true }
 
 @Composable
 private fun NavigationWrapper(
@@ -281,8 +284,10 @@ fun MainPage(
                             modifier = Modifier.fillMaxSize(),
                             verticalAlignment = Alignment.Top,
                             userScrollEnabled = false
-                        ) {
-                            navigationItems[it].content()
+                        ) { pageIndex ->
+                            CompositionLocalProvider(LocalMainTabActive provides (pagerState.currentPage == pageIndex)) {
+                                navigationItems[pageIndex].content()
+                            }
                         }
                         AnimatedVisibility(
                             visible = navigationType == MainNavigationType.BOTTOM_NAVIGATION,

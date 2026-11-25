@@ -16,12 +16,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,10 +44,12 @@ import com.huanchengfly.tieba.post.arch.onGlobalEvent
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.page.LocalNavigator
 import com.huanchengfly.tieba.post.ui.page.destinations.SearchPageDestination
+import com.huanchengfly.tieba.post.ui.page.main.LocalMainTabActive
 import com.huanchengfly.tieba.post.ui.page.main.explore.concern.ConcernPage
 import com.huanchengfly.tieba.post.ui.page.main.explore.hot.HotPage
 import com.huanchengfly.tieba.post.ui.page.main.explore.personalized.PersonalizedPage
 import com.huanchengfly.tieba.post.ui.widgets.compose.ActionItem
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialActionIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoadHorizontalPager
 import com.huanchengfly.tieba.post.ui.widgets.compose.Toolbar
 import com.huanchengfly.tieba.post.ui.widgets.compose.accountNavIconIfCompact
@@ -141,6 +145,13 @@ fun ExplorePage() {
     val account = LocalAccount.current
     val navigator = LocalNavigator.current
 
+    val isTabActive = LocalMainTabActive.current
+    var enterTrigger by remember { mutableIntStateOf(0) }
+    var searchTrigger by remember { mutableIntStateOf(0) }
+    LaunchedEffect(isTabActive) {
+        if (isTabActive) enterTrigger++
+    }
+
     val loggedIn = remember(account) { account != null }
 
     val pages = remember {
@@ -179,10 +190,17 @@ fun ExplorePage() {
                 navigationIcon = accountNavIconIfCompact(),
                 actions = {
                     ActionItem(
-                        icon = Icons.Rounded.Search,
-                        contentDescription = stringResource(id = R.string.title_search)
+                        contentDescription = stringResource(id = R.string.title_search),
+                        onClick = {
+                            searchTrigger++
+                            navigator.navigate(SearchPageDestination)
+                        },
                     ) {
-                        navigator.navigate(SearchPageDestination)
+                        EditorialActionIcon(
+                            kind = "search",
+                            tint = ExtendedTheme.colors.onTopBar,
+                            trigger = enterTrigger + searchTrigger,
+                        )
                     }
                 },
             ) {

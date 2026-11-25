@@ -29,7 +29,12 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +60,7 @@ import com.huanchengfly.tieba.post.ui.page.destinations.SettingsPageDestination
 import com.huanchengfly.tieba.post.ui.page.destinations.ThreadStorePageDestination
 import com.huanchengfly.tieba.post.ui.page.destinations.UserProfilePageDestination
 import com.huanchengfly.tieba.post.ui.page.destinations.WebViewPageDestination
+import com.huanchengfly.tieba.post.ui.page.main.LocalMainTabActive
 import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
 import com.huanchengfly.tieba.post.ui.widgets.compose.ConfirmDialog
 import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialMenuIcon
@@ -250,6 +256,17 @@ fun UserPage(
 ) {
     val context = LocalContext.current
     val navigator = LocalNavigator.current
+    val isTabActive = LocalMainTabActive.current
+    var enterTrigger by remember { mutableIntStateOf(0) }
+    val menuClickTriggers = remember { mutableStateMapOf<String, Int>() }
+    LaunchedEffect(isTabActive) {
+        if (isTabActive) enterTrigger++
+    }
+
+    fun onMenuClick(kind: String) {
+        menuClickTriggers[kind] = (menuClickTriggers[kind] ?: 0) + 1
+    }
+
     val isLoading by viewModel.uiState.collectPartialAsState(
         prop1 = UserUiState::isLoading,
         initial = false
@@ -361,24 +378,48 @@ fun UserPage(
                 ) {
                     if (account != null) {
                         ListMenuItem(
-                            iconContent = { EditorialMenuIcon(kind = "collect", tint = ExtendedTheme.colors.primary) },
+                            iconContent = {
+                                EditorialMenuIcon(
+                                    kind = "collect",
+                                    tint = ExtendedTheme.colors.primary,
+                                    trigger = enterTrigger + (menuClickTriggers["collect"] ?: 0),
+                                    delayMillis = 0,
+                                )
+                            },
                             text = stringResource(id = R.string.title_my_collect),
                             onClick = {
+                                onMenuClick("collect")
                                 navigator.navigate(ThreadStorePageDestination)
                             }
                         )
                     }
                     ListMenuItem(
-                        iconContent = { EditorialMenuIcon(kind = "history", tint = ExtendedTheme.colors.primary) },
+                        iconContent = {
+                            EditorialMenuIcon(
+                                kind = "history",
+                                tint = ExtendedTheme.colors.primary,
+                                trigger = enterTrigger + (menuClickTriggers["history"] ?: 0),
+                                delayMillis = 35,
+                            )
+                        },
                         text = stringResource(id = R.string.title_history),
                         onClick = {
+                            onMenuClick("history")
                             navigator.navigate(HistoryPageDestination)
                         }
                     )
                     ListMenuItem(
-                        iconContent = { EditorialMenuIcon(kind = "theme", tint = ExtendedTheme.colors.primary) },
+                        iconContent = {
+                            EditorialMenuIcon(
+                                kind = "theme",
+                                tint = ExtendedTheme.colors.primary,
+                                trigger = enterTrigger + (menuClickTriggers["theme"] ?: 0),
+                                delayMillis = 70,
+                            )
+                        },
                         text = stringResource(id = R.string.title_theme),
                         onClick = {
+                            onMenuClick("theme")
                             navigator.navigate(AppThemePageDestination)
                         }
                     ) {
@@ -401,9 +442,17 @@ fun UserPage(
                     }
                     if (account != null) {
                         ListMenuItem(
-                            iconContent = { EditorialMenuIcon(kind = "service", tint = ExtendedTheme.colors.primary) },
+                            iconContent = {
+                                EditorialMenuIcon(
+                                    kind = "service",
+                                    tint = ExtendedTheme.colors.primary,
+                                    trigger = enterTrigger + (menuClickTriggers["service"] ?: 0),
+                                    delayMillis = 105,
+                                )
+                            },
                             text = stringResource(id = R.string.my_info_service_center),
                             onClick = {
+                                onMenuClick("service")
                                 navigator.navigate(
                                     WebViewPageDestination(
                                         initialUrl = "https://tieba.baidu.com/mo/q/hybrid-main-service/uegServiceCenter?cuid=${CuidUtils.getNewCuid()}&cuid_galaxy2=${CuidUtils.getNewCuid()}&cuid_gid=&timestamp=${System.currentTimeMillis()}&_client_version=12.52.1.0&nohead=1"
@@ -419,14 +468,34 @@ fun UserPage(
                         .feedCardSurface()
                 ) {
                     ListMenuItem(
-                        iconContent = { EditorialMenuIcon(kind = "settings", tint = ExtendedTheme.colors.primary) },
+                        iconContent = {
+                            EditorialMenuIcon(
+                                kind = "settings",
+                                tint = ExtendedTheme.colors.primary,
+                                trigger = enterTrigger + (menuClickTriggers["settings"] ?: 0),
+                                delayMillis = 140,
+                            )
+                        },
                         text = stringResource(id = R.string.my_info_settings),
-                        onClick = { navigator.navigate(SettingsPageDestination) },
+                        onClick = {
+                            onMenuClick("settings")
+                            navigator.navigate(SettingsPageDestination)
+                        },
                     )
                     ListMenuItem(
-                        iconContent = { EditorialMenuIcon(kind = "about", tint = ExtendedTheme.colors.primary) },
+                        iconContent = {
+                            EditorialMenuIcon(
+                                kind = "about",
+                                tint = ExtendedTheme.colors.primary,
+                                trigger = enterTrigger + (menuClickTriggers["about"] ?: 0),
+                                delayMillis = 175,
+                            )
+                        },
                         text = stringResource(id = R.string.my_info_about),
-                        onClick = { navigator.navigate(AboutPageDestination) },
+                        onClick = {
+                            onMenuClick("about")
+                            navigator.navigate(AboutPageDestination)
+                        },
                     )
                 }
                 Spacer(modifier = Modifier.height(LocalFloatingBottomBarPadding.current + 12.dp))

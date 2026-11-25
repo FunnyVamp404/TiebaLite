@@ -12,7 +12,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -22,7 +24,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.exp
 import kotlin.math.sin
@@ -148,88 +152,401 @@ private fun DrawScope.drawUserIcon(scale: Float, stroke: Stroke, tint: Color, wa
 }
 
 @Composable
-fun EditorialMenuIcon(kind: String, tint: Color, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.size(20.dp)) {
-        val scale = size.minDimension / 24f
-        val stroke = Stroke(width = 1.65.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-
-        fun point(x: Float, y: Float) = Offset(x * scale, y * scale)
+fun EditorialMenuIcon(
+    kind: String,
+    tint: Color,
+    modifier: Modifier = Modifier,
+    trigger: Int = 0,
+    active: Boolean = false,
+    delayMillis: Int = 0,
+) {
+    EditorialIconCanvas(modifier, 1.65.dp, trigger, delayMillis) { stroke, progress ->
+        val pulse = dampedMotion(progress, PI)
+        val rebound = dampedMotion(progress)
+        val center = Offset(12f, 12f)
+        val activeFill = tint.copy(alpha = tint.alpha * 0.14f)
 
         fun drawOutlineCircle() {
-            drawCircle(tint, radius = 8.5f * scale, center = point(12f, 12f), style = stroke)
+            drawCircle(tint, radius = 8.5f, center = center, style = stroke)
         }
 
         when (kind) {
             "collect" -> {
                 val bookmark = Path().apply {
-                    moveTo(6.5f * scale, 4.5f * scale)
-                    lineTo(17.5f * scale, 4.5f * scale)
-                    lineTo(17.5f * scale, 19.5f * scale)
-                    lineTo(12f * scale, 15.5f * scale)
-                    lineTo(6.5f * scale, 19.5f * scale)
+                    moveTo(6.5f, 4.5f)
+                    lineTo(17.5f, 4.5f)
+                    lineTo(17.5f, 19.5f)
+                    lineTo(12f, 15.5f)
+                    lineTo(6.5f, 19.5f)
                     close()
                 }
-                drawPath(bookmark, tint, style = stroke)
+                translate(top = -2.6f * pulse) {
+                    if (active) drawPath(bookmark, activeFill)
+                    drawPath(bookmark, tint, style = stroke)
+                }
             }
+
             "history" -> {
                 drawOutlineCircle()
                 val hands = Path().apply {
-                    moveTo(12f * scale, 7.5f * scale)
-                    lineTo(12f * scale, 12f * scale)
-                    lineTo(15.2f * scale, 13.8f * scale)
+                    moveTo(12f, 7.5f)
+                    lineTo(12f, 12f)
+                    lineTo(15.2f, 13.8f)
                 }
-                drawPath(hands, tint, style = stroke)
+                rotate(degrees = 46f * pulse, pivot = center) {
+                    drawPath(hands, tint, style = stroke)
+                }
             }
-            "theme" -> {
-                val layers = Path().apply {
-                    moveTo(12f * scale, 4.5f * scale)
-                    lineTo(19.5f * scale, 9.5f * scale)
-                    lineTo(12f * scale, 14.5f * scale)
-                    lineTo(4.5f * scale, 9.5f * scale)
-                    close()
 
-                    moveTo(4.5f * scale, 14.5f * scale)
-                    lineTo(12f * scale, 19.5f * scale)
-                    lineTo(19.5f * scale, 14.5f * scale)
+            "theme" -> {
+                val topLayer = Path().apply {
+                    moveTo(12f, 4.5f)
+                    lineTo(19.5f, 9.5f)
+                    lineTo(12f, 14.5f)
+                    lineTo(4.5f, 9.5f)
+                    close()
                 }
-                drawPath(layers, tint, style = stroke)
+                val bottomLayer = Path().apply {
+                    moveTo(4.5f, 14.5f)
+                    lineTo(12f, 19.5f)
+                    lineTo(19.5f, 14.5f)
+                }
+                translate(top = -1.2f * pulse) {
+                    drawPath(topLayer, tint, style = stroke)
+                }
+                translate(top = 1.4f * pulse) {
+                    drawPath(bottomLayer, tint, style = stroke)
+                }
             }
+
             "service" -> {
                 drawOutlineCircle()
                 val questionMark = Path().apply {
-                    moveTo(9.8f * scale, 9.5f * scale)
-                    quadraticTo(10f * scale, 7.5f * scale, 12f * scale, 7.5f * scale)
-                    quadraticTo(14.2f * scale, 7.5f * scale, 14.2f * scale, 9.5f * scale)
-                    cubicTo(
-                        14.2f * scale, 11f * scale,
-                        12f * scale, 11f * scale,
-                        12f * scale, 12.2f * scale,
-                    )
-                    lineTo(12f * scale, 13.4f * scale)
+                    moveTo(9.8f, 9.5f)
+                    quadraticTo(10f, 7.5f, 12f, 7.5f)
+                    quadraticTo(14.2f, 7.5f, 14.2f, 9.5f)
+                    cubicTo(14.2f, 11f, 12f, 11f, 12f, 12.2f)
+                    lineTo(12f, 13.4f)
                 }
-                drawPath(questionMark, tint, style = stroke)
-                drawCircle(tint, radius = 0.9f * scale, center = point(12f, 16.2f))
+                rotate(degrees = 15f * rebound, pivot = center) {
+                    drawPath(questionMark, tint, style = stroke)
+                    drawCircle(tint, radius = 0.9f, center = Offset(12f, 16.2f))
+                }
             }
+
             "settings" -> {
                 fun drawSlider(y: Float, knobX: Float) {
                     val knobRadius = 2f
-                    drawLine(tint, point(4.5f, y), point(knobX - knobRadius, y), stroke.width, stroke.cap)
-                    drawCircle(tint, radius = knobRadius * scale, center = point(knobX, y), style = stroke)
-                    drawLine(tint, point(knobX + knobRadius, y), point(19.5f, y), stroke.width, stroke.cap)
+                    drawLine(
+                        tint, Offset(4.5f, y), Offset(knobX - knobRadius, y),
+                        stroke.width, stroke.cap,
+                    )
+                    drawCircle(tint, radius = knobRadius, center = Offset(knobX, y), style = stroke)
+                    drawLine(
+                        tint, Offset(knobX + knobRadius, y), Offset(19.5f, y),
+                        stroke.width, stroke.cap,
+                    )
                 }
 
-                drawSlider(y = 7f, knobX = 10.2f)
-                drawSlider(y = 12f, knobX = 15.2f)
-                drawSlider(y = 17f, knobX = 9.2f)
+                drawSlider(y = 7f, knobX = 10.2f + 3.2f * rebound)
+                drawSlider(y = 12f, knobX = 15.2f - 3.6f * rebound)
+                drawSlider(y = 17f, knobX = 9.2f + 2.8f * rebound)
             }
+
             "about" -> {
                 drawOutlineCircle()
-                drawLine(tint, point(12f, 11.2f), point(12f, 16.2f), stroke.width, stroke.cap)
-                drawCircle(tint, radius = 0.9f * scale, center = point(12f, 8.2f))
+                drawLine(tint, Offset(12f, 11.2f), Offset(12f, 16.2f), stroke.width, stroke.cap)
+                drawCircle(
+                    tint,
+                    radius = 0.9f + 0.65f * pulse,
+                    center = Offset(12f, 8.2f - 1.4f * pulse),
+                )
+            }
+
+            "see_lz" -> {
+                val shoulders = Path().apply {
+                    moveTo(4.5f, 19.5f)
+                    cubicTo(4.5f, 13f, 18.5f, 13f, 18.5f, 19.5f)
+                    close()
+                }
+                val head = Offset(11.5f, 8.9f)
+                translate(top = -2.1f * pulse) {
+                    if (active) {
+                        drawCircle(activeFill, radius = 3.2f, center = head)
+                        drawPath(shoulders, activeFill)
+                    }
+                    drawCircle(tint, radius = 3.2f, center = head, style = stroke)
+                    drawPath(shoulders, tint, style = stroke)
+                }
+                drawCircle(tint, radius = 1.05f, center = Offset(19.2f, 5.6f))
+            }
+
+            "pure_read" -> {
+                val leftPage = Path().apply {
+                    moveTo(12f, 7.3f)
+                    quadraticTo(8.2f, 4.1f, 3.8f, 6f)
+                    lineTo(3.8f, 17.7f)
+                    quadraticTo(8.2f, 16f, 12f, 19.2f)
+                }
+                val spine = Offset(12f, 12f)
+                val spread = 1f + 0.14f * pulse
+                for (direction in -1..1 step 2) {
+                    scale(scaleX = -direction * spread, scaleY = 1f, pivot = spine) {
+                        // The open contour closes along the spine for the fill.
+                        if (active) drawPath(leftPage, activeFill)
+                        drawPath(leftPage, tint, style = stroke)
+                    }
+                }
+                drawLine(tint, Offset(12f, 7.3f), Offset(12f, 19.2f), stroke.width, stroke.cap)
+            }
+
+            "sort" -> {
+                val arrow = Path().apply {
+                    moveTo(4f, 8.5f)
+                    lineTo(8f, 4.5f)
+                    lineTo(12f, 8.5f)
+                    moveTo(8f, 4.5f)
+                    lineTo(8f, 18f)
+                }
+                translate(top = -1.9f * pulse) {
+                    drawPath(arrow, tint, style = stroke)
+                }
+                translate(top = 1.9f * pulse) {
+                    rotate(degrees = 180f, pivot = center) {
+                        drawPath(arrow, tint, style = stroke)
+                    }
+                }
+            }
+
+            "jump_page" -> {
+                val plane = Path().apply {
+                    moveTo(3.5f, 10.3f)
+                    lineTo(19.2f, 4.8f)
+                    lineTo(14.1f, 20f)
+                    lineTo(10.2f, 13.9f)
+                    close()
+                    moveTo(10.2f, 13.9f)
+                    lineTo(19.2f, 4.8f)
+                }
+                translate(left = 1.9f * pulse, top = -1.9f * pulse) {
+                    drawPath(plane, tint, style = stroke)
+                }
+            }
+
+            "share" -> {
+                val tray = Path().apply {
+                    moveTo(4.5f, 13.5f)
+                    lineTo(4.5f, 18f)
+                    quadraticTo(4.5f, 19.8f, 6.3f, 19.8f)
+                    lineTo(17.7f, 19.8f)
+                    quadraticTo(19.5f, 19.8f, 19.5f, 18f)
+                    lineTo(19.5f, 13.5f)
+                }
+                val arrow = Path().apply {
+                    moveTo(8.1f, 9f)
+                    lineTo(12f, 5.1f)
+                    lineTo(15.9f, 9f)
+                    moveTo(12f, 5.1f)
+                    lineTo(12f, 15.6f)
+                }
+                drawPath(tray, tint, style = stroke)
+                translate(top = -2.6f * pulse) {
+                    drawPath(arrow, tint, style = stroke)
+                }
+            }
+
+            "copy_link" -> {
+                val links = Path().apply {
+                    moveTo(10.4f, 13.6f)
+                    cubicTo(9f, 12.2f, 9f, 9.9f, 10.4f, 8.5f)
+                    lineTo(14.1f, 4.8f)
+                    cubicTo(15.5f, 3.4f, 17.8f, 3.4f, 19.2f, 4.8f)
+                    cubicTo(20.6f, 6.2f, 20.6f, 8.5f, 19.2f, 9.9f)
+                    lineTo(17.6f, 11.5f)
+
+                    moveTo(13.6f, 10.4f)
+                    cubicTo(15f, 11.8f, 15f, 14.1f, 13.6f, 15.5f)
+                    lineTo(9.9f, 19.2f)
+                    cubicTo(8.5f, 20.6f, 6.2f, 20.6f, 4.8f, 19.2f)
+                    cubicTo(3.4f, 17.8f, 3.4f, 15.5f, 4.8f, 14.1f)
+                    lineTo(6.4f, 12.5f)
+                }
+                scale(scale = 1f + 0.15f * pulse, pivot = center) {
+                    drawPath(links, tint, style = stroke)
+                }
+            }
+
+            "report" -> {
+                val triangle = Path().apply {
+                    moveTo(10.7f, 5.1f)
+                    quadraticTo(12f, 2.9f, 13.3f, 5.1f)
+                    lineTo(20.4f, 17.2f)
+                    quadraticTo(21.7f, 19.5f, 19f, 19.5f)
+                    lineTo(5f, 19.5f)
+                    quadraticTo(2.3f, 19.5f, 3.6f, 17.2f)
+                    close()
+                }
+                rotate(degrees = 12f * rebound, pivot = center) {
+                    drawPath(triangle, tint, style = stroke)
+                    drawLine(tint, Offset(12f, 9.1f), Offset(12f, 13.2f), stroke.width, stroke.cap)
+                    drawCircle(tint, radius = 0.9f, center = Offset(12f, 16.1f))
+                }
+            }
+
+            "delete" -> {
+                val bin = Path().apply {
+                    moveTo(6.2f, 8.7f)
+                    lineTo(7.2f, 18.4f)
+                    quadraticTo(7.4f, 20f, 9f, 20f)
+                    lineTo(15f, 20f)
+                    quadraticTo(16.6f, 20f, 16.8f, 18.4f)
+                    lineTo(17.8f, 8.7f)
+                    moveTo(10.3f, 11.6f)
+                    lineTo(10.6f, 16.8f)
+                    moveTo(13.7f, 11.6f)
+                    lineTo(13.4f, 16.8f)
+                }
+                val lid = Path().apply {
+                    moveTo(4.8f, 7f)
+                    lineTo(19.2f, 7f)
+                    moveTo(9.2f, 7f)
+                    lineTo(9.2f, 5.6f)
+                    quadraticTo(9.2f, 4.5f, 10.3f, 4.5f)
+                    lineTo(13.7f, 4.5f)
+                    quadraticTo(14.8f, 4.5f, 14.8f, 5.6f)
+                    lineTo(14.8f, 7f)
+                }
+                drawPath(bin, tint, style = stroke)
+                rotate(degrees = -13f * pulse, pivot = Offset(6.2f, 7f)) {
+                    drawPath(lid, tint, style = stroke)
+                }
             }
         }
     }
 }
+
+@Composable
+fun EditorialActionIcon(
+    kind: String,
+    tint: Color,
+    modifier: Modifier = Modifier,
+    trigger: Int = 0,
+    delayMillis: Int = 0,
+) {
+    EditorialIconCanvas(modifier, 1.7.dp, trigger, delayMillis) { stroke, progress ->
+        val pulse = dampedMotion(progress, PI)
+        val rebound = dampedMotion(progress)
+        val center = Offset(12f, 12f)
+
+        fun drawRoundedOutline(x: Float, y: Float, width: Float, height: Float, radius: Float) {
+            drawRoundRect(
+                color = tint,
+                topLeft = Offset(x, y),
+                size = Size(width, height),
+                cornerRadius = CornerRadius(radius),
+                style = stroke,
+            )
+        }
+
+        when (kind) {
+            "sign" -> {
+                drawRoundedOutline(4.2f, 5.8f, 15.6f, 14f, 2.4f)
+                drawLine(tint, Offset(8f, 4.1f), Offset(8f, 7.4f), stroke.width, stroke.cap)
+                drawLine(tint, Offset(16f, 4.1f), Offset(16f, 7.4f), stroke.width, stroke.cap)
+                val checkmark = Path().apply {
+                    moveTo(8.6f, 13.2f)
+                    lineTo(11f, 15.6f)
+                    lineTo(15.5f, 11f)
+                }
+                translate(top = -2.2f * rebound) {
+                    drawPath(checkmark, tint, style = stroke)
+                }
+            }
+
+            "layout_single" -> {
+                scale(scale = 1f + 0.15f * pulse, pivot = center) {
+                    drawRoundedOutline(4.3f, 5f, 15.4f, 5.4f, 1.5f)
+                    drawRoundedOutline(4.3f, 13.6f, 15.4f, 5.4f, 1.5f)
+                }
+            }
+
+            "layout_grid" -> {
+                rotate(degrees = 8f * rebound, pivot = center) {
+                    scale(scale = 1f + 0.14f * pulse, pivot = center) {
+                        drawRoundedOutline(4.5f, 4.5f, 5.8f, 5.8f, 1.25f)
+                        drawRoundedOutline(13.7f, 4.5f, 5.8f, 5.8f, 1.25f)
+                        drawRoundedOutline(4.5f, 13.7f, 5.8f, 5.8f, 1.25f)
+                        drawRoundedOutline(13.7f, 13.7f, 5.8f, 5.8f, 1.25f)
+                    }
+                }
+            }
+
+            "search" -> {
+                val lensCenter = Offset(10.5f, 10.5f)
+                val radius = 5.7f + 1.1f * pulse
+                val joint = lensCenter + Offset(radius, radius) * 0.7071f
+                rotate(degrees = 13f * rebound, pivot = joint) {
+                    drawLine(tint, joint, joint + Offset(4.9f, 4.9f), stroke.width, stroke.cap)
+                }
+                drawCircle(tint, radius = radius, center = lensCenter, style = stroke)
+            }
+
+            "more" -> {
+                for (index in 0..2) {
+                    val dotProgress = (progress - index * 0.14f) / 0.72f
+                    val hop = dampedMotion(dotProgress, PI)
+                    drawCircle(
+                        tint,
+                        radius = 1.1f,
+                        center = Offset(12f, 6f + index * 6f - 3.3f * hop),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EditorialIconCanvas(
+    modifier: Modifier,
+    strokeWidth: Dp,
+    trigger: Int,
+    delayMillis: Int,
+    drawIcon: DrawScope.(Stroke, Float) -> Unit,
+) {
+    val anim = remember { Animatable(0f) }
+    LaunchedEffect(trigger) {
+        if (trigger > 0) {
+            if (delayMillis > 0) delay(delayMillis.toLong())
+            anim.snapTo(0f)
+            anim.animateTo(1f, tween(440, easing = FastOutSlowInEasing))
+        }
+    }
+
+    Canvas(modifier = modifier.size(20.dp)) {
+        val unit = size.minDimension / 24f
+        if (unit <= 0f) return@Canvas
+
+        val stroke = Stroke(
+            width = strokeWidth.toPx() / unit,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round,
+        )
+        val progress = if (trigger > 0) anim.value else 0f
+        translate(left = (size.width - 24f * unit) / 2f, top = (size.height - 24f * unit) / 2f) {
+            scale(scale = unit, pivot = Offset.Zero) {
+                drawIcon(stroke, progress)
+            }
+        }
+    }
+}
+
+private fun dampedMotion(progress: Float, radians: Double = 2 * PI): Float =
+    if (progress > 0f && progress < 1f) {
+        (sin(progress * radians) * exp(-2.2 * progress)).toFloat()
+    } else {
+        0f
+    }
 
 @Composable
 fun EditorialBackIcon(tint: Color, modifier: Modifier = Modifier) {

@@ -1,8 +1,27 @@
 package com.huanchengfly.tieba.post.ui.common.theme.compose
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
+import com.huanchengfly.tieba.post.App
+import com.huanchengfly.tieba.post.dataStore
+import com.huanchengfly.tieba.post.getString
+import com.huanchengfly.tieba.post.putString
 
 const val KEY_MONET_PRESET = "monetColorPreset"
+
+object MonetPresetState {
+    val presetState: MutableState<MonetPreset> by lazy {
+        mutableStateOf(
+            MonetPreset.fromId(App.INSTANCE.dataStore.getString(KEY_MONET_PRESET))
+        )
+    }
+
+    fun setPreset(preset: MonetPreset) {
+        presetState.value = preset
+        App.INSTANCE.dataStore.putString(KEY_MONET_PRESET, preset.id)
+    }
+}
 
 enum class MonetPreset(
     val id: String,
@@ -38,10 +57,10 @@ enum class MonetPreset(
         swatch1 = Color(0xFF3E5872),
         swatch2 = Color(0xFFB9D4EB),
         swatch3 = Color(0xFFDCD8EB),
-        darkPrimary = Color(0xFF8CA9C4),
-        darkAccent = Color(0xFF9DB4C9),
-        darkCanvas = Color(0xFF0E1116),
-        darkCard = Color(0xFF161B22),
+        darkPrimary = Color(0xFF92B0CC),
+        darkAccent = Color(0xFFA4BDD4),
+        darkCanvas = Color(0xFF0F1217),
+        darkCard = Color(0xFF171C24),
         lightPrimary = Color(0xFF47627D),
         lightAccent = Color(0xFF5B7894),
         lightCanvas = Color(0xFFF5F6F8),
@@ -52,13 +71,13 @@ enum class MonetPreset(
         swatch1 = Color(0xFF226654),
         swatch2 = Color(0xFF9EE0C5),
         swatch3 = Color(0xFFC6ECF5),
-        darkPrimary = Color(0xFF7FC3AE),
-        darkAccent = Color(0xFF94CFB9),
-        darkCanvas = Color(0xFF0C1311),
-        darkCard = Color(0xFF141E1B),
+        darkPrimary = Color(0xFF7AC7AE),
+        darkAccent = Color(0xFF91D4BD),
+        darkCanvas = Color(0xFF0D1614),
+        darkCard = Color(0xFF15231F),
         lightPrimary = Color(0xFF2E6F5E),
         lightAccent = Color(0xFF3F8572),
-        lightCanvas = Color(0xFFF4F7F5),
+        lightCanvas = Color(0xFFF3F7F5),
     ),
     SEA(
         id = "sea",
@@ -66,13 +85,13 @@ enum class MonetPreset(
         swatch1 = Color(0xFF24607E),
         swatch2 = Color(0xFFB3E2F7),
         swatch3 = Color(0xFFDCD6FA),
-        darkPrimary = Color(0xFF7FB8D6),
-        darkAccent = Color(0xFF97C7E0),
-        darkCanvas = Color(0xFF0C1217),
-        darkCard = Color(0xFF141D25),
+        darkPrimary = Color(0xFF78B9DC),
+        darkAccent = Color(0xFF92C9E6),
+        darkCanvas = Color(0xFF0C151D),
+        darkCard = Color(0xFF14222E),
         lightPrimary = Color(0xFF2D6A88),
         lightAccent = Color(0xFF3F809F),
-        lightCanvas = Color(0xFFF4F7F9),
+        lightCanvas = Color(0xFFF3F7FA),
     ),
     IRIS(
         id = "iris",
@@ -80,13 +99,13 @@ enum class MonetPreset(
         swatch1 = Color(0xFF665B8A),
         swatch2 = Color(0xFFDDD3FA),
         swatch3 = Color(0xFFF7D1DA),
-        darkPrimary = Color(0xFFA79BC9),
-        darkAccent = Color(0xFFB9AED8),
-        darkCanvas = Color(0xFF100F16),
-        darkCard = Color(0xFF191722),
+        darkPrimary = Color(0xFFB0A0D8),
+        darkAccent = Color(0xFFC2B4E3),
+        darkCanvas = Color(0xFF13101B),
+        darkCard = Color(0xFF1E192B),
         lightPrimary = Color(0xFF6B5F8F),
         lightAccent = Color(0xFF7F72A6),
-        lightCanvas = Color(0xFFF7F5FA),
+        lightCanvas = Color(0xFFF7F5FB),
     );
 
     fun applyTo(base: ExtendedColors): ExtendedColors {

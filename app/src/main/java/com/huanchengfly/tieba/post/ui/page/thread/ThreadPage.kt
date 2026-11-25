@@ -39,6 +39,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -48,22 +49,10 @@ import androidx.compose.material.SnackbarResult
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ChromeReaderMode
-import androidx.compose.material.icons.automirrored.rounded.ChromeReaderMode
-import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.AlignVerticalTop
-import androidx.compose.material.icons.rounded.ContentCopy
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Face6
-import androidx.compose.material.icons.rounded.FaceRetouchingOff
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Report
-import androidx.compose.material.icons.rounded.RocketLaunch
-import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -86,6 +75,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -146,6 +137,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.Card
 import com.huanchengfly.tieba.post.ui.widgets.compose.Chip
 import com.huanchengfly.tieba.post.ui.widgets.compose.ConfirmDialog
 import com.huanchengfly.tieba.post.ui.widgets.compose.Container
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialActionIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialMenuIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.ErrorScreen
 import com.huanchengfly.tieba.post.ui.widgets.compose.HorizontalDivider
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoad
@@ -610,6 +603,10 @@ fun ThreadPage(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    var menuOpenTrigger by remember { mutableIntStateOf(0) }
+    LaunchedEffect(bottomSheetState.isVisible) {
+        if (bottomSheetState.isVisible) menuOpenTrigger++
+    }
     val lastVisibilityPost by remember {
         derivedStateOf {
             data.firstOrNull { (post) ->
@@ -1091,13 +1088,14 @@ fun ThreadPage(
                 ModalBottomSheetLayout(
                     sheetState = bottomSheetState,
                     sheetShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
-                    sheetBackgroundColor = ExtendedTheme.colors.windowBackground,
+                    sheetBackgroundColor = feedBackdropColor(),
                     sheetContent = {
                         ThreadMenu(
                             isSeeLz = isSeeLz,
                             isCollected = isCollected,
                             isImmersiveMode = isImmersiveMode,
                             isDesc = curSortType == ThreadSortType.SORT_TYPE_DESC,
+                            menuTrigger = menuOpenTrigger,
                             canDelete = { author?.get { id } == user.get { id } },
                             onSeeLzClick = {
                                 viewModel.send(
@@ -1631,6 +1629,8 @@ private fun BottomBar(
     agreeNum: Long = 0,
 ) {
     val colors = ExtendedTheme.colors
+    var moreTrigger by remember { mutableIntStateOf(0) }
+    val moreDesc = stringResource(id = R.string.btn_more)
     val dockColor = if (colors.isNightMode) {
         lerp(colors.card, Color(0xFF1E222A), 0.45f).copy(alpha = 0.90f)
     } else {
@@ -1705,13 +1705,17 @@ private fun BottomBar(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .clickable(onClick = onClickMore),
+                    .semantics { contentDescription = moreDesc }
+                    .clickable {
+                        moreTrigger++
+                        onClickMore()
+                    },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.MoreVert,
-                    contentDescription = stringResource(id = R.string.btn_more),
+                EditorialActionIcon(
+                    kind = "more",
                     tint = colors.textSecondary,
+                    trigger = moreTrigger,
                     modifier = Modifier.size(20.dp),
                 )
             }
@@ -2112,7 +2116,18 @@ private fun ThreadMenu(
     onReportClick: () -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier,
+    menuTrigger: Int = 0,
 ) {
+    var seeLzTrigger by remember { mutableIntStateOf(0) }
+    var collectTrigger by remember { mutableIntStateOf(0) }
+    var pureReadTrigger by remember { mutableIntStateOf(0) }
+    var sortTrigger by remember { mutableIntStateOf(0) }
+    var jumpPageTrigger by remember { mutableIntStateOf(0) }
+    var shareTrigger by remember { mutableIntStateOf(0) }
+    var copyLinkTrigger by remember { mutableIntStateOf(0) }
+    var reportTrigger by remember { mutableIntStateOf(0) }
+    var deleteTrigger by remember { mutableIntStateOf(0) }
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -2142,11 +2157,17 @@ private fun ThreadMenu(
                         )
                     },
                     checked = isSeeLz,
-                    onClick = onSeeLzClick,
+                    onClick = {
+                        seeLzTrigger++
+                        onSeeLzClick()
+                    },
                     icon = {
-                        Icon(
-                            imageVector = if (isSeeLz) Icons.Rounded.Face6 else Icons.Rounded.FaceRetouchingOff,
-                            contentDescription = null
+                        EditorialMenuIcon(
+                            kind = "see_lz",
+                            tint = LocalContentColor.current,
+                            trigger = menuTrigger + seeLzTrigger,
+                            active = isSeeLz,
+                            delayMillis = 0,
                         )
                     },
                     modifier = Modifier.fillMaxSize()
@@ -2163,11 +2184,17 @@ private fun ThreadMenu(
                         )
                     },
                     checked = isCollected,
-                    onClick = onCollectClick,
+                    onClick = {
+                        collectTrigger++
+                        onCollectClick()
+                    },
                     icon = {
-                        Icon(
-                            imageVector = if (isCollected) Icons.Rounded.Star else Icons.Rounded.StarBorder,
-                            contentDescription = null
+                        EditorialMenuIcon(
+                            kind = "collect",
+                            tint = LocalContentColor.current,
+                            trigger = menuTrigger + collectTrigger,
+                            active = isCollected,
+                            delayMillis = 35,
                         )
                     },
                     modifier = Modifier.fillMaxSize()
@@ -2184,11 +2211,17 @@ private fun ThreadMenu(
                         )
                     },
                     checked = isImmersiveMode,
-                    onClick = onImmersiveModeClick,
+                    onClick = {
+                        pureReadTrigger++
+                        onImmersiveModeClick()
+                    },
                     icon = {
-                        Icon(
-                            imageVector = if (isImmersiveMode) Icons.AutoMirrored.Rounded.ChromeReaderMode else Icons.AutoMirrored.Outlined.ChromeReaderMode,
-                            contentDescription = null
+                        EditorialMenuIcon(
+                            kind = "pure_read",
+                            tint = LocalContentColor.current,
+                            trigger = menuTrigger + pureReadTrigger,
+                            active = isImmersiveMode,
+                            delayMillis = 70,
                         )
                     },
                     modifier = Modifier.fillMaxSize()
@@ -2205,11 +2238,17 @@ private fun ThreadMenu(
                         )
                     },
                     checked = isDesc,
-                    onClick = onDescClick,
+                    onClick = {
+                        sortTrigger++
+                        onDescClick()
+                    },
                     icon = {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.Sort,
-                            contentDescription = null
+                        EditorialMenuIcon(
+                            kind = "sort",
+                            tint = LocalContentColor.current,
+                            trigger = menuTrigger + sortTrigger,
+                            active = isDesc,
+                            delayMillis = 105,
                         )
                     },
                     modifier = Modifier.fillMaxSize()
@@ -2218,39 +2257,84 @@ private fun ThreadMenu(
         }
         Column {
             ListMenuItem(
-                icon = Icons.Rounded.RocketLaunch,
+                iconContent = {
+                    EditorialMenuIcon(
+                        kind = "jump_page",
+                        tint = ExtendedTheme.colors.text,
+                        trigger = menuTrigger + jumpPageTrigger,
+                        delayMillis = 140,
+                    )
+                },
                 text = stringResource(id = R.string.title_jump_page),
-                iconColor = ExtendedTheme.colors.text,
-                onClick = onJumpPageClick,
+                onClick = {
+                    jumpPageTrigger++
+                    onJumpPageClick()
+                },
                 modifier = Modifier.fillMaxWidth(),
             )
             ListMenuItem(
-                icon = Icons.Rounded.Share,
+                iconContent = {
+                    EditorialMenuIcon(
+                        kind = "share",
+                        tint = ExtendedTheme.colors.text,
+                        trigger = menuTrigger + shareTrigger,
+                        delayMillis = 175,
+                    )
+                },
                 text = stringResource(id = R.string.title_share),
-                iconColor = ExtendedTheme.colors.text,
-                onClick = onShareClick,
+                onClick = {
+                    shareTrigger++
+                    onShareClick()
+                },
                 modifier = Modifier.fillMaxWidth(),
             )
             ListMenuItem(
-                icon = Icons.Rounded.ContentCopy,
+                iconContent = {
+                    EditorialMenuIcon(
+                        kind = "copy_link",
+                        tint = ExtendedTheme.colors.text,
+                        trigger = menuTrigger + copyLinkTrigger,
+                        delayMillis = 210,
+                    )
+                },
                 text = stringResource(id = R.string.title_copy_link),
-                iconColor = ExtendedTheme.colors.text,
-                onClick = onCopyLinkClick,
+                onClick = {
+                    copyLinkTrigger++
+                    onCopyLinkClick()
+                },
                 modifier = Modifier.fillMaxWidth(),
             )
             ListMenuItem(
-                icon = Icons.Rounded.Report,
+                iconContent = {
+                    EditorialMenuIcon(
+                        kind = "report",
+                        tint = ExtendedTheme.colors.text,
+                        trigger = menuTrigger + reportTrigger,
+                        delayMillis = 245,
+                    )
+                },
                 text = stringResource(id = R.string.title_report),
-                iconColor = ExtendedTheme.colors.text,
-                onClick = onReportClick,
+                onClick = {
+                    reportTrigger++
+                    onReportClick()
+                },
                 modifier = Modifier.fillMaxWidth(),
             )
             if (canDelete()) {
                 ListMenuItem(
-                    icon = Icons.Rounded.Delete,
+                    iconContent = {
+                        EditorialMenuIcon(
+                            kind = "delete",
+                            tint = ExtendedTheme.colors.text,
+                            trigger = menuTrigger + deleteTrigger,
+                            delayMillis = 280,
+                        )
+                    },
                     text = stringResource(id = R.string.title_delete),
-                    iconColor = ExtendedTheme.colors.text,
-                    onClick = onDeleteClick,
+                    onClick = {
+                        deleteTrigger++
+                        onDeleteClick()
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

@@ -17,7 +17,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.huanchengfly.tieba.post.App
 import com.huanchengfly.tieba.post.R
 import com.huanchengfly.tieba.post.rememberPreferenceAsState
@@ -459,10 +458,7 @@ fun TiebaLiteTheme(
         key = booleanPreferencesKey("useDynamicColorTheme"),
         defaultValue = false
     )
-    val monetPresetId by rememberPreferenceAsState(
-        key = stringPreferencesKey(KEY_MONET_PRESET),
-        defaultValue = MonetPreset.GRAPHITE.id,
-    )
+    val monetPreset by remember { MonetPresetState.presetState }
     val isDarkColorPalette by remember {
         derivedStateOf {
             ThemeUtil.isNightMode(theme)
@@ -477,8 +473,8 @@ fun TiebaLiteTheme(
     } else {
         getDynamicColor(theme, dynamicTonalPalette(context))
     }
-    val extendedColors = if (!ThemeUtil.isTranslucentTheme(theme)) {
-        MonetPreset.fromId(monetPresetId).applyTo(baseColors)
+    val extendedColors = if (!ThemeUtil.isTranslucentTheme(theme) && !useDynamicTheme) {
+        monetPreset.applyTo(baseColors)
     } else {
         baseColors
     }

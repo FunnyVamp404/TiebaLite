@@ -36,9 +36,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -46,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,10 +56,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -82,11 +79,13 @@ import com.huanchengfly.tieba.post.ui.page.LocalNavigator
 import com.huanchengfly.tieba.post.ui.page.destinations.ForumPageDestination
 import com.huanchengfly.tieba.post.ui.page.destinations.LoginPageDestination
 import com.huanchengfly.tieba.post.ui.page.destinations.SearchPageDestination
+import com.huanchengfly.tieba.post.ui.page.main.LocalMainTabActive
 import com.huanchengfly.tieba.post.ui.widgets.compose.ActionItem
 import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
 import com.huanchengfly.tieba.post.ui.widgets.compose.Button
 import com.huanchengfly.tieba.post.ui.widgets.compose.Chip
 import com.huanchengfly.tieba.post.ui.widgets.compose.ConfirmDialog
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialActionIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.ErrorScreen
 import com.huanchengfly.tieba.post.ui.widgets.compose.LongClickMenu
 import com.huanchengfly.tieba.post.ui.widgets.compose.MenuState
@@ -129,6 +128,7 @@ fun SearchBox(
     modifier: Modifier = Modifier,
     backgroundColor: Color = ExtendedTheme.colors.topBarSurface,
     contentColor: Color = ExtendedTheme.colors.onTopBarSurface,
+    iconTrigger: Int = 0,
     onClick: () -> Unit,
 ) {
     Box(
@@ -149,12 +149,12 @@ fun SearchBox(
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.Search,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .align(CenterVertically)
-                        .size(24.dp),
+                EditorialActionIcon(
+                    kind = "search",
+                    tint = contentColor,
+                    trigger = iconTrigger,
+                    delayMillis = 80,
+                    modifier = Modifier.align(CenterVertically).size(19.dp),
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
@@ -392,6 +392,15 @@ fun HomePage(
     val account = LocalAccount.current
     val context = LocalContext.current
     val navigator = LocalNavigator.current
+    val isTabActive = LocalMainTabActive.current
+    var enterTrigger by remember { mutableIntStateOf(0) }
+    var signTrigger by remember { mutableIntStateOf(0) }
+    var layoutTrigger by remember { mutableIntStateOf(0) }
+    var searchTrigger by remember { mutableIntStateOf(0) }
+    LaunchedEffect(isTabActive) {
+        if (isTabActive) enterTrigger++
+    }
+
     val isLoading by viewModel.uiState.collectPartialAsState(
         prop1 = HomeUiState::isLoading,
         initial = true
@@ -460,17 +469,32 @@ fun HomePage(
                 navigationIcon = accountNavIconIfCompact(),
                 actions = {
                     ActionItem(
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_oksign),
-                        contentDescription = stringResource(id = R.string.title_oksign)
+                        contentDescription = stringResource(id = R.string.title_oksign),
+                        onClick = {
+                            signTrigger++
+                            TiebaUtil.startSign(context)
+                        },
                     ) {
-                        TiebaUtil.startSign(context)
+                        EditorialActionIcon(
+                            kind = "sign",
+                            tint = ExtendedTheme.colors.onTopBar,
+                            trigger = enterTrigger + signTrigger,
+                        )
                     }
                     ActionItem(
-                        icon = Icons.Outlined.ViewAgenda,
-                        contentDescription = stringResource(id = R.string.title_switch_list_single)
+                        contentDescription = stringResource(id = R.string.title_switch_list_single),
+                        onClick = {
+                            layoutTrigger++
+                            context.appPreferences.listSingle = !listSingle
+                            listSingle = !listSingle
+                        },
                     ) {
-                        context.appPreferences.listSingle = !listSingle
-                        listSingle = !listSingle
+                        EditorialActionIcon(
+                            kind = if (listSingle) "layout_single" else "layout_grid",
+                            tint = ExtendedTheme.colors.onTopBar,
+                            trigger = enterTrigger + layoutTrigger,
+                            delayMillis = 45,
+                        )
                     }
                 }
             )
@@ -487,7 +511,11 @@ fun HomePage(
                 .padding(contentPaddings)
         ) {
             Column {
-                SearchBox(modifier = Modifier.padding(bottom = 4.dp)) {
+                SearchBox(
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    iconTrigger = enterTrigger + searchTrigger,
+                ) {
+                    searchTrigger++
                     navigator.navigate(SearchPageDestination)
                 }
                 StateScreen(

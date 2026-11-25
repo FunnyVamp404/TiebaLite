@@ -10,19 +10,20 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -31,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Checkbox
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -40,10 +42,6 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BorderColor
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.ColorLens
-import androidx.compose.material.icons.rounded.Colorize
-import androidx.compose.material.icons.rounded.NightsStay
-import androidx.compose.material.icons.rounded.PhotoSizeSelectActual
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,11 +61,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.github.panpf.sketch.compose.AsyncImage
 import com.github.panpf.sketch.fetch.newFileUri
 import com.github.panpf.sketch.fetch.newResourceUri
@@ -82,15 +80,14 @@ import com.huanchengfly.tieba.post.goToActivity
 import com.huanchengfly.tieba.post.rememberPreferenceAsMutableState
 import com.huanchengfly.tieba.post.rememberPreferenceAsState
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
-import com.huanchengfly.tieba.post.ui.common.theme.compose.KEY_MONET_PRESET
 import com.huanchengfly.tieba.post.ui.common.theme.compose.MonetPreset
+import com.huanchengfly.tieba.post.ui.common.theme.compose.MonetPresetState
 import com.huanchengfly.tieba.post.ui.common.theme.compose.dynamicTonalPalette
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.Dialog
 import com.huanchengfly.tieba.post.ui.widgets.compose.DialogNegativeButton
 import com.huanchengfly.tieba.post.ui.widgets.compose.DialogPositiveButton
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
-import com.huanchengfly.tieba.post.ui.widgets.compose.ProvideContentColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
@@ -100,6 +97,8 @@ import com.huanchengfly.tieba.post.utils.appPreferences
 import com.huanchengfly.tieba.post.utils.extension.toHexString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+
+private const val THEME_WHITE = "white"
 
 @Destination
 @Composable
@@ -111,13 +110,10 @@ fun AppThemePage(
     val themeNames = stringArrayResource(id = R.array.themeNames)
     val currentTheme by remember { ThemeUtil.themeState }
     val isDynamicTheme by rememberPreferenceAsState(
-        key = booleanPreferencesKey("useDynamicColorTheme"),
+        key = booleanPreferencesKey(ThemeUtil.KEY_USE_DYNAMIC_THEME),
         defaultValue = false
     )
-    var monetPresetId by rememberPreferenceAsMutableState(
-        key = stringPreferencesKey(KEY_MONET_PRESET),
-        defaultValue = MonetPreset.GRAPHITE.id,
-    )
+    val selectedPreset by remember { MonetPresetState.presetState }
     val customPrimaryColorDialogState = rememberDialogState()
     var customPrimaryColor by remember {
         mutableStateOf(
@@ -157,6 +153,7 @@ fun AppThemePage(
                     context.appPreferences.customStatusBarFontDark = customStatusBarFontDark
                     ThemeUtil.setUseDynamicTheme(false)
                     ThemeUtil.switchTheme(ThemeUtil.THEME_CUSTOM)
+                    MonetPresetState.setPreset(MonetPreset.NONE)
                 }
             )
             DialogNegativeButton(
@@ -329,246 +326,212 @@ fun AppThemePage(
             )
         },
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .navigationBarsPadding(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                item {
-                    MonetPaletteSection(
-                        selectedPreset = MonetPreset.fromId(monetPresetId),
-                        onPresetSelected = { monetPresetId = it.id },
-                    )
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    item {
-                        val tonalPalette = remember { dynamicTonalPalette(context) }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(
-                                    brush = Brush.sweepGradient(
-                                        colors = listOf(
-                                            tonalPalette.primary50,
-                                            tonalPalette.secondary50,
-                                            tonalPalette.tertiary50,
-                                            tonalPalette.primary50,
-                                        )
-                                    )
-                                )
-                                .clickable {
-                                    monetPresetId = MonetPreset.NONE.id
-                                    ThemeUtil.setUseDynamicTheme(true)
-                                }
-                                .padding(all = 16.dp)
-                        ) {
+            item {
+                MonetPaletteSection(
+                    selectedPreset = selectedPreset,
+                    onPresetSelected = { preset ->
+                        if (preset != MonetPreset.NONE) {
+                            ThemeUtil.setUseDynamicTheme(false)
+                        }
+                        MonetPresetState.setPreset(preset)
+                    },
+                )
+            }
+            item {
+                EditorialSectionCard(
+                    eyebrow = "02 / BASE APPEARANCE",
+                    title = "基础外观",
+                    subtitle = "深色模式可与上方莫奈配色自由叠加",
+                ) {
+                    val (nightThemes, lightThemes) = themeValues.zip(themeNames)
+                        .partition { (value, _) -> ThemeUtil.isNightMode(value) }
+                    Column(
+                        modifier = Modifier.selectableGroup(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        val rows = nightThemes.chunked(2) + lightThemes.chunked(2)
+                        rows.forEach { themes ->
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
-                                Icon(
-                                    imageVector = if (isDynamicTheme) {
-                                        Icons.Rounded.Check
-                                    } else {
-                                        Icons.Rounded.Colorize
-                                    },
-                                    contentDescription = null,
-                                    tint = ExtendedTheme.colors.windowBackground
-                                )
-                                Text(
-                                    text = stringResource(id = R.string.title_dynamic_theme),
-                                    fontWeight = FontWeight.Bold,
-                                    color = ExtendedTheme.colors.windowBackground
-                                )
+                                themes.forEach { (value, name) ->
+                                    val isNightTheme = ThemeUtil.isNightMode(value)
+                                    val previewColor = remember(context, value) {
+                                        val colorAttr = if (isNightTheme) {
+                                            R.attr.colorBackground
+                                        } else {
+                                            R.attr.colorNewPrimary
+                                        }
+                                        Color(App.ThemeDelegate.getColorByAttr(context, colorAttr, value))
+                                    }
+                                    BaseThemeTile(
+                                        modifier = Modifier.weight(1f),
+                                        name = name,
+                                        previewColor = previewColor,
+                                        selected = !isDynamicTheme && currentTheme == value,
+                                        onClick = {
+                                            ThemeUtil.setUseDynamicTheme(false)
+                                            ThemeUtil.switchTheme(value)
+                                            if (!isNightTheme && value != THEME_WHITE &&
+                                                value != ThemeUtil.THEME_DEFAULT
+                                            ) {
+                                                MonetPresetState.setPreset(MonetPreset.NONE)
+                                            }
+                                        },
+                                    )
+                                }
+                                if (themes.size == 1) {
+                                    Spacer(Modifier.weight(1f))
+                                }
                             }
                         }
                     }
                 }
-                item {
-                    ProvideContentColor(color = ExtendedTheme.colors.windowBackground) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min)
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(
-                                        color = customPrimaryColor,
+            }
+            item {
+                EditorialSectionCard(
+                    eyebrow = "03 / PERSONALIZATION",
+                    title = "进阶外观",
+                    subtitle = "系统动态取色、自定义主色与壁纸透明主题",
+                ) {
+                    val hairline = editorialHairline()
+                    Column {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            val tonalPalette = remember(context) { dynamicTonalPalette(context) }
+                            PersonalizationRow(
+                                title = stringResource(id = R.string.title_dynamic_theme),
+                                subtitle = "跟随系统壁纸取色（将暂停莫奈预设）",
+                                selected = isDynamicTheme,
+                                onClick = {
+                                    MonetPresetState.setPreset(MonetPreset.NONE)
+                                    ThemeUtil.setUseDynamicTheme(true)
+                                },
+                                preview = {
+                                    Box(
+                                        Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                Brush.sweepGradient(
+                                                    colors = listOf(
+                                                        tonalPalette.primary50,
+                                                        tonalPalette.secondary50,
+                                                        tonalPalette.tertiary50,
+                                                        tonalPalette.primary50,
+                                                    ),
+                                                ),
+                                            )
+                                            .border(0.75.dp, hairline, CircleShape),
                                     )
-                                    .clickable {
-                                        customPrimaryColorDialogState.show()
-                                    }
-                                    .padding(all = 16.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                ) {
-                                    Icon(
-                                        imageVector = if (!isDynamicTheme && currentTheme == ThemeUtil.THEME_CUSTOM) {
-                                            Icons.Rounded.Check
-                                        } else {
-                                            Icons.Rounded.ColorLens
-                                        },
-                                        contentDescription = null
-                                    )
-                                    Text(
-                                        text = stringResource(id = R.string.title_custom_color),
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .clickable {
-                                        context.goToActivity<TranslucentThemeActivity>()
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                val previewImageUri =
-                                    if (context.appPreferences.translucentThemeBackgroundPath != null) {
-                                        newFileUri(context.appPreferences.translucentThemeBackgroundPath!!)
-                                    } else {
-                                        newResourceUri(R.drawable.user_header)
-                                    }
+                                },
+                            )
+                            Divider(color = hairline, thickness = 0.5.dp)
+                        }
+                        PersonalizationRow(
+                            title = stringResource(id = R.string.title_custom_color),
+                            subtitle = "自由挑选主色调与顶栏配色",
+                            selected = !isDynamicTheme && currentTheme == ThemeUtil.THEME_CUSTOM,
+                            onClick = { customPrimaryColorDialogState.show() },
+                            preview = {
+                                Box(
+                                    Modifier
+                                        .size(28.dp)
+                                        .background(customPrimaryColor, CircleShape)
+                                        .border(0.75.dp, hairline, CircleShape),
+                                )
+                            },
+                        )
+                        Divider(color = hairline, thickness = 0.5.dp)
+                        PersonalizationRow(
+                            title = stringResource(id = R.string.title_theme_translucent),
+                            subtitle = "使用自定义图片作为应用背景",
+                            selected = ThemeUtil.isTranslucentTheme(currentTheme),
+                            onClick = { context.goToActivity<TranslucentThemeActivity>() },
+                            preview = {
+                                val shape = RoundedCornerShape(7.dp)
+                                val previewImageUri = context.appPreferences.translucentThemeBackgroundPath
+                                    ?.let { newFileUri(it) } ?: newResourceUri(R.drawable.user_header)
                                 AsyncImage(
                                     imageUri = previewImageUri,
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
                                     modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(all = 16.dp)
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                    ) {
-                                        Icon(
-                                            imageVector = if (ThemeUtil.isTranslucentTheme(
-                                                    currentTheme
-                                                )
-                                            ) {
-                                                Icons.Rounded.Check
-                                            } else {
-                                                Icons.Rounded.PhotoSizeSelectActual
-                                            },
-                                            contentDescription = null
-                                        )
-                                        Text(
-                                            text = stringResource(id = R.string.title_theme_translucent),
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                itemsIndexed(
-                    items = themeValues.toList(),
-                    key = { _, item -> item }
-                ) { index, item ->
-                    val name = themeNames[index]
-                    val backgroundColor = remember {
-                        Color(
-                            App.ThemeDelegate.getColorByAttr(
-                                context,
-                                R.attr.colorBackground,
-                                item
-                            )
-                        )
-                    }
-                    val primaryColor = remember {
-                        Color(
-                            App.ThemeDelegate.getColorByAttr(
-                                context,
-                                R.attr.colorNewPrimary,
-                                item
-                            )
-                        )
-                    }
-                    val accentColor = remember {
-                        Color(
-                            App.ThemeDelegate.getColorByAttr(
-                                context,
-                                R.attr.colorAccent,
-                                item
-                            )
-                        )
-                    }
-                    val onAccentColor = remember {
-                        Color(
-                            App.ThemeDelegate.getColorByAttr(
-                                context,
-                                R.attr.colorOnAccent,
-                                item
-                            )
-                        )
-                    }
-                    val onBackgroundColor = remember {
-                        Color(
-                            App.ThemeDelegate.getColorByAttr(
-                                context,
-                                R.attr.colorText,
-                                item
-                            )
-                        )
-                    }
-                    if (index == 0) {
-                        Spacer(modifier = Modifier.size(16.dp))
-                    }
-                    if (ThemeUtil.isNightMode(item)) {
-                        ThemeItem(
-                            themeName = name,
-                            themeValue = item,
-                            primaryColor = backgroundColor,
-                            accentColor = backgroundColor,
-                            contentColor = onBackgroundColor,
-                            selected = !isDynamicTheme && currentTheme == item,
-                            onClick = {
-                                ThemeUtil.switchTheme(item)
-                                ThemeUtil.setUseDynamicTheme(false)
-                            }
-                        )
-                    } else {
-                        ThemeItem(
-                            themeName = name,
-                            themeValue = item,
-                            primaryColor = primaryColor,
-                            accentColor = accentColor,
-                            contentColor = onAccentColor,
-                            selected = !isDynamicTheme && currentTheme == item,
-                            onClick = {
-                                ThemeUtil.switchTheme(item)
-                                ThemeUtil.setUseDynamicTheme(false)
-                            }
+                                        .size(28.dp)
+                                        .clip(shape)
+                                        .border(0.75.dp, hairline, shape),
+                                )
+                            },
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun editorialHairline(): Color =
+    if (ExtendedTheme.colors.isNightMode) Color.White.copy(alpha = 0.10f)
+    else Color.Black.copy(alpha = 0.08f)
+
+@Composable
+private fun EditorialSectionCard(
+    eyebrow: String,
+    title: String,
+    subtitle: String? = null,
+    trailing: (@Composable () -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val colors = ExtendedTheme.colors
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .feedCardSurface()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = eyebrow,
+                fontSize = 11.sp,
+                letterSpacing = 1.sp,
+                color = colors.textSecondary,
+            )
+            Box(Modifier.weight(1f).height(0.5.dp).background(editorialHairline()))
+            Box(Modifier.size(4.dp).background(colors.primary, CircleShape))
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = title,
+                modifier = Modifier.weight(1f),
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Medium,
+                color = colors.text,
+            )
+            trailing?.invoke()
+        }
+        subtitle?.let {
+            Text(text = it, fontSize = 12.sp, color = colors.textSecondary)
+        }
+        Spacer(Modifier.height(4.dp))
+        content()
     }
 }
 
@@ -578,11 +541,7 @@ private fun MonetPaletteSection(
     onPresetSelected: (MonetPreset) -> Unit,
 ) {
     val colors = ExtendedTheme.colors
-    val hairline = if (colors.isNightMode) {
-        Color.White.copy(alpha = 0.10f)
-    } else {
-        Color.Black.copy(alpha = 0.08f)
-    }
+    val hairline = editorialHairline()
     val originalSelected = selectedPreset == MonetPreset.NONE
     val originalBackground = if (originalSelected) {
         colors.primary.copy(alpha = 0.12f)
@@ -591,94 +550,58 @@ private fun MonetPaletteSection(
     }
     val swatchCardShape = RoundedCornerShape(10.dp)
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .feedCardSurface()
-            .selectableGroup()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+    Box(Modifier.selectableGroup()) {
+        EditorialSectionCard(
+            eyebrow = "01 / MONET PALETTE",
+            title = "莫奈配色",
+            subtitle = "低饱和东方色板，深色与浅色自动配套",
+            trailing = {
+                Text(
+                    text = "恢复原色",
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(originalBackground)
+                        .border(0.75.dp, if (originalSelected) colors.primary else hairline, CircleShape)
+                        .selectable(
+                            selected = originalSelected,
+                            role = Role.RadioButton,
+                            onClick = { onPresetSelected(MonetPreset.NONE) },
+                        )
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    fontSize = 12.sp,
+                    color = if (originalSelected) colors.primary else colors.textSecondary,
+                )
+            },
         ) {
-            Text(
-                text = "01 / MONET PALETTE",
-                fontSize = 11.sp,
-                letterSpacing = 1.sp,
-                color = colors.textSecondary,
-            )
-            Box(Modifier.weight(1f).height(0.5.dp).background(hairline))
-            Box(Modifier.size(4.dp).background(colors.primary))
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = "莫奈配色",
-                modifier = Modifier.weight(1f),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = colors.text,
-            )
-            Text(
-                text = "恢复原色",
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(originalBackground)
-                    .border(0.75.dp, if (originalSelected) colors.primary else hairline, CircleShape)
-                    .selectable(
-                        selected = originalSelected,
-                        role = Role.RadioButton,
-                        onClick = { onPresetSelected(MonetPreset.NONE) },
-                    )
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                fontSize = 12.sp,
-                color = if (originalSelected) colors.primary else colors.textSecondary,
-            )
-        }
-        Text(
-            text = "低饱和东方色板，深色与浅色自动配套",
-            fontSize = 12.sp,
-            color = colors.textSecondary,
-        )
-        Column(
-            modifier = Modifier.padding(top = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            MonetPreset.selectablePresets.chunked(2).forEach { presets ->
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    presets.forEach { preset ->
-                        val selected = selectedPreset == preset
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(swatchCardShape)
-                                .border(
-                                    width = if (selected) 1.5.dp else 0.75.dp,
-                                    color = if (selected) colors.primary else hairline,
-                                    shape = swatchCardShape,
-                                )
-                                .selectable(
-                                    selected = selected,
-                                    role = Role.RadioButton,
-                                    onClick = { onPresetSelected(preset) },
-                                ),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Box(
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                MonetPreset.selectablePresets.chunked(2).forEach { presets ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        presets.forEach { preset ->
+                            val selected = selectedPreset == preset
+                            Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(46.dp)
-                                    .padding(4.dp),
+                                    .weight(1f)
+                                    .clip(swatchCardShape)
+                                    .border(
+                                        width = if (selected) 1.5.dp else 0.75.dp,
+                                        color = if (selected) colors.primary else hairline,
+                                        shape = swatchCardShape,
+                                    )
+                                    .selectable(
+                                        selected = selected,
+                                        role = Role.RadioButton,
+                                        onClick = { onPresetSelected(preset) },
+                                    ),
+                                horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxSize()
+                                        .fillMaxWidth()
+                                        .height(46.dp)
+                                        .padding(4.dp)
                                         .clip(RoundedCornerShape(6.dp)),
                                 ) {
                                     val stripe = Modifier.weight(1f).fillMaxHeight()
@@ -686,14 +609,14 @@ private fun MonetPaletteSection(
                                     Box(stripe.background(preset.swatch2))
                                     Box(stripe.background(preset.swatch3))
                                 }
+                                Text(
+                                    text = preset.label,
+                                    modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
+                                    fontSize = 12.sp,
+                                    fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                                    color = colors.text,
+                                )
                             }
-                            Text(
-                                text = preset.label,
-                                modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
-                                fontSize = 12.sp,
-                                fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
-                                color = colors.text,
-                            )
                         }
                     }
                 }
@@ -703,59 +626,92 @@ private fun MonetPaletteSection(
 }
 
 @Composable
-private fun ThemeItem(
-    themeName: String,
-    themeValue: String,
-    primaryColor: Color,
-    accentColor: Color,
-    contentColor: Color,
+private fun BaseThemeTile(
+    modifier: Modifier,
+    name: String,
+    previewColor: Color,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
+    val colors = ExtendedTheme.colors
+    val hairline = editorialHairline()
+    val shape = RoundedCornerShape(8.dp)
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .clickable(
-                onClickLabel = themeName,
-                onClick = onClick
+        modifier = modifier
+            .clip(shape)
+            .background(if (selected) colors.primary.copy(alpha = 0.08f) else Color.Transparent)
+            .border(
+                width = if (selected) 1.5.dp else 0.75.dp,
+                color = if (selected) colors.primary else hairline,
+                shape = shape,
             )
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(
-                    brush = Brush.radialGradient(
-                        listOf(
-                            primaryColor,
-                            accentColor,
-                        )
-                    )
-                )
-                .padding(9.dp),
-        ) {
-            if (ThemeUtil.isNightMode(themeValue)) {
-                Icon(
-                    imageVector = Icons.Rounded.NightsStay,
-                    contentDescription = stringResource(id = R.string.desc_night_theme),
-                    tint = contentColor
-                )
-            }
-        }
+            Modifier
+                .size(20.dp)
+                .background(previewColor, CircleShape)
+                .border(0.75.dp, hairline, CircleShape),
+        )
         Text(
-            text = themeName,
-            modifier = Modifier.weight(1f)
+            text = name,
+            modifier = Modifier.weight(1f),
+            color = colors.text,
+            fontSize = 13.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         if (selected) {
-            Icon(
-                imageVector = Icons.Rounded.Check,
-                contentDescription = stringResource(id = R.string.desc_checked),
-                tint = ExtendedTheme.colors.primary
-            )
+            ThemeSelectionCheck()
         }
     }
+}
+
+@Composable
+private fun PersonalizationRow(
+    title: String,
+    subtitle: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    preview: @Composable () -> Unit,
+) {
+    val colors = ExtendedTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(selected = selected, role = Role.Button, onClick = onClick)
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        preview()
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = title,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = colors.text,
+            )
+            Text(text = subtitle, fontSize = 12.sp, color = colors.textSecondary)
+        }
+        if (selected) {
+            ThemeSelectionCheck()
+        }
+    }
+}
+
+@Composable
+private fun ThemeSelectionCheck() {
+    Icon(
+        imageVector = Icons.Rounded.Check,
+        contentDescription = null,
+        tint = ExtendedTheme.colors.primary,
+        modifier = Modifier.size(14.dp),
+    )
 }

@@ -209,10 +209,10 @@ fun UserHeader(
 fun feedBackdropColor(): Color {
     val colors = ExtendedTheme.colors
     return if (colors.isNightMode) {
-        if (colors.background == Color.Black) Color(0xFF0A0B0E)
-        else lerp(colors.background, Color(0xFF0D0F13), 0.55f)
+        if (colors.background == Color.Black) Color(0xFF060709)
+        else colors.background
     } else {
-        lerp(colors.background, Color(0xFFF6F5F1), 0.65f)
+        colors.background
     }
 }
 
@@ -222,15 +222,15 @@ fun Modifier.feedCardSurface(): Modifier {
     val colors = ExtendedTheme.colors
     val shape = RoundedCornerShape(10.dp)
     val surfaceColor = if (colors.isNightMode) {
-        if (colors.background == Color.Black) Color(0xFF14161B)
-        else lerp(colors.card, Color(0xFF1A1D24), 0.40f).copy(alpha = 0.84f)
+        if (colors.background == Color.Black) Color(0xFF121419)
+        else colors.card.copy(alpha = 0.90f)
     } else {
-        Color.White.copy(alpha = 0.86f)
+        Color.White.copy(alpha = 0.88f)
     }
     val borderColor = if (colors.isNightMode) {
-        Color.White.copy(alpha = 0.09f)
+        lerp(Color.White, colors.primary, 0.28f).copy(alpha = 0.13f)
     } else {
-        Color.Black.copy(alpha = 0.07f)
+        lerp(Color.Black, colors.primary, 0.20f).copy(alpha = 0.08f)
     }
     return this
         .clip(shape)

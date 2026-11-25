@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -67,6 +68,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.LocalFloatingBottomBarPadd
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.ProvideShouldLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.archivePlaneTransition
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.utils.appPreferences
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
@@ -348,7 +350,8 @@ fun MainPage(
                                                     if (active || outgoing) placeable.place(0, 0)
                                                 }
                                             }
-                                            .then(transition),
+                                            .then(transition)
+                                            .background(feedBackdropColor()),
                                     ) {
                                         CompositionLocalProvider(
                                             LocalMainTabActive provides active,

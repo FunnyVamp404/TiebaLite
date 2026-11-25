@@ -525,7 +525,7 @@ fun EditorialActionIcon(
 }
 
 @Composable
-private fun EditorialIconCanvas(
+internal fun EditorialIconCanvas(
     modifier: Modifier,
     strokeWidth: Dp,
     trigger: Int,
@@ -559,7 +559,7 @@ private fun EditorialIconCanvas(
     }
 }
 
-private fun dampedMotion(progress: Float, radians: Double = 2 * PI): Float =
+internal fun dampedMotion(progress: Float, radians: Double = 2 * PI): Float =
     if (progress > 0f && progress < 1f) {
         (sin(progress * radians) * exp(-1.45 * progress)).toFloat()
     } else {

@@ -16,19 +16,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +46,7 @@ import com.huanchengfly.tieba.post.ui.page.destinations.OKSignSettingsPageDestin
 import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialChevronRightIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
@@ -88,7 +88,7 @@ fun NowAccountItem(
                 navigator.navigate(LoginPageDestination)
             }
         },
-    ) {
+    ) { trigger ->
         if (account != null) {
             Avatar(
                 data = StringUtil.getAvatarUrl(account.portrait),
@@ -96,7 +96,13 @@ fun NowAccountItem(
                 contentDescription = null,
             )
         } else {
-            SettingsCardIcon(Icons.Rounded.AccountCircle)
+            EditorialSettingIcon(
+                kind = "account",
+                tint = ExtendedTheme.colors.primary,
+                modifier = Modifier.size(22.dp),
+                trigger = trigger,
+                delayMillis = 0,
+            )
         }
     }
 }
@@ -141,8 +147,14 @@ fun SettingsPage(
                         title = stringResource(id = R.string.title_block_settings),
                         subtitle = stringResource(id = R.string.summary_block_settings),
                         onClick = { navigator.navigate(BlockSettingsPageDestination) },
-                    ) {
-                        SettingsCardIcon(ImageVector.vectorResource(id = R.drawable.ic_settings_block))
+                    ) { trigger ->
+                        EditorialSettingIcon(
+                            kind = "block",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(22.dp),
+                            trigger = trigger,
+                            delayMillis = 70,
+                        )
                     }
                 }
                 item {
@@ -150,8 +162,14 @@ fun SettingsPage(
                         title = stringResource(id = R.string.title_settings_custom),
                         subtitle = stringResource(id = R.string.summary_settings_custom),
                         onClick = { navigator.navigate(CustomSettingsPageDestination) },
-                    ) {
-                        SettingsCardIcon(ImageVector.vectorResource(id = R.drawable.ic_brush_black_24dp))
+                    ) { trigger ->
+                        EditorialSettingIcon(
+                            kind = "brush",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(22.dp),
+                            trigger = trigger,
+                            delayMillis = 140,
+                        )
                     }
                 }
                 item {
@@ -159,8 +177,14 @@ fun SettingsPage(
                         title = stringResource(id = R.string.title_settings_read_habit),
                         subtitle = stringResource(id = R.string.summary_settings_habit),
                         onClick = { navigator.navigate(HabitSettingsPageDestination) },
-                    ) {
-                        SettingsCardIcon(ImageVector.vectorResource(id = R.drawable.ic_dashboard_customize_black_24))
+                    ) { trigger ->
+                        EditorialSettingIcon(
+                            kind = "layout",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(22.dp),
+                            trigger = trigger,
+                            delayMillis = 210,
+                        )
                     }
                 }
                 item {
@@ -168,8 +192,14 @@ fun SettingsPage(
                         title = stringResource(id = R.string.title_oksign),
                         subtitle = stringResource(id = R.string.summary_settings_oksign),
                         onClick = { navigator.navigate(OKSignSettingsPageDestination) },
-                    ) {
-                        SettingsCardIcon(ImageVector.vectorResource(id = R.drawable.ic_rocket_launch_black_24))
+                    ) { trigger ->
+                        EditorialSettingIcon(
+                            kind = "rocket",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(22.dp),
+                            trigger = trigger,
+                            delayMillis = 280,
+                        )
                     }
                 }
                 item {
@@ -177,8 +207,14 @@ fun SettingsPage(
                         title = stringResource(id = R.string.title_settings_more),
                         subtitle = stringResource(id = R.string.summary_settings_more),
                         onClick = { navigator.navigate(MoreSettingsPageDestination) },
-                    ) {
-                        SettingsCardIcon(ImageVector.vectorResource(id = R.drawable.ic_more_horiz_black_24))
+                    ) { trigger ->
+                        EditorialSettingIcon(
+                            kind = "more",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(22.dp),
+                            trigger = trigger,
+                            delayMillis = 350,
+                        )
                     }
                 }
             }
@@ -192,14 +228,18 @@ private fun SettingsCard(
     subtitle: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    icon: @Composable () -> Unit,
+    icon: @Composable (trigger: Int) -> Unit,
 ) {
     val colors = ExtendedTheme.colors
+    var trigger by remember { mutableIntStateOf(0) }
     Row(
         modifier = modifier
             .fillMaxWidth()
             .feedCardSurface()
-            .clickable(onClick = onClick)
+            .clickable {
+                trigger++
+                onClick()
+            }
             .padding(horizontal = 14.dp, vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -213,7 +253,7 @@ private fun SettingsCard(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            icon()
+            icon(trigger)
         }
         Column(
             modifier = Modifier.weight(1f),
@@ -233,14 +273,4 @@ private fun SettingsCard(
         }
         EditorialChevronRightIcon(tint = colors.textSecondary.copy(alpha = 0.65f))
     }
-}
-
-@Composable
-private fun SettingsCardIcon(icon: ImageVector) {
-    Icon(
-        imageVector = icon,
-        contentDescription = null,
-        modifier = Modifier.size(20.dp),
-        tint = ExtendedTheme.colors.primary,
-    )
 }

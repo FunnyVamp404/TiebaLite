@@ -68,11 +68,11 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
 import com.huanchengfly.tieba.post.ui.widgets.compose.ConfirmDialog
 import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialChevronRightIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialMenuIcon
-import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialPageHeader
 import com.huanchengfly.tieba.post.ui.widgets.compose.HorizontalDivider
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalFloatingBottomBarPadding
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.Switch
+import com.huanchengfly.tieba.post.ui.widgets.compose.archiveReveal
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.placeholder.placeholder
@@ -81,6 +81,15 @@ import com.huanchengfly.tieba.post.utils.CuidUtils
 import com.huanchengfly.tieba.post.utils.StringUtil
 import com.huanchengfly.tieba.post.utils.ThemeUtil
 import com.huanchengfly.tieba.post.utils.appPreferences
+
+private fun Modifier.userCardReveal(index: Int): Modifier {
+    val stagger = index.coerceAtMost(5) * 0.05f
+    return archiveReveal(
+        start = 0.18f + stagger,
+        end = (0.84f + stagger).coerceAtMost(1f),
+        travelY = 6.dp,
+    )
+}
 
 @Composable
 private fun StatCardPlaceholder(modifier: Modifier = Modifier) {
@@ -92,12 +101,18 @@ private fun StatCardPlaceholder(modifier: Modifier = Modifier) {
             statNum = 0,
             statText = stringResource(id = R.string.text_stat_follow)
         )
-        HorizontalDivider(color = ExtendedTheme.colors.divider.copy(alpha = 0.6f))
+        HorizontalDivider(
+            modifier = Modifier.archiveReveal(start = 0f, end = 0.46f),
+            color = ExtendedTheme.colors.divider.copy(alpha = 0.6f),
+        )
         StatCardItem(
             statNum = 0,
             statText = stringResource(id = R.string.text_stat_fans)
         )
-        HorizontalDivider(color = ExtendedTheme.colors.divider.copy(alpha = 0.6f))
+        HorizontalDivider(
+            modifier = Modifier.archiveReveal(start = 0f, end = 0.46f),
+            color = ExtendedTheme.colors.divider.copy(alpha = 0.6f),
+        )
         StatCardItem(
             statNum = 0,
             statText = stringResource(id = R.string.title_stat_posts_num)
@@ -125,13 +140,19 @@ private fun StatCard(
             statText = stringResource(id = R.string.text_stat_follow),
             onClick = onFollowClick,
         )
-        HorizontalDivider(color = ExtendedTheme.colors.divider.copy(alpha = 0.6f))
+        HorizontalDivider(
+            modifier = Modifier.archiveReveal(start = 0f, end = 0.46f),
+            color = ExtendedTheme.colors.divider.copy(alpha = 0.6f),
+        )
         StatCardItem(
             statNum = fansNum,
             statText = stringResource(id = R.string.text_stat_fans),
             onClick = onFansClick,
         )
-        HorizontalDivider(color = ExtendedTheme.colors.divider.copy(alpha = 0.6f))
+        HorizontalDivider(
+            modifier = Modifier.archiveReveal(start = 0f, end = 0.46f),
+            color = ExtendedTheme.colors.divider.copy(alpha = 0.6f),
+        )
         StatCardItem(
             statNum = postNum,
             statText = stringResource(id = R.string.title_stat_posts_num),
@@ -148,43 +169,45 @@ private fun InfoCard(
     avatar: String? = null,
     isPlaceholder: Boolean = false
 ) {
-    Row(
-        modifier = modifier,
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .align(Alignment.Bottom)
+    Box(modifier = modifier) {
+        Row(
+            modifier = Modifier.userCardReveal(index = 0),
         ) {
-            Text(
-                text = userName,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = ExtendedTheme.colors.text,
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .placeholder(visible = isPlaceholder, color = ExtendedTheme.colors.chip, shape = RectangleShape),
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = userIntro,
-                fontSize = 12.sp,
-                color = ExtendedTheme.colors.textSecondary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .placeholder(visible = isPlaceholder, color = ExtendedTheme.colors.chip, shape = RectangleShape),
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        if (avatar != null) {
-            Avatar(
-                data = avatar,
-                size = Sizes.Large,
-                contentDescription = stringResource(id = R.string.desc_user_avatar),
-                modifier = Modifier
+                    .weight(1f)
                     .align(Alignment.Bottom)
-                    .placeholder(visible = isPlaceholder, color = ExtendedTheme.colors.chip, shape = RectangleShape),
-            )
+            ) {
+                Text(
+                    text = userName,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = ExtendedTheme.colors.text,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .placeholder(visible = isPlaceholder, color = ExtendedTheme.colors.chip, shape = RectangleShape),
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = userIntro,
+                    fontSize = 12.sp,
+                    color = ExtendedTheme.colors.textSecondary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .placeholder(visible = isPlaceholder, color = ExtendedTheme.colors.chip, shape = RectangleShape),
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            if (avatar != null) {
+                Avatar(
+                    data = avatar,
+                    size = Sizes.Large,
+                    contentDescription = stringResource(id = R.string.desc_user_avatar),
+                    modifier = Modifier
+                        .align(Alignment.Bottom)
+                        .placeholder(visible = isPlaceholder, color = ExtendedTheme.colors.chip, shape = RectangleShape),
+                )
+            }
         }
     }
 }
@@ -199,7 +222,8 @@ private fun RowScope.StatCardItem(
         modifier = Modifier
             .weight(1f)
             .let { if (onClick != null) it.clickable(onClick = onClick) else it }
-            .padding(vertical = 18.dp),
+            .padding(vertical = 18.dp)
+            .userCardReveal(index = 1),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -218,34 +242,36 @@ private fun RowScope.StatCardItem(
 
 @Composable
 private fun LoginTipCard(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier,
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .align(Alignment.Bottom)
+    Box(modifier = modifier) {
+        Row(
+            modifier = Modifier.userCardReveal(index = 0),
         ) {
-            Text(
-                text = stringResource(id = R.string.tip_login),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = ExtendedTheme.colors.text,
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .weight(1f)
+                    .align(Alignment.Bottom)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.tip_login),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = ExtendedTheme.colors.text,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Icon(
+                imageVector = Icons.Rounded.AccountCircle,
+                contentDescription = null,
+                tint = ExtendedTheme.colors.onChip,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(Sizes.Large)
+                    .background(color = ExtendedTheme.colors.chip)
+                    .padding(16.dp),
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
-        Icon(
-            imageVector = Icons.Rounded.AccountCircle,
-            contentDescription = null,
-            tint = ExtendedTheme.colors.onChip,
-            modifier = Modifier
-                .clip(CircleShape)
-                .size(Sizes.Large)
-                .background(color = ExtendedTheme.colors.chip)
-                .padding(16.dp),
-        )
     }
 }
 
@@ -256,59 +282,64 @@ private fun UserMenuCard(
     subtitle: String,
     trigger: Int,
     delayMillis: Int,
+    cardIndex: Int,
     onClick: () -> Unit,
     trailing: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val colors = ExtendedTheme.colors
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 5.dp)
             .feedCardSurface()
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .background(
-                    color = colors.primary.copy(alpha = if (colors.isNightMode) 0.14f else 0.10f),
-                    shape = RoundedCornerShape(9.dp),
-                ),
-            contentAlignment = Alignment.Center,
+        Row(
+            modifier = Modifier.fillMaxWidth().userCardReveal(cardIndex),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            EditorialMenuIcon(
-                kind = iconKind,
-                tint = colors.primary,
-                trigger = trigger,
-                delayMillis = delayMillis,
-            )
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = colors.text,
-            )
-            Text(
-                text = subtitle,
-                fontSize = 11.sp,
-                color = colors.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        if (trailing != null) {
-            trailing()
-        } else {
-            EditorialChevronRightIcon(tint = colors.textSecondary.copy(alpha = 0.65f))
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(
+                        color = colors.primary.copy(alpha = if (colors.isNightMode) 0.14f else 0.10f),
+                        shape = RoundedCornerShape(9.dp),
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                EditorialMenuIcon(
+                    kind = iconKind,
+                    tint = colors.primary,
+                    trigger = trigger,
+                    delayMillis = delayMillis,
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.text,
+                )
+                Text(
+                    text = subtitle,
+                    fontSize = 11.sp,
+                    color = colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            if (trailing != null) {
+                trailing()
+            } else {
+                EditorialChevronRightIcon(tint = colors.textSecondary.copy(alpha = 0.65f))
+            }
         }
     }
 }
@@ -377,12 +408,28 @@ fun UserPage(
                     .verticalScroll(state = rememberScrollState())
                     .fillMaxSize()
             ) {
-                EditorialPageHeader(
-                    title = stringResource(id = R.string.title_user),
-                    eyebrow = "PROFILE / ACCOUNT & TOOLS",
-                    animateKey = enterTrigger,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                )
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                    Text(
+                        text = stringResource(id = R.string.title_user),
+                        color = ExtendedTheme.colors.onTopBar,
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.4.sp,
+                        lineHeight = 23.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = "PROFILE / ACCOUNT & TOOLS",
+                        modifier = Modifier.archiveReveal(start = 0.10f, end = 0.68f),
+                        color = ExtendedTheme.colors.textSecondary,
+                        fontSize = 10.sp,
+                        letterSpacing = 1.5.sp,
+                        lineHeight = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 val accountCardModifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
@@ -440,6 +487,9 @@ fun UserPage(
                     )
                 }
                 Spacer(Modifier.height(10.dp))
+                val firstMenuCardIndex = if (account != null || isLoading) 2 else 1
+                val historyCardIndex = firstMenuCardIndex + if (account != null) 1 else 0
+                val settingsCardIndex = historyCardIndex + if (account != null) 3 else 2
                 if (account != null) {
                     UserMenuCard(
                         iconKind = "collect",
@@ -447,6 +497,7 @@ fun UserPage(
                         subtitle = "收藏的帖子与楼层",
                         trigger = enterTrigger + (menuClickTriggers["collect"] ?: 0),
                         delayMillis = 0,
+                        cardIndex = firstMenuCardIndex,
                         onClick = {
                             onMenuClick("collect")
                             navigator.navigate(ThreadStorePageDestination)
@@ -459,6 +510,7 @@ fun UserPage(
                     subtitle = "最近浏览过的帖子与贴吧",
                     trigger = enterTrigger + (menuClickTriggers["history"] ?: 0),
                     delayMillis = 40,
+                    cardIndex = historyCardIndex,
                     onClick = {
                         onMenuClick("history")
                         navigator.navigate(HistoryPageDestination)
@@ -471,6 +523,7 @@ fun UserPage(
                     subtitle = "莫奈色板与深色模式",
                     trigger = enterTrigger + (menuClickTriggers["theme"] ?: 0),
                     delayMillis = 80,
+                    cardIndex = historyCardIndex + 1,
                     onClick = {
                         onMenuClick("theme")
                         navigator.navigate(AppThemePageDestination)
@@ -500,6 +553,7 @@ fun UserPage(
                         subtitle = "账号状态与服务中心",
                         trigger = enterTrigger + (menuClickTriggers["service"] ?: 0),
                         delayMillis = 120,
+                        cardIndex = historyCardIndex + 2,
                         onClick = {
                             onMenuClick("service")
                             navigator.navigate(
@@ -517,6 +571,7 @@ fun UserPage(
                     subtitle = "偏好、屏蔽与显示设置",
                     trigger = enterTrigger + (menuClickTriggers["settings"] ?: 0),
                     delayMillis = 160,
+                    cardIndex = settingsCardIndex,
                     onClick = {
                         onMenuClick("settings")
                         navigator.navigate(SettingsPageDestination)
@@ -528,6 +583,7 @@ fun UserPage(
                     subtitle = "版本信息与项目说明",
                     trigger = enterTrigger + (menuClickTriggers["about"] ?: 0),
                     delayMillis = 200,
+                    cardIndex = settingsCardIndex + 1,
                     onClick = {
                         onMenuClick("about")
                         navigator.navigate(AboutPageDestination)

@@ -3,15 +3,10 @@ package com.huanchengfly.tieba.post.ui.page.settings.oksign
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.BatteryAlert
-import androidx.compose.material.icons.outlined.BrowseGallery
-import androidx.compose.material.icons.outlined.OfflinePin
-import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material.icons.outlined.WatchLater
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -35,11 +30,10 @@ import com.huanchengfly.tieba.post.ui.common.prefs.widgets.TextPref
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.TimePickerPerf
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.page.settings.LeadingIcon
-import com.huanchengfly.tieba.post.ui.widgets.compose.AvatarIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalSnackbarHostState
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
-import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.utils.isIgnoringBatteryOptimizations
 import com.huanchengfly.tieba.post.utils.powerManager
@@ -80,10 +74,11 @@ fun OKSignSettingsPage(
                 SwitchPref(
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.BrowseGallery,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "agenda",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 0,
                             )
                         }
                     },
@@ -98,10 +93,11 @@ fun OKSignSettingsPage(
                 SwitchPref(
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.Speed,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "rocket",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 60,
                             )
                         }
                     },
@@ -115,10 +111,11 @@ fun OKSignSettingsPage(
                 SwitchPref(
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.OfflinePin,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "shield",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 120,
                             )
                         }
                     },
@@ -133,10 +130,11 @@ fun OKSignSettingsPage(
                 TimePickerPerf(
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.WatchLater,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "time",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 180,
                             )
                         }
                     },
@@ -152,10 +150,11 @@ fun OKSignSettingsPage(
                 TextPref(
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.BatteryAlert,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "default",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 240,
                             )
                         }
                     },

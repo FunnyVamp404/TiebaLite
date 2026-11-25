@@ -8,16 +8,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Apps
-import androidx.compose.material.icons.outlined.Brightness2
-import androidx.compose.material.icons.outlined.BrightnessAuto
-import androidx.compose.material.icons.outlined.ColorLens
-import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.FontDownload
-import androidx.compose.material.icons.outlined.FormatColorFill
-import androidx.compose.material.icons.outlined.Upcoming
-import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -25,11 +15,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -43,9 +31,10 @@ import com.huanchengfly.tieba.post.ui.common.prefs.PrefsScreen
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.ListPref
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.SwitchPref
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.TextPref
+import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.page.settings.LeadingIcon
-import com.huanchengfly.tieba.post.ui.widgets.compose.AvatarIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
@@ -91,10 +80,11 @@ fun CustomSettingsPage(
                     title = stringResource(id = R.string.title_custom_font_size),
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.FontDownload,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "font",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 0,
                             )
                         }
                     },
@@ -112,10 +102,11 @@ fun CustomSettingsPage(
                     defaultValue = ThemeUtil.THEME_AMOLED_DARK,
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.Brightness2,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "moon",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 60,
                             )
                         }
                     },
@@ -134,10 +125,11 @@ fun CustomSettingsPage(
                     defaultValue = LauncherIcons.DEFAULT_ICON,
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.Apps,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "apps",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 120,
                             )
                         }
                     },
@@ -209,10 +201,11 @@ fun CustomSettingsPage(
                         enabled = isCurrentSupportThemedIcon,
                         leadingIcon = {
                             LeadingIcon {
-                                AvatarIcon(
-                                    icon = Icons.Outlined.ColorLens,
-                                    size = Sizes.Small,
-                                    contentDescription = null,
+                                EditorialSettingIcon(
+                                    kind = "palette",
+                                    tint = ExtendedTheme.colors.primary,
+                                    modifier = Modifier.size(24.dp),
+                                    delayMillis = 180,
                                 )
                             }
                         },
@@ -230,10 +223,11 @@ fun CustomSettingsPage(
                     defaultChecked = true,
                 ) {
                     LeadingIcon {
-                        AvatarIcon(
-                            icon = Icons.Outlined.BrightnessAuto,
-                            size = Sizes.Small,
-                            contentDescription = null,
+                        EditorialSettingIcon(
+                            kind = "auto_brightness",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(24.dp),
+                            delayMillis = 240,
                         )
                     }
                 }
@@ -246,10 +240,11 @@ fun CustomSettingsPage(
                     defaultChecked = true,
                 ) {
                     LeadingIcon {
-                        AvatarIcon(
-                            icon = ImageVector.vectorResource(id = R.drawable.ic_beaker),
-                            size = Sizes.Small,
-                            contentDescription = null,
+                        EditorialSettingIcon(
+                            kind = "flask",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(24.dp),
+                            delayMillis = 300,
                         )
                     }
                 }
@@ -261,10 +256,11 @@ fun CustomSettingsPage(
                     defaultChecked = false,
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.FormatColorFill,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "fill",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 360,
                             )
                         }
                     },
@@ -278,10 +274,11 @@ fun CustomSettingsPage(
                     defaultChecked = false,
                 ) {
                     LeadingIcon {
-                        AvatarIcon(
-                            icon = Icons.Outlined.ViewAgenda,
-                            size = Sizes.Small,
-                            contentDescription = null,
+                        EditorialSettingIcon(
+                            kind = "agenda",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(24.dp),
+                            delayMillis = 420,
                         )
                     }
                 }
@@ -293,10 +290,11 @@ fun CustomSettingsPage(
                     defaultChecked = false,
                 ) {
                     LeadingIcon {
-                        AvatarIcon(
-                            icon = Icons.Outlined.Explore,
-                            size = Sizes.Small,
-                            contentDescription = null,
+                        EditorialSettingIcon(
+                            kind = "compass",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(24.dp),
+                            delayMillis = 480,
                         )
                     }
                 }
@@ -308,10 +306,11 @@ fun CustomSettingsPage(
                     defaultChecked = true,
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.Upcoming,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "layout",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 540,
                             )
                         }
                     },

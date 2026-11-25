@@ -6,13 +6,10 @@ import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.OfflineBolt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,10 +19,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.huanchengfly.tieba.post.BuildConfig
@@ -35,13 +30,13 @@ import com.huanchengfly.tieba.post.ui.common.prefs.PrefsScreen
 import com.huanchengfly.tieba.post.ui.common.prefs.dependNot
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.SwitchPref
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.TextPref
+import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.page.destinations.AboutPageDestination
 import com.huanchengfly.tieba.post.ui.page.settings.LeadingIcon
-import com.huanchengfly.tieba.post.ui.widgets.compose.AvatarIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalSnackbarHostState
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
-import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.utils.ImageCacheUtil
 import com.huanchengfly.tieba.post.utils.appPreferences
@@ -92,10 +87,11 @@ fun MoreSettingsPage(
                 SwitchPref(
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = ImageVector.vectorResource(id = R.drawable.ic_chrome),
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "compass",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 0,
                             )
                         }
                     },
@@ -112,10 +108,11 @@ fun MoreSettingsPage(
                 SwitchPref(
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = ImageVector.vectorResource(id = R.drawable.ic_today),
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "agenda",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 60,
                             )
                         }
                     },
@@ -135,10 +132,11 @@ fun MoreSettingsPage(
                     TextPref(
                         leadingIcon = {
                             LeadingIcon {
-                                AvatarIcon(
-                                    icon = Icons.Outlined.Link,
-                                    size = Sizes.Small,
-                                    contentDescription = null,
+                                EditorialSettingIcon(
+                                    kind = "default",
+                                    tint = ExtendedTheme.colors.primary,
+                                    modifier = Modifier.size(24.dp),
+                                    delayMillis = 120,
                                 )
                             }
                         },
@@ -161,10 +159,11 @@ fun MoreSettingsPage(
                 TextPref(
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.OfflineBolt,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "rocket",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 180,
                             )
                         }
                     },
@@ -184,10 +183,11 @@ fun MoreSettingsPage(
                 TextPref(
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.Info,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "info",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 240,
                             )
                         }
                     },

@@ -1,9 +1,6 @@
 package com.huanchengfly.tieba.post.ui.widgets.compose
 
 import android.util.Log
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -38,15 +35,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -58,7 +52,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp as lerpFloat
 import androidx.core.content.ContextCompat
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.huanchengfly.tieba.post.R
@@ -260,60 +253,32 @@ fun EditorialPageHeader(
     centered: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    val progress = rememberEditorialHeaderProgress(animateKey)
     Column(
         modifier = modifier,
         horizontalAlignment = if (centered) Alignment.CenterHorizontally else Alignment.Start,
     ) {
         Text(
             text = title,
-            modifier = Modifier.graphicsLayer {
-                val p = progress.value
-                alpha = 0.45f + 0.55f * p
-                if (centered) {
-                    scaleX = 0.94f + 0.06f * p
-                } else {
-                    translationX = (1f - p) * 10.dp.toPx()
-                }
-            },
             color = ExtendedTheme.colors.onTopBar,
             fontSize = 19.sp,
             fontWeight = FontWeight.SemiBold,
-            letterSpacing = lerpFloat(3.6f, 0.4f, progress.value).sp,
+            letterSpacing = 0.4.sp,
             lineHeight = 23.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        EditorialEyebrow(
-            eyebrow,
-            progress.value,
-            modifier = Modifier.archiveReveal(start = 0.16f, end = 0.88f),
-        )
+        EditorialEyebrow(eyebrow)
     }
 }
 
 @Composable
-private fun rememberEditorialHeaderProgress(animateKey: Any?): State<Float> {
-    val animation = remember { Animatable(0f) }
-    LaunchedEffect(animateKey) {
-        animation.snapTo(0f)
-        animation.animateTo(1f, tween(460, easing = FastOutSlowInEasing))
-    }
-    return animation.asState()
-}
-
-@Composable
-private fun EditorialEyebrow(
-    eyebrow: String,
-    progress: Float,
-    modifier: Modifier = Modifier,
-) {
+private fun EditorialEyebrow(eyebrow: String) {
     Text(
         text = eyebrow.uppercase(),
-        modifier = modifier,
+        modifier = Modifier.archiveReveal(start = 0.16f, end = 0.88f),
         color = ExtendedTheme.colors.textSecondary,
         fontSize = 10.sp,
-        letterSpacing = lerpFloat(0.3f, 1.5f, progress).sp,
+        letterSpacing = 1.5.sp,
         lineHeight = 12.sp,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
@@ -395,15 +360,19 @@ fun TitleCentredToolbar(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Medium)) {
+                        ProvideTextStyle(
+                            value = MaterialTheme.typography.h6.copy(
+                                fontWeight = FontWeight.Medium,
+                                letterSpacing = 0.4.sp,
+                            ),
+                        ) {
                             ProvideContentColor(color = ExtendedTheme.colors.onTopBar) {
                                 if (eyebrow == null) {
                                     title()
                                 } else {
-                                    val progress = rememberEditorialHeaderProgress(eyebrow)
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         title()
-                                        EditorialEyebrow(eyebrow, progress.value)
+                                        EditorialEyebrow(eyebrow)
                                     }
                                 }
                             }

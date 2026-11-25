@@ -2,31 +2,17 @@ package com.huanchengfly.tieba.post.ui.page.settings.habit
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.BrandingWatermark
-import androidx.compose.material.icons.automirrored.outlined.ExitToApp
-import androidx.compose.material.icons.automirrored.rounded.Sort
-import androidx.compose.material.icons.outlined.CalendarViewDay
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.ImageSearch
-import androidx.compose.material.icons.outlined.NightsStay
-import androidx.compose.material.icons.outlined.PhotoSizeSelectActual
-import androidx.compose.material.icons.outlined.SecurityUpdateWarning
-import androidx.compose.material.icons.outlined.SpeakerNotesOff
-import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material.icons.outlined.Verified
-import androidx.compose.material.icons.outlined.WatchLater
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.huanchengfly.tieba.post.R
@@ -34,11 +20,11 @@ import com.huanchengfly.tieba.post.dataStore
 import com.huanchengfly.tieba.post.ui.common.prefs.PrefsScreen
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.ListPref
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.SwitchPref
+import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.page.settings.LeadingIcon
-import com.huanchengfly.tieba.post.ui.widgets.compose.AvatarIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
-import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.utils.isPhotoPickerAvailable
 import com.ramcosta.composedestinations.annotation.Destination
@@ -88,10 +74,11 @@ fun HabitSettingsPage(
                     defaultValue = "home",
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.Home,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "layout",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 0,
                             )
                         }
                     },
@@ -111,10 +98,11 @@ fun HabitSettingsPage(
                     defaultValue = "0",
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.PhotoSizeSelectActual,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "default",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 60,
                             )
                         }
                     },
@@ -133,10 +121,11 @@ fun HabitSettingsPage(
                     defaultValue = "2",
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.AutoMirrored.Outlined.BrandingWatermark,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "edit",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 120,
                             )
                         }
                     },
@@ -149,10 +138,11 @@ fun HabitSettingsPage(
                     defaultChecked = true,
                 ) {
                     LeadingIcon {
-                        AvatarIcon(
-                            icon = Icons.Outlined.NightsStay,
-                            size = Sizes.Small,
-                            contentDescription = null,
+                        EditorialSettingIcon(
+                            kind = "moon",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(24.dp),
+                            delayMillis = 180,
                         )
                     }
                 }
@@ -169,10 +159,11 @@ fun HabitSettingsPage(
                     defaultValue = "0",
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.CalendarViewDay,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "agenda",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 240,
                             )
                         }
                     },
@@ -185,10 +176,11 @@ fun HabitSettingsPage(
                     defaultValue = "post",
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.AutoMirrored.Outlined.ExitToApp,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "compass",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 300,
                             )
                         }
                     },
@@ -208,10 +200,11 @@ fun HabitSettingsPage(
                     defaultChecked = false
                 ) {
                     LeadingIcon {
-                        AvatarIcon(
-                            icon = ImageVector.vectorResource(R.drawable.ic_outline_collapse_all),
-                            size = Sizes.Small,
-                            contentDescription = null,
+                        EditorialSettingIcon(
+                            kind = "hide",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(24.dp),
+                            delayMillis = 360,
                         )
                     }
                 }
@@ -241,10 +234,11 @@ fun HabitSettingsPage(
                     defaultChecked = true,
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.StarOutline,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "account",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 420,
                             )
                         }
                     },
@@ -259,10 +253,11 @@ fun HabitSettingsPage(
                     defaultChecked = false,
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.AutoMirrored.Rounded.Sort,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "tune",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 480,
                             )
                         }
                     },
@@ -277,10 +272,11 @@ fun HabitSettingsPage(
                     defaultChecked = false,
                 ) {
                     LeadingIcon {
-                        AvatarIcon(
-                            icon = Icons.Outlined.Verified,
-                            size = Sizes.Small,
-                            contentDescription = null,
+                        EditorialSettingIcon(
+                            kind = "account",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(24.dp),
+                            delayMillis = 540,
                         )
                     }
                 }
@@ -292,10 +288,11 @@ fun HabitSettingsPage(
                     defaultChecked = true,
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.WatchLater,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "time",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 600,
                             )
                         }
                     },
@@ -308,10 +305,11 @@ fun HabitSettingsPage(
                     defaultChecked = false,
                 ) {
                     LeadingIcon {
-                        AvatarIcon(
-                            icon = Icons.Outlined.SecurityUpdateWarning,
-                            size = Sizes.Small,
-                            contentDescription = null,
+                        EditorialSettingIcon(
+                            kind = "bell",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(24.dp),
+                            delayMillis = 660,
                         )
                     }
                 }
@@ -323,10 +321,11 @@ fun HabitSettingsPage(
                     defaultChecked = false,
                 ) {
                     LeadingIcon {
-                        AvatarIcon(
-                            icon = Icons.Outlined.SpeakerNotesOff,
-                            size = Sizes.Small,
-                            contentDescription = null,
+                        EditorialSettingIcon(
+                            kind = "hide",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(24.dp),
+                            delayMillis = 720,
                         )
                     }
                 }
@@ -347,10 +346,11 @@ fun HabitSettingsPage(
                     defaultChecked = false,
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.ImageSearch,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "default",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 780,
                             )
                         }
                     },

@@ -3,27 +3,20 @@ package com.huanchengfly.tieba.post.ui.page.settings.account
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.AddCircleOutline
-import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.SupervisedUserCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -39,9 +32,8 @@ import com.huanchengfly.tieba.post.ui.common.prefs.widgets.TextPref
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.page.destinations.LoginPageDestination
 import com.huanchengfly.tieba.post.ui.page.settings.LeadingIcon
-import com.huanchengfly.tieba.post.ui.widgets.compose.AvatarIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
-import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.utils.AccountUtil
 import com.huanchengfly.tieba.post.utils.AccountUtil.AllAccounts
@@ -94,10 +86,11 @@ fun AccountManagePage(
                         ),
                         leadingIcon = {
                             LeadingIcon {
-                                AvatarIcon(
-                                    icon = Icons.Outlined.AccountCircle,
-                                    size = Sizes.Small,
-                                    contentDescription = null,
+                                EditorialSettingIcon(
+                                    kind = "account",
+                                    tint = ExtendedTheme.colors.primary,
+                                    modifier = Modifier.size(24.dp),
+                                    delayMillis = 0,
                                 )
                             }
                         },
@@ -114,10 +107,11 @@ fun AccountManagePage(
                         summary = null,
                         leadingIcon = {
                             LeadingIcon {
-                                AvatarIcon(
-                                    icon = Icons.Outlined.AccountCircle,
-                                    size = Sizes.Small,
-                                    contentDescription = null,
+                                EditorialSettingIcon(
+                                    kind = "account",
+                                    tint = ExtendedTheme.colors.primary,
+                                    modifier = Modifier.size(24.dp),
+                                    delayMillis = 60,
                                 )
                             }
                         },
@@ -132,10 +126,11 @@ fun AccountManagePage(
                     onClick = { navigator.navigate(LoginPageDestination) },
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.AddCircleOutline,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "add",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 120,
                             )
                         }
                     },
@@ -169,10 +164,11 @@ fun AccountManagePage(
                     onClick = { AccountUtil.exit(context) },
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = ImageVector.vectorResource(id = R.drawable.ic_outlined_close_circle_24),
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "close",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 180,
                             )
                         }
                     },
@@ -190,10 +186,11 @@ fun AccountManagePage(
                     },
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.SupervisedUserCircle,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "switch_user",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 240,
                             )
                         }
                     },
@@ -207,10 +204,11 @@ fun AccountManagePage(
                     onClick = { TiebaUtil.copyText(context, account?.bduss, isSensitive = true) },
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.ContentCopy,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "copy",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 300,
                             )
                         }
                     },
@@ -228,10 +226,11 @@ fun AccountManagePage(
                         littleTail,
                     leadingIcon = {
                         LeadingIcon {
-                            AvatarIcon(
-                                icon = Icons.Outlined.Edit,
-                                size = Sizes.Small,
-                                contentDescription = null,
+                            EditorialSettingIcon(
+                                kind = "edit",
+                                tint = ExtendedTheme.colors.primary,
+                                modifier = Modifier.size(24.dp),
+                                delayMillis = 360,
                             )
                         }
                     },

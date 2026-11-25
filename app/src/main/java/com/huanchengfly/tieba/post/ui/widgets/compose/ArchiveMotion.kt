@@ -8,7 +8,9 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.min
 
@@ -22,16 +24,15 @@ fun Modifier.archivePlaneTransition(
     direction: Float,
 ): Modifier {
     val eased = ArchivePlaneEasing.transform(progress.coerceIn(0f, 1f))
-    return graphicsLayer {
-        if (isOutgoing) {
+    if (isOutgoing) {
+        return graphicsLayer {
             translationX = 10.dp.toPx() * direction * eased
             translationY = -4.dp.toPx() * eased
-        } else {
-            translationX = -24.dp.toPx() * direction * (1f - eased)
-            translationY = 12.dp.toPx() * (1f - eased)
         }
-    }.drawWithContent {
-        if (isOutgoing || eased >= 0.999f) {
+    }
+
+    return drawWithContent {
+        if (eased >= 0.999f) {
             drawContent()
         } else if (eased > 0.001f) {
             val slant = min(180.dp.toPx(), size.width * 0.46f)
@@ -45,7 +46,13 @@ fun Modifier.archivePlaneTransition(
                 lineTo(x(0f), size.height)
                 close()
             }
-            clipPath(path) { this@drawWithContent.drawContent() }
+            val dx = -24.dp.toPx() * direction * (1f - eased)
+            val dy = 12.dp.toPx() * (1f - eased)
+            clipPath(path) {
+                translate(dx, dy) {
+                    this@drawWithContent.drawContent()
+                }
+            }
         }
     }
 }
@@ -54,22 +61,25 @@ fun Modifier.archiveReveal(
     start: Float = 0.08f,
     end: Float = 0.72f,
     vertical: Boolean = false,
+    travelX: Dp = 0.dp,
+    travelY: Dp = 0.dp,
 ): Modifier = composed {
     val clock = LocalArchiveMotionProgress.current
     if (clock >= 0.999f) return@composed this
 
     val u = ((clock - start) / (end - start)).coerceIn(0f, 1f)
     val p = 1f - (1f - u) * (1f - u) * (1f - u)
-    graphicsLayer {
-        translationX = if (!vertical) -8.dp.toPx() * (1f - p) else 0f
-        translationY = if (vertical) -6.dp.toPx() * (1f - p) else 0f
-    }.drawWithContent {
+    drawWithContent {
         if (p > 0.001f) {
+            val dx = travelX.toPx() * (1f - p)
+            val dy = travelY.toPx() * (1f - p)
             clipRect(
                 right = if (!vertical) size.width * p else size.width,
                 bottom = if (vertical) size.height * p else size.height,
             ) {
-                this@drawWithContent.drawContent()
+                translate(dx, dy) {
+                    this@drawWithContent.drawContent()
+                }
             }
         }
     }

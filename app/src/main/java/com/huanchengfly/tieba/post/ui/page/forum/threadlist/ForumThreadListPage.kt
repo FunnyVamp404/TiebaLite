@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -117,7 +118,8 @@ private fun GoodClassifyTabs(
     onSelected: (Int) -> Unit,
 ) {
     LazyRow(
-        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+        modifier = Modifier.background(feedBackdropColor()),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(
@@ -189,14 +191,18 @@ private fun ThreadList(
     ) {
         if (!forumRuleTitle.isNullOrEmpty()) {
             item(key = "ForumRule") {
-                TopThreadItem(
-                    title = forumRuleTitle,
-                    onClick = {
-                        onOpenForumRule?.invoke()
-                    },
-                    modifier = Modifier.fillMaxWidth().feedCardSurface(),
-                    type = stringResource(id = R.string.desc_forum_rule)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp, horizontal = 12.dp)
+                ) {
+                    TopThreadItem(
+                        title = forumRuleTitle,
+                        onClick = { onOpenForumRule?.invoke() },
+                        modifier = Modifier.fillMaxWidth(itemFraction).feedCardSurface(),
+                        type = stringResource(id = R.string.desc_forum_rule)
+                    )
+                }
             }
         }
         itemsIndexed(

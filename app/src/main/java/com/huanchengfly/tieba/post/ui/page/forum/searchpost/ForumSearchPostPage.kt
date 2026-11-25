@@ -4,6 +4,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -78,6 +79,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.SearchBox
 import com.huanchengfly.tieba.post.ui.widgets.compose.SearchThreadList
 import com.huanchengfly.tieba.post.ui.widgets.compose.TopAppBarContainer
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.picker.ListSinglePicker
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberMenuState
 import com.huanchengfly.tieba.post.ui.widgets.compose.states.StateScreen
@@ -119,13 +121,16 @@ private fun SearchHistoryList(
                 text = stringResource(id = R.string.title_search_history),
                 modifier = Modifier
                     .weight(1f),
-                style = MaterialTheme.typography.subtitle1
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = ExtendedTheme.colors.textSecondary
             )
             if (hasItem) {
                 Text(
                     text = stringResource(id = R.string.button_clear_all),
                     modifier = Modifier.clickable(onClick = onClear),
-                    style = MaterialTheme.typography.button
+                    style = MaterialTheme.typography.button,
+                    color = ExtendedTheme.colors.primary
                 )
             }
         }
@@ -136,15 +141,17 @@ private fun SearchHistoryList(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             showItem.fastForEach { searchHistory ->
+                val shape = RoundedCornerShape(100)
                 Box(
                     modifier = Modifier
                         .padding(bottom = 8.dp)
-                        .clip(RoundedCornerShape(100))
+                        .clip(shape)
                         .combinedClickable(
                             onClick = { onSearchHistoryClick(searchHistory) },
                             onLongClick = { onDelete(searchHistory) }
                         )
-                        .background(ExtendedTheme.colors.chip)
+                        .background(ExtendedTheme.colors.card)
+                        .border(0.6.dp, ExtendedTheme.colors.divider, shape)
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
@@ -302,19 +309,24 @@ fun ForumSearchPostPage(
     }
 
     MyScaffold(
+        backgroundColor = feedBackdropColor(),
         topBar = {
             TopAppBarContainer(
+                backgroundColor = feedBackdropColor(),
                 topBar = {
                     Box(
                         modifier = Modifier
                             .height(64.dp)
-                            .background(ExtendedTheme.colors.topBar)
+                            .background(feedBackdropColor())
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
+                        val searchShape = RoundedCornerShape(10.dp)
                         SearchBox(
                             keyword = inputKeyword,
                             onKeywordChange = { inputKeyword = it },
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .border(0.6.dp, ExtendedTheme.colors.divider.copy(alpha = 0.6f), searchShape),
                             onKeywordSubmit = {
                                 focusRequester.freeFocus()
                                 keyboardController?.hide()
@@ -356,7 +368,7 @@ fun ForumSearchPostPage(
                                 }
                             },
                             focusRequester = focusRequester,
-                            shape = RoundedCornerShape(6.dp)
+                            shape = searchShape
                         )
                     }
                 }
@@ -468,7 +480,7 @@ fun ForumSearchPostPage(
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             modifier = Modifier
-                                                .background(ExtendedTheme.colors.background)
+                                                .background(feedBackdropColor())
                                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                                 .clickable(
                                                     interactionSource = remember { MutableInteractionSource() },
@@ -539,6 +551,11 @@ fun ForumSearchPostPage(
                                                         Text(
                                                             text = filterTypeMapping[type] ?: "",
                                                             fontSize = 13.sp,
+                                                            color = if (type == currentFilterType) {
+                                                                ExtendedTheme.colors.primary
+                                                            } else {
+                                                                ExtendedTheme.colors.textSecondary
+                                                            },
                                                             fontWeight = if (type == currentFilterType) {
                                                                 FontWeight.Bold
                                                             } else {

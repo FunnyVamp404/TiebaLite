@@ -1,5 +1,6 @@
 package com.huanchengfly.tieba.post.ui.page.search.thread
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,6 +30,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.LoadMoreLayout
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalShouldLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.SearchThreadList
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.states.StateScreen
 import kotlinx.collections.immutable.persistentListOf
 
@@ -106,7 +108,7 @@ fun SearchThreadPage(
     }
 
     StateScreen(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(feedBackdropColor()),
         isEmpty = isEmpty,
         isError = error != null,
         isLoading = isRefreshing,
@@ -121,6 +123,7 @@ fun SearchThreadPage(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(feedBackdropColor())
                 .pullRefresh(pullRefreshState)
         ) {
             LoadMoreLayout(

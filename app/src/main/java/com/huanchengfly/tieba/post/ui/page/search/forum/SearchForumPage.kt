@@ -6,11 +6,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -25,7 +27,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.huanchengfly.tieba.post.R
 import com.huanchengfly.tieba.post.api.models.SearchForumBean
 import com.huanchengfly.tieba.post.arch.collectPartialAsState
@@ -37,12 +41,14 @@ import com.huanchengfly.tieba.post.ui.page.LocalNavigator
 import com.huanchengfly.tieba.post.ui.page.destinations.ForumPageDestination
 import com.huanchengfly.tieba.post.ui.page.search.SearchUiEvent
 import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
-import com.huanchengfly.tieba.post.ui.widgets.compose.Chip
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialChevronRightIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.ErrorScreen
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalShouldLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyColumn
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.states.StateScreen
 import kotlinx.collections.immutable.persistentListOf
 
@@ -126,20 +132,23 @@ fun SearchForumPage(
                 .fillMaxSize()
                 .pullRefresh(pullRefreshState)
         ) {
-            MyLazyColumn(modifier = Modifier.fillMaxSize()) {
+            MyLazyColumn(
+                modifier = Modifier.fillMaxSize().background(feedBackdropColor()),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
                 if (showExactMatchResult) {
                     stickyHeader(key = "ExactMatchHeader") {
-                        Column(
+                        Text(
+                            text = stringResource(id = R.string.title_exact_match),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(ExtendedTheme.colors.background)
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Chip(
-                                text = stringResource(id = R.string.title_exact_match),
-                                invertColor = true
-                            )
-                        }
+                                .background(feedBackdropColor())
+                                .padding(vertical = 4.dp),
+                            color = ExtendedTheme.colors.primary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                        )
                     }
                     item(key = "ExactMatch") {
                         SearchForumItem(
@@ -152,17 +161,16 @@ fun SearchForumPage(
                 }
                 if (showFuzzyMatchResult) {
                     stickyHeader(key = "FuzzyMatchHeader") {
-                        Column(
+                        Text(
+                            text = stringResource(id = R.string.title_fuzzy_match),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(ExtendedTheme.colors.background)
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Chip(
-                                text = stringResource(id = R.string.title_fuzzy_match),
-                                invertColor = false
-                            )
-                        }
+                                .background(feedBackdropColor())
+                                .padding(vertical = 4.dp),
+                            color = ExtendedTheme.colors.textSecondary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                        )
                     }
                     items(fuzzyMatchForumList) {
                         SearchForumItem(
@@ -195,15 +203,17 @@ private fun SearchForumItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .feedCardSurface()
             .clickable(onClick = onClick)
-            .padding(16.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Avatar(
             data = item.avatar,
             size = Sizes.Medium,
-            contentDescription = item.forumNameShow
+            contentDescription = item.forumNameShow,
+            shape = RoundedCornerShape(10.dp),
         )
         Column(
             modifier = Modifier
@@ -212,15 +222,19 @@ private fun SearchForumItem(
         ) {
             Text(
                 text = stringResource(id = R.string.title_forum, item.forumNameShow.orEmpty()),
-                style = MaterialTheme.typography.subtitle1
+                style = MaterialTheme.typography.subtitle1,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
             )
             if (!item.intro.isNullOrEmpty()) {
                 Text(
                     text = item.slogan.orEmpty(),
                     style = MaterialTheme.typography.body2,
+                    color = ExtendedTheme.colors.textSecondary,
                     maxLines = 1
                 )
             }
         }
+        EditorialChevronRightIcon(tint = ExtendedTheme.colors.textSecondary.copy(alpha = 0.65f))
     }
 }

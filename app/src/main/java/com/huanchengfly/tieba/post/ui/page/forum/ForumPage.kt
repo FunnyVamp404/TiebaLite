@@ -6,6 +6,7 @@ import android.graphics.Typeface
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -105,6 +106,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.Button
 import com.huanchengfly.tieba.post.ui.widgets.compose.ClickMenu
 import com.huanchengfly.tieba.post.ui.widgets.compose.ConfirmDialog
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialChevronRightIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.FeedCardPlaceholder
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.MenuScope
@@ -115,6 +117,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.ScrollableTabRow
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TabClickMenu
 import com.huanchengfly.tieba.post.ui.widgets.compose.Toolbar
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.picker.ListSinglePicker
 import com.huanchengfly.tieba.post.ui.widgets.compose.placeholder.PlaceholderHighlight
 import com.huanchengfly.tieba.post.ui.widgets.compose.placeholder.fade
@@ -167,7 +171,11 @@ private fun ForumHeaderPlaceholder(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .feedCardSurface()
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
@@ -194,9 +202,9 @@ private fun ForumHeaderPlaceholder(
                             visible = true,
                             highlight = PlaceholderHighlight.fade(),
                         )
-                        .padding(horizontal = 18.dp, vertical = 6.dp)
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
-                    Text(text = stringResource(id = R.string.button_sign_in), fontSize = 13.sp)
+                    Text(text = stringResource(id = R.string.button_sign_in), fontSize = 12.sp, fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -212,7 +220,11 @@ private fun ForumHeader(
 ) {
     val (forum) = forumInfoImmutableHolder
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .feedCardSurface()
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
@@ -242,12 +254,9 @@ private fun ForumHeader(
                         style = MaterialTheme.typography.h6,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
-//                    Icon(
-//                        imageVector = Icons.Rounded.KeyboardArrowRight,
-//                        contentDescription = null,
-//                        modifier = Modifier.size(16.dp)
-//                    )
+                    EditorialChevronRightIcon(tint = ExtendedTheme.colors.textSecondary)
                 }
                 AnimatedVisibility(visible = forum.is_like == 1) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -261,9 +270,9 @@ private fun ForumHeader(
                             ),
                             modifier = Modifier
                                 .clip(RoundedCornerShape(100))
-                                .height(8.dp),
+                                .height(6.dp),
                             color = ExtendedTheme.colors.primary,
-                            backgroundColor = ExtendedTheme.colors.primary.copy(alpha = 0.25f)
+                            backgroundColor = ExtendedTheme.colors.primary.copy(alpha = 0.16f)
                         )
                         Text(
                             text = stringResource(
@@ -287,9 +296,11 @@ private fun ForumHeader(
                     shape = RoundedCornerShape(100),
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = ExtendedTheme.colors.primary,
-                        contentColor = ExtendedTheme.colors.onAccent
+                        contentColor = ExtendedTheme.colors.onAccent,
+                        disabledBackgroundColor = ExtendedTheme.colors.primary.copy(alpha = 0.14f),
+                        disabledContentColor = ExtendedTheme.colors.primary,
                     ),
-                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 6.dp),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                     enabled = btnEnabled
                 ) {
                     val text = when {
@@ -301,7 +312,7 @@ private fun ForumHeader(
 
                         else -> stringResource(id = R.string.button_sign_in)
                     }
-                    Text(text = text, fontSize = 13.sp)
+                    Text(text = text, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -455,7 +466,7 @@ fun ForumPage(
     var headerHeight by rememberSaveable {
         mutableFloatStateOf(
             with(density) {
-                (Sizes.Large + 16.dp * 2).toPx()
+                (Sizes.Large + (8.dp + 14.dp) * 2).toPx()
             }
         )
     }
@@ -524,7 +535,7 @@ fun ForumPage(
         ) {
             MyScaffold(
                 scaffoldState = scaffoldState,
-                backgroundColor = Color.Transparent,
+                backgroundColor = feedBackdropColor(),
                 modifier = Modifier.fillMaxSize(),
                 topBar = {
                     ForumToolbar(
@@ -625,9 +636,11 @@ fun ForumPage(
                                     }
                                 }
                             },
-                            backgroundColor = ExtendedTheme.colors.windowBackground,
+                            backgroundColor = ExtendedTheme.colors.card,
                             contentColor = ExtendedTheme.colors.primary,
-                            modifier = Modifier.navigationBarsPadding()
+                            modifier = Modifier
+                                .navigationBarsPadding()
+                                .border(0.75.dp, ExtendedTheme.colors.divider.copy(alpha = 0.6f), CircleShape)
                         ) {
                             Icon(
                                 imageVector = when (context.appPreferences.forumFabFunction) {
@@ -760,10 +773,7 @@ fun ForumPage(
                                                         )
                                                     }
                                                 }
-                                            },
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp)
+                                            }
                                         )
                                     }
                                 }
@@ -894,7 +904,7 @@ fun LoadingPlaceholder(
     val context = LocalContext.current
 
     MyScaffold(
-        backgroundColor = Color.Transparent,
+        backgroundColor = feedBackdropColor(),
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
@@ -916,10 +926,7 @@ fun LoadingPlaceholder(
     ) { contentPadding ->
         Column(modifier = Modifier.padding(contentPadding)) {
             ForumHeaderPlaceholder(
-                forumName = forumName,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                forumName = forumName
             )
             Row(modifier = Modifier.height(48.dp)) {
                 persistentListOf(

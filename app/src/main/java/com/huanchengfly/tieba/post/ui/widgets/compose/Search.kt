@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,7 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -99,7 +100,7 @@ fun QuotePostCard(
             mainPost = mainPost,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(6.dp))
+                .clip(RoundedCornerShape(8.dp))
                 .background(ExtendedTheme.colors.card)
                 .clickable {
                     onMainPostClick(mainPost)
@@ -165,23 +166,28 @@ fun SearchThreadList(
 ) {
     MyLazyColumn(
         state = lazyListState,
-        modifier = modifier
+        modifier = modifier.background(feedBackdropColor()),
+        contentPadding = PaddingValues(bottom = 16.dp),
     ) {
         header()
-        itemsIndexed(data) { index, item ->
-            if (index > 0) {
-                VerticalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+        items(data) { item ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                SearchThreadItem(
+                    item = item,
+                    modifier = Modifier.fillMaxWidth().feedCardSurface(),
+                    onClick = onItemClick,
+                    onUserClick = onItemUserClick,
+                    onForumClick = onItemForumClick,
+                    onQuotePostClick = onQuotePostClick,
+                    onMainPostClick = onMainPostClick,
+                    hideForum = hideForum,
+                    searchKeyword = searchKeyword
+                )
             }
-            SearchThreadItem(
-                item = item,
-                onClick = onItemClick,
-                onUserClick = onItemUserClick,
-                onForumClick = onItemForumClick,
-                onQuotePostClick = onQuotePostClick,
-                onMainPostClick = onMainPostClick,
-                hideForum = hideForum,
-                searchKeyword = searchKeyword
-            )
         }
     }
 }
@@ -259,7 +265,7 @@ fun SearchThreadItem(
                         onMainPostClick = onMainPostClick,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(6.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(ExtendedTheme.colors.floorCard)
                             .clickable {
                                 onQuotePostClick(item.postInfo)
@@ -272,7 +278,7 @@ fun SearchThreadItem(
                         mainPost = item.mainPost,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(6.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(ExtendedTheme.colors.floorCard)
                             .clickable {
                                 onMainPostClick(item.mainPost)

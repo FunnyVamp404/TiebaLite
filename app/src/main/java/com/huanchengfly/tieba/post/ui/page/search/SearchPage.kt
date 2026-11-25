@@ -3,6 +3,7 @@ package com.huanchengfly.tieba.post.ui.page.search
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -89,6 +91,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.SearchBox
 import com.huanchengfly.tieba.post.ui.widgets.compose.TabClickMenu
 import com.huanchengfly.tieba.post.ui.widgets.compose.TabRow
 import com.huanchengfly.tieba.post.ui.widgets.compose.TopAppBarContainer
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.picker.ListSinglePicker
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
@@ -235,13 +239,15 @@ fun SearchPage(
     }
     val pagerState = rememberPagerState { pages.size }
     MyScaffold(
+        backgroundColor = feedBackdropColor(),
         topBar = {
             TopAppBarContainer(
+                backgroundColor = feedBackdropColor(),
                 topBar = {
                     Box(
                         modifier = Modifier
                             .height(64.dp)
-                            .background(ExtendedTheme.colors.topBar)
+                            .background(feedBackdropColor())
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         SearchTopBar(
@@ -322,7 +328,9 @@ private fun SearchSuggestionList(
     onItemClick: (String) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().background(feedBackdropColor()),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(
             items = suggestions,
@@ -335,6 +343,8 @@ private fun SearchSuggestionList(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .feedCardSurface()
                         .clickable {
                             onItemClick(it)
                         }
@@ -363,7 +373,7 @@ private fun SearchSuggestionList(
 private fun SearchSuggestionListPreview() {
     TiebaLiteTheme {
         Box(
-            modifier = Modifier.background(ExtendedTheme.colors.topBar)
+            modifier = Modifier.background(feedBackdropColor())
         ) {
             SearchSuggestionList(
                 suggestions = persistentListOf("1", "2", "3"),
@@ -475,12 +485,15 @@ private fun SearchHistoryList(
                 text = stringResource(id = R.string.title_search_history),
                 modifier = Modifier
                     .weight(1f),
-                style = MaterialTheme.typography.subtitle1
+                color = ExtendedTheme.colors.textSecondary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
             )
             if (hasItem) {
                 Text(
                     text = stringResource(id = R.string.button_clear_all),
                     modifier = Modifier.clickable(onClick = onClear),
+                    color = ExtendedTheme.colors.primary,
                     style = MaterialTheme.typography.button
                 )
             }
@@ -491,16 +504,18 @@ private fun SearchHistoryList(
                 .animateContentSize(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            val pillShape = RoundedCornerShape(100)
             showItem.fastForEach { searchHistory ->
                 Box(
                     modifier = Modifier
                         .padding(bottom = 8.dp)
-                        .clip(RoundedCornerShape(100))
+                        .clip(pillShape)
+                        .background(ExtendedTheme.colors.card)
+                        .border(0.6.dp, ExtendedTheme.colors.divider, pillShape)
                         .combinedClickable(
                             onClick = { onSearchHistoryClick(searchHistory) },
                             onLongClick = { onDelete(searchHistory) }
                         )
-                        .background(ExtendedTheme.colors.chip)
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
@@ -561,10 +576,13 @@ private fun SearchTopBar(
     onKeywordSubmit: (String) -> Unit = {},
     onBack: () -> Unit = {},
 ) {
+    val searchShape = RoundedCornerShape(10.dp)
     SearchBox(
         keyword = keyword,
         onKeywordChange = onKeywordChange,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .border(0.6.dp, ExtendedTheme.colors.divider.copy(alpha = 0.6f), searchShape),
         onKeywordSubmit = onKeywordSubmit,
         placeholder = {
             Text(
@@ -590,7 +608,7 @@ private fun SearchTopBar(
                 )
             }
         },
-        shape = RoundedCornerShape(6.dp)
+        shape = searchShape
     )
 }
 
@@ -602,7 +620,7 @@ fun PreviewSearchBox() {
         Box(
             modifier = Modifier
                 .height(64.dp)
-                .background(ExtendedTheme.colors.topBar)
+                .background(feedBackdropColor())
                 .padding(vertical = 8.dp, horizontal = 16.dp)
         ) {
             SearchTopBar(
@@ -618,7 +636,7 @@ fun PreviewSearchBox() {
 fun PreviewSearchHistoryList() {
     TiebaLiteTheme {
         var expanded by remember { mutableStateOf(false) }
-        Box(modifier = Modifier.background(ExtendedTheme.colors.background)) {
+        Box(modifier = Modifier.background(feedBackdropColor())) {
             SearchHistoryList(
                 searchHistories = (0..20).map {
                     SearchHistory(content = if (it % 2 == 0) "记录$it" else "搜索记录$it")

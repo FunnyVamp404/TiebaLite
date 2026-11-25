@@ -1,5 +1,8 @@
 package com.huanchengfly.tieba.post.ui.page.main.explore
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -88,13 +91,12 @@ private fun ColumnScope.ExplorePageTab(
             val pillStyle = if (isSelected) {
                 pill
                     .background(
-                        if (colors.isNightMode) Color.White.copy(alpha = 0.11f)
-                        else colors.primary.copy(alpha = 0.10f)
+                        if (colors.isNightMode) colors.primary.copy(alpha = 0.16f)
+                        else colors.primary.copy(alpha = 0.12f)
                     )
                     .border(
                         width = 0.75.dp,
-                        color = if (colors.isNightMode) Color.White.copy(alpha = 0.16f)
-                        else colors.primary.copy(alpha = 0.22f),
+                        color = colors.primary.copy(alpha = if (colors.isNightMode) 0.42f else 0.30f),
                         shape = CircleShape
                     )
             } else {
@@ -126,15 +128,20 @@ private fun TabText(
     selected: Boolean
 ) {
     val colors = ExtendedTheme.colors
+    val spacing by animateFloatAsState(
+        targetValue = if (selected) 2.2f else 0.5f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMediumLow),
+        label = "ExploreTabTextStretch",
+    )
     val style = MaterialTheme.typography.button.copy(
         fontSize = 14.sp,
-        letterSpacing = 0.75.sp,
+        letterSpacing = spacing.sp,
         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
         textAlign = TextAlign.Center
     )
     Text(
         text = text,
-        color = if (selected) colors.onTopBar else colors.onTopBarSecondary.copy(alpha = 0.78f),
+        color = if (selected) colors.primary else colors.onTopBarSecondary.copy(alpha = 0.76f),
         style = style
     )
 }
@@ -187,6 +194,8 @@ fun ExplorePage() {
         topBar = {
             Toolbar(
                 title = stringResource(id = R.string.title_explore),
+                eyebrow = "DISCOVER / EDITORIAL FEED",
+                animateKey = enterTrigger,
                 navigationIcon = accountNavIconIfCompact(),
                 actions = {
                     ActionItem(

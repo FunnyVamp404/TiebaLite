@@ -223,14 +223,14 @@ fun Modifier.feedCardSurface(): Modifier {
     val shape = RoundedCornerShape(10.dp)
     val surfaceColor = if (colors.isNightMode) {
         if (colors.background == Color.Black) Color(0xFF121419)
-        else colors.card.copy(alpha = 0.90f)
+        else colors.card.copy(alpha = 0.94f)
     } else {
-        Color.White.copy(alpha = 0.88f)
+        colors.card.copy(alpha = 0.94f)
     }
     val borderColor = if (colors.isNightMode) {
-        lerp(Color.White, colors.primary, 0.28f).copy(alpha = 0.13f)
+        lerp(Color.White, colors.primary, 0.45f).copy(alpha = 0.18f)
     } else {
-        lerp(Color.Black, colors.primary, 0.20f).copy(alpha = 0.08f)
+        lerp(Color.Black, colors.primary, 0.35f).copy(alpha = 0.12f)
     }
     return this
         .clip(shape)

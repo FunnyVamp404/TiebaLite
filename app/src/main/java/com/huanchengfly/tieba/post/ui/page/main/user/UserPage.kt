@@ -4,6 +4,7 @@ import android.graphics.Typeface
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +19,9 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
@@ -43,6 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.huanchengfly.tieba.post.R
@@ -63,9 +67,10 @@ import com.huanchengfly.tieba.post.ui.page.destinations.WebViewPageDestination
 import com.huanchengfly.tieba.post.ui.page.main.LocalMainTabActive
 import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
 import com.huanchengfly.tieba.post.ui.widgets.compose.ConfirmDialog
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialChevronRightIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialMenuIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialPageHeader
 import com.huanchengfly.tieba.post.ui.widgets.compose.HorizontalDivider
-import com.huanchengfly.tieba.post.ui.widgets.compose.ListMenuItem
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalFloatingBottomBarPadding
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.Switch
@@ -245,6 +250,99 @@ private fun LoginTipCard(modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+private fun UserSectionHeader(eyebrow: String) {
+    val colors = ExtendedTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 18.dp, top = 14.dp, end = 18.dp, bottom = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = eyebrow,
+            fontSize = 11.sp,
+            letterSpacing = 1.sp,
+            color = colors.textSecondary,
+        )
+        Divider(
+            modifier = Modifier.weight(1f),
+            color = colors.divider,
+            thickness = 0.5.dp,
+        )
+        Box(
+            modifier = Modifier
+                .size(4.dp)
+                .background(colors.primary, CircleShape),
+        )
+    }
+}
+
+@Composable
+private fun UserMenuCard(
+    iconKind: String,
+    title: String,
+    subtitle: String,
+    trigger: Int,
+    delayMillis: Int,
+    onClick: () -> Unit,
+    trailing: (@Composable RowScope.() -> Unit)? = null,
+) {
+    val colors = ExtendedTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .feedCardSurface()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 13.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(
+                    color = colors.primary.copy(alpha = if (colors.isNightMode) 0.14f else 0.10f),
+                    shape = RoundedCornerShape(9.dp),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            EditorialMenuIcon(
+                kind = iconKind,
+                tint = colors.primary,
+                trigger = trigger,
+                delayMillis = delayMillis,
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = colors.text,
+            )
+            Text(
+                text = subtitle,
+                fontSize = 11.sp,
+                color = colors.textSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        if (trailing != null) {
+            trailing()
+        } else {
+            EditorialChevronRightIcon(tint = colors.textSecondary.copy(alpha = 0.65f))
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UserPage(
@@ -309,10 +407,19 @@ fun UserPage(
                     .verticalScroll(state = rememberScrollState())
                     .fillMaxSize()
             ) {
+                EditorialPageHeader(
+                    title = stringResource(id = R.string.title_user),
+                    eyebrow = "PROFILE / ACCOUNT & TOOLS",
+                    animateKey = enterTrigger,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                )
+                val accountCardModifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .feedCardSurface()
                 if (account != null) {
                     InfoCard(
-                        modifier = Modifier
-                            .padding(top = 8.dp)
+                        modifier = accountCardModifier
                             .clickable {
                                 navigator.navigate(UserProfilePageDestination(account!!.uid.toLong()))
                             }
@@ -345,159 +452,119 @@ fun UserPage(
                                 )
                             )
                         },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .feedCardSurface()
+                        modifier = accountCardModifier,
                     )
                 } else if (isLoading) {
                     InfoCard(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 16.dp)
-                            .padding(top = 8.dp),
+                        modifier = accountCardModifier.padding(horizontal = 16.dp, vertical = 16.dp),
                         isPlaceholder = true,
                     )
-                    StatCardPlaceholder(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .feedCardSurface()
-                    )
+                    StatCardPlaceholder(modifier = accountCardModifier)
                 } else {
                     LoginTipCard(
-                        modifier = Modifier
-                            .padding(top = 8.dp)
+                        modifier = accountCardModifier
                             .clickable {
                                 navigator.navigate(LoginPageDestination)
                             }
                             .padding(horizontal = 16.dp, vertical = 16.dp),
                     )
                 }
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
-                        .feedCardSurface()
-                ) {
-                    if (account != null) {
-                        ListMenuItem(
-                            iconContent = {
-                                EditorialMenuIcon(
-                                    kind = "collect",
-                                    tint = ExtendedTheme.colors.primary,
-                                    trigger = enterTrigger + (menuClickTriggers["collect"] ?: 0),
-                                    delayMillis = 0,
-                                )
-                            },
-                            text = stringResource(id = R.string.title_my_collect),
-                            onClick = {
-                                onMenuClick("collect")
-                                navigator.navigate(ThreadStorePageDestination)
-                            }
-                        )
-                    }
-                    ListMenuItem(
-                        iconContent = {
-                            EditorialMenuIcon(
-                                kind = "history",
-                                tint = ExtendedTheme.colors.primary,
-                                trigger = enterTrigger + (menuClickTriggers["history"] ?: 0),
-                                delayMillis = 35,
-                            )
-                        },
-                        text = stringResource(id = R.string.title_history),
+                UserSectionHeader(eyebrow = "01 / LIBRARY")
+                if (account != null) {
+                    UserMenuCard(
+                        iconKind = "collect",
+                        title = stringResource(id = R.string.title_my_collect),
+                        subtitle = "收藏的帖子与楼层",
+                        trigger = enterTrigger + (menuClickTriggers["collect"] ?: 0),
+                        delayMillis = 0,
                         onClick = {
-                            onMenuClick("history")
-                            navigator.navigate(HistoryPageDestination)
-                        }
-                    )
-                    ListMenuItem(
-                        iconContent = {
-                            EditorialMenuIcon(
-                                kind = "theme",
-                                tint = ExtendedTheme.colors.primary,
-                                trigger = enterTrigger + (menuClickTriggers["theme"] ?: 0),
-                                delayMillis = 70,
-                            )
-                        },
-                        text = stringResource(id = R.string.title_theme),
-                        onClick = {
-                            onMenuClick("theme")
-                            navigator.navigate(AppThemePageDestination)
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.my_info_night),
-                            color = ExtendedTheme.colors.textSecondary,
-                            fontSize = 12.sp,
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Switch(
-                            checked = ThemeUtil.isNightMode(ThemeUtil.themeState.value),
-                            onCheckedChange = {
-                                if (context.appPreferences.followSystemNight) {
-                                    switchToNightDialogState.show()
-                                } else {
-                                    ThemeUtil.switchNightMode()
-                                }
-                            }
-                        )
-                    }
-                    if (account != null) {
-                        ListMenuItem(
-                            iconContent = {
-                                EditorialMenuIcon(
-                                    kind = "service",
-                                    tint = ExtendedTheme.colors.primary,
-                                    trigger = enterTrigger + (menuClickTriggers["service"] ?: 0),
-                                    delayMillis = 105,
-                                )
-                            },
-                            text = stringResource(id = R.string.my_info_service_center),
-                            onClick = {
-                                onMenuClick("service")
-                                navigator.navigate(
-                                    WebViewPageDestination(
-                                        initialUrl = "https://tieba.baidu.com/mo/q/hybrid-main-service/uegServiceCenter?cuid=${CuidUtils.getNewCuid()}&cuid_galaxy2=${CuidUtils.getNewCuid()}&cuid_gid=&timestamp=${System.currentTimeMillis()}&_client_version=12.52.1.0&nohead=1"
-                                    )
-                                )
-                            },
-                        )
-                    }
-                }
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
-                        .feedCardSurface()
-                ) {
-                    ListMenuItem(
-                        iconContent = {
-                            EditorialMenuIcon(
-                                kind = "settings",
-                                tint = ExtendedTheme.colors.primary,
-                                trigger = enterTrigger + (menuClickTriggers["settings"] ?: 0),
-                                delayMillis = 140,
-                            )
-                        },
-                        text = stringResource(id = R.string.my_info_settings),
-                        onClick = {
-                            onMenuClick("settings")
-                            navigator.navigate(SettingsPageDestination)
-                        },
-                    )
-                    ListMenuItem(
-                        iconContent = {
-                            EditorialMenuIcon(
-                                kind = "about",
-                                tint = ExtendedTheme.colors.primary,
-                                trigger = enterTrigger + (menuClickTriggers["about"] ?: 0),
-                                delayMillis = 175,
-                            )
-                        },
-                        text = stringResource(id = R.string.my_info_about),
-                        onClick = {
-                            onMenuClick("about")
-                            navigator.navigate(AboutPageDestination)
+                            onMenuClick("collect")
+                            navigator.navigate(ThreadStorePageDestination)
                         },
                     )
                 }
+                UserMenuCard(
+                    iconKind = "history",
+                    title = stringResource(id = R.string.title_history),
+                    subtitle = "最近浏览过的帖子与贴吧",
+                    trigger = enterTrigger + (menuClickTriggers["history"] ?: 0),
+                    delayMillis = 40,
+                    onClick = {
+                        onMenuClick("history")
+                        navigator.navigate(HistoryPageDestination)
+                    },
+                )
+
+                UserSectionHeader(eyebrow = "02 / APPEARANCE")
+                UserMenuCard(
+                    iconKind = "theme",
+                    title = stringResource(id = R.string.title_theme),
+                    subtitle = "莫奈色板与深色模式",
+                    trigger = enterTrigger + (menuClickTriggers["theme"] ?: 0),
+                    delayMillis = 80,
+                    onClick = {
+                        onMenuClick("theme")
+                        navigator.navigate(AppThemePageDestination)
+                    },
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.my_info_night),
+                        color = ExtendedTheme.colors.textSecondary,
+                        fontSize = 12.sp,
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Switch(
+                        checked = ThemeUtil.isNightMode(ThemeUtil.themeState.value),
+                        onCheckedChange = {
+                            if (context.appPreferences.followSystemNight) {
+                                switchToNightDialogState.show()
+                            } else {
+                                ThemeUtil.switchNightMode()
+                            }
+                        }
+                    )
+                }
+                if (account != null) {
+                    UserMenuCard(
+                        iconKind = "service",
+                        title = stringResource(id = R.string.my_info_service_center),
+                        subtitle = "账号状态与服务中心",
+                        trigger = enterTrigger + (menuClickTriggers["service"] ?: 0),
+                        delayMillis = 120,
+                        onClick = {
+                            onMenuClick("service")
+                            navigator.navigate(
+                                WebViewPageDestination(
+                                    initialUrl = "https://tieba.baidu.com/mo/q/hybrid-main-service/uegServiceCenter?cuid=${CuidUtils.getNewCuid()}&cuid_galaxy2=${CuidUtils.getNewCuid()}&cuid_gid=&timestamp=${System.currentTimeMillis()}&_client_version=12.52.1.0&nohead=1"
+                                )
+                            )
+                        },
+                    )
+                }
+
+                UserSectionHeader(eyebrow = "03 / SYSTEM")
+                UserMenuCard(
+                    iconKind = "settings",
+                    title = stringResource(id = R.string.my_info_settings),
+                    subtitle = "偏好、屏蔽与显示设置",
+                    trigger = enterTrigger + (menuClickTriggers["settings"] ?: 0),
+                    delayMillis = 160,
+                    onClick = {
+                        onMenuClick("settings")
+                        navigator.navigate(SettingsPageDestination)
+                    },
+                )
+                UserMenuCard(
+                    iconKind = "about",
+                    title = stringResource(id = R.string.my_info_about),
+                    subtitle = "版本信息与项目说明",
+                    trigger = enterTrigger + (menuClickTriggers["about"] ?: 0),
+                    delayMillis = 200,
+                    onClick = {
+                        onMenuClick("about")
+                        navigator.navigate(AboutPageDestination)
+                    },
+                )
                 Spacer(modifier = Modifier.height(LocalFloatingBottomBarPadding.current + 12.dp))
             }
 

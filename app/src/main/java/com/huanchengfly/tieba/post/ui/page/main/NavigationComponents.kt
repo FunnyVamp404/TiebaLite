@@ -2,6 +2,8 @@ package com.huanchengfly.tieba.post.ui.page.main
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.background
@@ -48,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
@@ -390,14 +393,14 @@ fun BottomNavigation(
     themeColors: ExtendedColors = ExtendedTheme.colors
 ) {
     val dockColor = if (themeColors.isNightMode) {
-        lerp(themeColors.card, Color(0xFF1E222A), 0.45f).copy(alpha = 0.90f)
+        lerp(themeColors.card, themeColors.primary, 0.14f).copy(alpha = 0.93f)
     } else {
-        Color.White.copy(alpha = 0.92f)
+        lerp(Color.White, themeColors.primary, 0.05f).copy(alpha = 0.94f)
     }
     val rimColor = if (themeColors.isNightMode) {
-        Color.White.copy(alpha = 0.14f)
+        lerp(Color.White, themeColors.primary, 0.48f).copy(alpha = 0.22f)
     } else {
-        Color.Black.copy(alpha = 0.08f)
+        lerp(Color.Black, themeColors.primary, 0.25f).copy(alpha = 0.10f)
     }
 
     Box(
@@ -428,8 +431,18 @@ fun BottomNavigation(
             navigationItems.fastForEachIndexed { index, navigationItem ->
                 val isSelected = index == currentPosition
                 val indicatorWidth by animateDpAsState(
-                    targetValue = if (isSelected) 14.dp else 0.dp,
+                    targetValue = if (isSelected) 18.dp else 0.dp,
                     label = "NavIndicatorWidth",
+                )
+                val labelLetterSpacing by animateFloatAsState(
+                    targetValue = if (isSelected) 1.4f else 0f,
+                    animationSpec = spring(dampingRatio = 0.55f, stiffness = 360f),
+                    label = "Navigation label letter spacing",
+                )
+                val labelScaleX by animateFloatAsState(
+                    targetValue = if (isSelected) 1.06f else 1f,
+                    animationSpec = spring(dampingRatio = 0.55f, stiffness = 360f),
+                    label = "Navigation label horizontal scale",
                 )
                 val animatedContentColor by animateColorAsState(
                     targetValue = if (isSelected) {
@@ -494,7 +507,9 @@ fun BottomNavigation(
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = navigationItem.title(isSelected),
+                        modifier = Modifier.graphicsLayer { scaleX = labelScaleX },
                         fontSize = 10.sp,
+                        letterSpacing = labelLetterSpacing.sp,
                         lineHeight = 12.sp,
                         maxLines = 1,
                         fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,

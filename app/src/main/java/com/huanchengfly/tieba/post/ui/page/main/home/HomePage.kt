@@ -466,6 +466,8 @@ fun HomePage(
         topBar = {
             Toolbar(
                 title = stringResource(id = R.string.title_main),
+                eyebrow = "TIEBA / MY FORUMS",
+                animateKey = enterTrigger,
                 navigationIcon = accountNavIconIfCompact(),
                 actions = {
                     ActionItem(

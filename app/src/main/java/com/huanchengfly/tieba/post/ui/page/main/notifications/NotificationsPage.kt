@@ -9,7 +9,12 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,10 +24,12 @@ import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.page.LocalNavigator
 import com.huanchengfly.tieba.post.ui.page.ProvideNavigator
 import com.huanchengfly.tieba.post.ui.page.destinations.SearchPageDestination
+import com.huanchengfly.tieba.post.ui.page.main.LocalMainTabActive
 import com.huanchengfly.tieba.post.ui.page.main.notifications.list.NotificationsListPage
 import com.huanchengfly.tieba.post.ui.page.main.notifications.list.NotificationsType
 import com.huanchengfly.tieba.post.ui.widgets.compose.ActionItem
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialActionIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoadHorizontalPager
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.PagerTabIndicator
@@ -64,6 +71,7 @@ fun NotificationsPage(
             topBar = {
                 TitleCentredToolbar(
                     title = { Text(text = stringResource(id = R.string.title_notifications)) },
+                    eyebrow = "INBOX / NOTIFICATIONS",
                     navigationIcon = {
                         BackNavigationIcon {
                             navigator.navigateUp()
@@ -118,6 +126,12 @@ fun NotificationsPage(
     initialTab: Int = 0,
 ) {
     val navigator = LocalNavigator.current
+    val isTabActive = LocalMainTabActive.current
+    var enterTrigger by remember { mutableIntStateOf(0) }
+    var searchTrigger by remember { mutableIntStateOf(0) }
+    LaunchedEffect(isTabActive) {
+        if (isTabActive) enterTrigger++
+    }
     val pages = listOf<Pair<String, (@Composable () -> Unit)>>(
         stringResource(id = R.string.title_reply_me) to @Composable {
             NotificationsListPage(type = NotificationsType.ReplyMe)
@@ -135,13 +149,22 @@ fun NotificationsPage(
         topBar = {
             Toolbar(
                 title = stringResource(id = R.string.title_notifications),
+                eyebrow = "INBOX / NOTIFICATIONS",
+                animateKey = enterTrigger,
                 navigationIcon = accountNavIconIfCompact(),
                 actions = {
                     ActionItem(
-                        icon = Icons.Rounded.Search,
-                        contentDescription = stringResource(id = R.string.title_search)
+                        contentDescription = stringResource(id = R.string.title_search),
+                        onClick = {
+                            searchTrigger++
+                            navigator.navigate(SearchPageDestination)
+                        }
                     ) {
-                        navigator.navigate(SearchPageDestination)
+                        EditorialActionIcon(
+                            kind = "search",
+                            tint = ExtendedTheme.colors.onTopBar,
+                            trigger = enterTrigger + searchTrigger,
+                        )
                     }
                 },
             ) {

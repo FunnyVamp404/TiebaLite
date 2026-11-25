@@ -165,13 +165,12 @@ class TranslucentThemeActivity : BaseActivity(), View.OnClickListener, OnSeekBar
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
-            mUri = UCrop.getOutput(data!!)
+        if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP && data != null) {
+            mUri = UCrop.getOutput(data)
             invalidateFinishBtn()
             refreshBackground()
-        } else if (resultCode == UCrop.RESULT_ERROR) {
-            val cropError = UCrop.getError(data!!)
-            cropError!!.printStackTrace()
+        } else if (resultCode == UCrop.RESULT_ERROR && data != null) {
+            UCrop.getError(data)?.printStackTrace()
         }
     }
 
@@ -201,11 +200,13 @@ class TranslucentThemeActivity : BaseActivity(), View.OnClickListener, OnSeekBar
             if (result is DisplayResult.Success) {
                 result.drawable.alpha = alpha
                 findViewById<View>(R.id.background).background = result.drawable
-                mPalette = Palette.from(ImageUtil.drawableToBitmap(result.drawable)).generate()
+                mPalette = runCatching {
+                    Palette.from(ImageUtil.drawableToBitmap(result.drawable)).generate()
+                }.getOrNull()
                 mTranslucentThemeColorAdapter.setPalette(mPalette)
                 mSelectColor.visibility = View.VISIBLE
-                mProgress.visibility = View.GONE
             }
+            mProgress.visibility = View.GONE
         }
     }
 
@@ -244,8 +245,10 @@ class TranslucentThemeActivity : BaseActivity(), View.OnClickListener, OnSeekBar
         ).forEach {
             it.setOnClickListener(this@TranslucentThemeActivity)
         }
-        wallpapers =
-            CacheUtil.getCache(this, "recommend_wallpapers", List::class.java) as List<String>?
+        wallpapers = runCatching {
+            @Suppress("UNCHECKED_CAST")
+            CacheUtil.getCache(this, "recommend_wallpapers", List::class.java) as? List<String>
+        }.getOrNull()
         colorTheme.enableChangingLayoutTransition()
         wallpaperAdapter.setOnItemClickListener { _, item, _ ->
             launchUCrop(Uri.parse(item))
@@ -318,13 +321,21 @@ class TranslucentThemeActivity : BaseActivity(), View.OnClickListener, OnSeekBar
     }
 
     private fun fetchWallpapers() {
-        launch(IO + job) {
-            LiteApi.instance
-                .wallpapersAsync()
-                .doIfSuccess {
-                    CacheUtil.putCache(this@TranslucentThemeActivity, "recommend_wallpapers", it)
-                    wallpapers = it
+        launch {
+            runCatching {
+                kotlinx.coroutines.withContext(IO) {
+                    LiteApi.instance
+                        .wallpapersAsync()
+                        .doIfSuccess {
+                            CacheUtil.putCache(this@TranslucentThemeActivity, "recommend_wallpapers", it)
+                            launch {
+                                if (!isFinishing && !isDestroyed) {
+                                    wallpapers = it
+                                }
+                            }
+                        }
                 }
+            }
         }
     }
 

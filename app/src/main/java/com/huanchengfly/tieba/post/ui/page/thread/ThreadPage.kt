@@ -1632,14 +1632,14 @@ private fun BottomBar(
     var moreTrigger by remember { mutableIntStateOf(0) }
     val moreDesc = stringResource(id = R.string.btn_more)
     val dockColor = if (colors.isNightMode) {
-        lerp(colors.card, Color(0xFF1E222A), 0.45f).copy(alpha = 0.90f)
+        lerp(colors.card, colors.primary, 0.14f).copy(alpha = 0.93f)
     } else {
-        Color.White.copy(alpha = 0.92f)
+        lerp(Color.White, colors.primary, 0.05f).copy(alpha = 0.94f)
     }
     val rimColor = if (colors.isNightMode) {
-        Color.White.copy(alpha = 0.14f)
+        lerp(Color.White, colors.primary, 0.48f).copy(alpha = 0.22f)
     } else {
-        Color.Black.copy(alpha = 0.08f)
+        lerp(Color.Black, colors.primary, 0.25f).copy(alpha = 0.10f)
     }
 
     Box(

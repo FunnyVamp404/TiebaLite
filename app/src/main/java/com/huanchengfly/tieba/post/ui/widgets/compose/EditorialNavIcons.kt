@@ -42,7 +42,7 @@ fun EditorialNavIcon(id: String, selected: Boolean, tint: Color, modifier: Modif
         prevSelected = selected
         if (activated) {
             anim.snapTo(0f)
-            anim.animateTo(1f, animationSpec = tween(durationMillis = 480, easing = FastOutSlowInEasing))
+            anim.animateTo(1f, animationSpec = tween(580, easing = FastOutSlowInEasing))
         }
     }
 
@@ -50,7 +50,7 @@ fun EditorialNavIcon(id: String, selected: Boolean, tint: Color, modifier: Modif
         val scale = size.minDimension / 24f
         val stroke = Stroke(width = 1.75.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
         val t = if (selected) anim.value else 0f
-        val wave = if (t > 0f && t < 1f) sin(t * PI).toFloat() else 0f
+        val wave = dampedMotion(t, PI)
 
         when (id) {
             "explore" -> drawExploreIcon(scale, stroke, tint, t, wave)
@@ -79,17 +79,21 @@ private fun DrawScope.drawHomeIcon(scale: Float, stroke: Stroke, tint: Color, t:
         lineTo(14.5f * scale, 14f * scale)
         lineTo(14.5f * scale, 19.5f * scale)
     }
-    val bounce = 1f + 0.13f * wave * (1f - t * 0.5f)
-    translate(top = -1.6f * scale * wave) {
-        scale(scale = bounce, pivot = Offset(12f * scale, 12f * scale)) {
-            drawPath(house, tint, style = stroke)
+    val pivot = Offset(12f * scale, 12f * scale)
+    val bounce = 1f + 0.22f * wave * (1f - t * 0.4f)
+    val tilt = (sin(t * 2 * PI) * exp(-1.8 * t) * 8.0).toFloat()
+    translate(top = -3.2f * scale * wave) {
+        rotate(degrees = tilt, pivot = pivot) {
+            scale(scale = bounce, pivot = pivot) {
+                drawPath(house, tint, style = stroke)
+            }
         }
     }
 }
 
 private fun DrawScope.drawExploreIcon(scale: Float, stroke: Stroke, tint: Color, t: Float, wave: Float) {
     val iconCenter = Offset(12f * scale, 12f * scale)
-    drawCircle(tint, radius = 8.8f * scale * (1f + 0.08f * wave), center = iconCenter, style = stroke)
+    drawCircle(tint, radius = 8.8f * scale * (1f + 0.14f * wave), center = iconCenter, style = stroke)
 
     val needle = Path().apply {
         moveTo(15.2f * scale, 8.8f * scale)
@@ -99,7 +103,7 @@ private fun DrawScope.drawExploreIcon(scale: Float, stroke: Stroke, tint: Color,
         close()
     }
     val angle = if (t > 0f && t < 1f) {
-        (sin(t * 2f * PI) * exp(-2.2 * t) * 48.0).toFloat()
+        (sin(t * 2 * PI) * exp(-1.5 * t) * 78.0).toFloat()
     } else {
         0f
     }
@@ -125,29 +129,31 @@ private fun DrawScope.drawNotificationIcon(scale: Float, stroke: Stroke, tint: C
     }
     val pivot = Offset(12f * scale, 4.5f * scale)
     val swing = if (t > 0f && t < 1f) {
-        (sin(t * 3f * PI) * exp(-2.6 * t) * 20.0).toFloat()
+        (sin(t * 3 * PI) * exp(-1.8 * t) * 28.0).toFloat()
     } else {
         0f
     }
     rotate(degrees = swing, pivot = pivot) {
         drawPath(bell, tint, style = stroke)
     }
-    rotate(degrees = swing * 1.25f, pivot = pivot) {
+    rotate(degrees = 1.35f * swing, pivot = pivot) {
         drawPath(clapper, tint, style = stroke)
     }
 }
 
 private fun DrawScope.drawUserIcon(scale: Float, stroke: Stroke, tint: Color, wave: Float) {
     val iconCenter = Offset(12f * scale, 12f * scale)
-    drawCircle(tint, radius = 8.8f * scale * (1f + 0.08f * wave), center = iconCenter, style = stroke)
+    drawCircle(tint, radius = 8.8f * scale * (1f + 0.14f * wave), center = iconCenter, style = stroke)
 
     val shoulders = Path().apply {
         moveTo(6.6f * scale, 18.2f * scale)
         quadraticTo(12f * scale, 13.8f * scale, 17.4f * scale, 18.2f * scale)
     }
-    translate(top = -1.4f * scale * wave) {
-        drawCircle(tint, radius = 2.8f * scale, center = Offset(12f * scale, 9.5f * scale), style = stroke)
-        drawPath(shoulders, tint, style = stroke)
+    translate(top = -2.8f * scale * wave) {
+        scale(scale = 1f + 0.16f * wave, pivot = iconCenter) {
+            drawCircle(tint, radius = 2.8f * scale, center = Offset(12f * scale, 9.5f * scale), style = stroke)
+            drawPath(shoulders, tint, style = stroke)
+        }
     }
 }
 
@@ -166,8 +172,8 @@ fun EditorialMenuIcon(
         val center = Offset(12f, 12f)
         val activeFill = tint.copy(alpha = tint.alpha * 0.14f)
 
-        fun drawOutlineCircle() {
-            drawCircle(tint, radius = 8.5f, center = center, style = stroke)
+        fun drawOutlineCircle(radius: Float = 8.5f) {
+            drawCircle(tint, radius = radius, center = center, style = stroke)
         }
 
         when (kind) {
@@ -180,9 +186,11 @@ fun EditorialMenuIcon(
                     lineTo(6.5f, 19.5f)
                     close()
                 }
-                translate(top = -2.6f * pulse) {
-                    if (active) drawPath(bookmark, activeFill)
-                    drawPath(bookmark, tint, style = stroke)
+                translate(top = -4.2f * pulse) {
+                    scale(scale = 1f + 0.20f * pulse, pivot = center) {
+                        if (active) drawPath(bookmark, activeFill)
+                        drawPath(bookmark, tint, style = stroke)
+                    }
                 }
             }
 
@@ -193,7 +201,7 @@ fun EditorialMenuIcon(
                     lineTo(12f, 12f)
                     lineTo(15.2f, 13.8f)
                 }
-                rotate(degrees = 46f * pulse, pivot = center) {
+                rotate(degrees = 180f * pulse, pivot = center) {
                     drawPath(hands, tint, style = stroke)
                 }
             }
@@ -211,16 +219,18 @@ fun EditorialMenuIcon(
                     lineTo(12f, 19.5f)
                     lineTo(19.5f, 14.5f)
                 }
-                translate(top = -1.2f * pulse) {
-                    drawPath(topLayer, tint, style = stroke)
-                }
-                translate(top = 1.4f * pulse) {
-                    drawPath(bottomLayer, tint, style = stroke)
+                scale(scale = 1f + 0.12f * pulse, pivot = center) {
+                    translate(top = -2.8f * pulse) {
+                        drawPath(topLayer, tint, style = stroke)
+                    }
+                    translate(top = 3.0f * pulse) {
+                        drawPath(bottomLayer, tint, style = stroke)
+                    }
                 }
             }
 
             "service" -> {
-                drawOutlineCircle()
+                drawOutlineCircle(radius = 8.5f * (1f + 0.12f * pulse))
                 val questionMark = Path().apply {
                     moveTo(9.8f, 9.5f)
                     quadraticTo(10f, 7.5f, 12f, 7.5f)
@@ -228,7 +238,7 @@ fun EditorialMenuIcon(
                     cubicTo(14.2f, 11f, 12f, 11f, 12f, 12.2f)
                     lineTo(12f, 13.4f)
                 }
-                rotate(degrees = 15f * rebound, pivot = center) {
+                rotate(degrees = 24f * rebound, pivot = center) {
                     drawPath(questionMark, tint, style = stroke)
                     drawCircle(tint, radius = 0.9f, center = Offset(12f, 16.2f))
                 }
@@ -248,18 +258,18 @@ fun EditorialMenuIcon(
                     )
                 }
 
-                drawSlider(y = 7f, knobX = 10.2f + 3.2f * rebound)
-                drawSlider(y = 12f, knobX = 15.2f - 3.6f * rebound)
-                drawSlider(y = 17f, knobX = 9.2f + 2.8f * rebound)
+                drawSlider(y = 7f, knobX = 10.2f + 5.0f * rebound)
+                drawSlider(y = 12f, knobX = 15.2f - 5.2f * rebound)
+                drawSlider(y = 17f, knobX = 9.2f + 4.6f * rebound)
             }
 
             "about" -> {
-                drawOutlineCircle()
+                drawOutlineCircle(radius = 8.5f * (1f + 0.12f * pulse))
                 drawLine(tint, Offset(12f, 11.2f), Offset(12f, 16.2f), stroke.width, stroke.cap)
                 drawCircle(
                     tint,
-                    radius = 0.9f + 0.65f * pulse,
-                    center = Offset(12f, 8.2f - 1.4f * pulse),
+                    radius = 0.9f + 0.85f * pulse,
+                    center = Offset(12f, 8.2f - 2.8f * pulse),
                 )
             }
 
@@ -270,15 +280,17 @@ fun EditorialMenuIcon(
                     close()
                 }
                 val head = Offset(11.5f, 8.9f)
-                translate(top = -2.1f * pulse) {
-                    if (active) {
-                        drawCircle(activeFill, radius = 3.2f, center = head)
-                        drawPath(shoulders, activeFill)
+                translate(top = -3.4f * pulse) {
+                    scale(scale = 1f + 0.16f * pulse, pivot = center) {
+                        if (active) {
+                            drawCircle(activeFill, radius = 3.2f, center = head)
+                            drawPath(shoulders, activeFill)
+                        }
+                        drawCircle(tint, radius = 3.2f, center = head, style = stroke)
+                        drawPath(shoulders, tint, style = stroke)
                     }
-                    drawCircle(tint, radius = 3.2f, center = head, style = stroke)
-                    drawPath(shoulders, tint, style = stroke)
                 }
-                drawCircle(tint, radius = 1.05f, center = Offset(19.2f, 5.6f))
+                drawCircle(tint, radius = 1.05f * (1f + 0.65f * pulse), center = Offset(19.2f, 5.6f))
             }
 
             "pure_read" -> {
@@ -289,7 +301,7 @@ fun EditorialMenuIcon(
                     quadraticTo(8.2f, 16f, 12f, 19.2f)
                 }
                 val spine = Offset(12f, 12f)
-                val spread = 1f + 0.14f * pulse
+                val spread = 1f + 0.26f * pulse
                 for (direction in -1..1 step 2) {
                     scale(scaleX = -direction * spread, scaleY = 1f, pivot = spine) {
                         // The open contour closes along the spine for the fill.
@@ -308,10 +320,10 @@ fun EditorialMenuIcon(
                     moveTo(8f, 4.5f)
                     lineTo(8f, 18f)
                 }
-                translate(top = -1.9f * pulse) {
+                translate(top = -3.5f * pulse) {
                     drawPath(arrow, tint, style = stroke)
                 }
-                translate(top = 1.9f * pulse) {
+                translate(top = 3.5f * pulse) {
                     rotate(degrees = 180f, pivot = center) {
                         drawPath(arrow, tint, style = stroke)
                     }
@@ -328,8 +340,10 @@ fun EditorialMenuIcon(
                     moveTo(10.2f, 13.9f)
                     lineTo(19.2f, 4.8f)
                 }
-                translate(left = 1.9f * pulse, top = -1.9f * pulse) {
-                    drawPath(plane, tint, style = stroke)
+                translate(left = 3.6f * pulse, top = -3.6f * pulse) {
+                    scale(scale = 1f + 0.16f * pulse, pivot = center) {
+                        drawPath(plane, tint, style = stroke)
+                    }
                 }
             }
 
@@ -350,7 +364,7 @@ fun EditorialMenuIcon(
                     lineTo(12f, 15.6f)
                 }
                 drawPath(tray, tint, style = stroke)
-                translate(top = -2.6f * pulse) {
+                translate(top = -4.2f * pulse) {
                     drawPath(arrow, tint, style = stroke)
                 }
             }
@@ -371,8 +385,10 @@ fun EditorialMenuIcon(
                     cubicTo(3.4f, 17.8f, 3.4f, 15.5f, 4.8f, 14.1f)
                     lineTo(6.4f, 12.5f)
                 }
-                scale(scale = 1f + 0.15f * pulse, pivot = center) {
-                    drawPath(links, tint, style = stroke)
+                rotate(degrees = 12f * rebound, pivot = center) {
+                    scale(scale = 1f + 0.24f * pulse, pivot = center) {
+                        drawPath(links, tint, style = stroke)
+                    }
                 }
             }
 
@@ -386,7 +402,7 @@ fun EditorialMenuIcon(
                     quadraticTo(2.3f, 19.5f, 3.6f, 17.2f)
                     close()
                 }
-                rotate(degrees = 12f * rebound, pivot = center) {
+                rotate(degrees = 20f * rebound, pivot = center) {
                     drawPath(triangle, tint, style = stroke)
                     drawLine(tint, Offset(12f, 9.1f), Offset(12f, 13.2f), stroke.width, stroke.cap)
                     drawCircle(tint, radius = 0.9f, center = Offset(12f, 16.1f))
@@ -417,7 +433,7 @@ fun EditorialMenuIcon(
                     lineTo(14.8f, 7f)
                 }
                 drawPath(bin, tint, style = stroke)
-                rotate(degrees = -13f * pulse, pivot = Offset(6.2f, 7f)) {
+                rotate(degrees = -28f * pulse, pivot = Offset(6.2f, 7f)) {
                     drawPath(lid, tint, style = stroke)
                 }
             }
@@ -458,21 +474,23 @@ fun EditorialActionIcon(
                     lineTo(11f, 15.6f)
                     lineTo(15.5f, 11f)
                 }
-                translate(top = -2.2f * rebound) {
-                    drawPath(checkmark, tint, style = stroke)
+                translate(top = -3.4f * rebound) {
+                    scale(scale = 1f + 0.18f * pulse, pivot = Offset(12f, 13.3f)) {
+                        drawPath(checkmark, tint, style = stroke)
+                    }
                 }
             }
 
             "layout_single" -> {
-                scale(scale = 1f + 0.15f * pulse, pivot = center) {
-                    drawRoundedOutline(4.3f, 5f, 15.4f, 5.4f, 1.5f)
-                    drawRoundedOutline(4.3f, 13.6f, 15.4f, 5.4f, 1.5f)
+                scale(scale = 1f + 0.22f * pulse, pivot = center) {
+                    drawRoundedOutline(4.3f, 5f - pulse, 15.4f, 5.4f, 1.5f)
+                    drawRoundedOutline(4.3f, 13.6f + pulse, 15.4f, 5.4f, 1.5f)
                 }
             }
 
             "layout_grid" -> {
-                rotate(degrees = 8f * rebound, pivot = center) {
-                    scale(scale = 1f + 0.14f * pulse, pivot = center) {
+                rotate(degrees = 18f * rebound, pivot = center) {
+                    scale(scale = 1f + 0.22f * pulse, pivot = center) {
                         drawRoundedOutline(4.5f, 4.5f, 5.8f, 5.8f, 1.25f)
                         drawRoundedOutline(13.7f, 4.5f, 5.8f, 5.8f, 1.25f)
                         drawRoundedOutline(4.5f, 13.7f, 5.8f, 5.8f, 1.25f)
@@ -483,9 +501,9 @@ fun EditorialActionIcon(
 
             "search" -> {
                 val lensCenter = Offset(10.5f, 10.5f)
-                val radius = 5.7f + 1.1f * pulse
+                val radius = 5.7f * (1f + 0.22f * pulse)
                 val joint = lensCenter + Offset(radius, radius) * 0.7071f
-                rotate(degrees = 13f * rebound, pivot = joint) {
+                rotate(degrees = 22f * rebound, pivot = joint) {
                     drawLine(tint, joint, joint + Offset(4.9f, 4.9f), stroke.width, stroke.cap)
                 }
                 drawCircle(tint, radius = radius, center = lensCenter, style = stroke)
@@ -498,7 +516,7 @@ fun EditorialActionIcon(
                     drawCircle(
                         tint,
                         radius = 1.1f,
-                        center = Offset(12f, 6f + index * 6f - 3.3f * hop),
+                        center = Offset(12f, 6f + index * 6f - 4.8f * hop),
                     )
                 }
             }
@@ -519,7 +537,7 @@ private fun EditorialIconCanvas(
         if (trigger > 0) {
             if (delayMillis > 0) delay(delayMillis.toLong())
             anim.snapTo(0f)
-            anim.animateTo(1f, tween(440, easing = FastOutSlowInEasing))
+            anim.animateTo(1f, tween(560, easing = FastOutSlowInEasing))
         }
     }
 
@@ -543,7 +561,7 @@ private fun EditorialIconCanvas(
 
 private fun dampedMotion(progress: Float, radians: Double = 2 * PI): Float =
     if (progress > 0f && progress < 1f) {
-        (sin(progress * radians) * exp(-2.2 * progress)).toFloat()
+        (sin(progress * radians) * exp(-1.45 * progress)).toFloat()
     } else {
         0f
     }
@@ -558,6 +576,20 @@ fun EditorialBackIcon(tint: Color, modifier: Modifier = Modifier) {
             lineTo(14.5f * scale, 17.5f * scale)
         }
         val stroke = Stroke(width = 1.85.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+        drawPath(chevron, tint, style = stroke)
+    }
+}
+
+@Composable
+fun EditorialChevronRightIcon(tint: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(16.dp)) {
+        val scale = size.minDimension / 24f
+        val chevron = Path().apply {
+            moveTo(9.5f * scale, 6.5f * scale)
+            lineTo(15f * scale, 12f * scale)
+            lineTo(9.5f * scale, 17.5f * scale)
+        }
+        val stroke = Stroke(width = 1.65.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
         drawPath(chevron, tint, style = stroke)
     }
 }

@@ -1,6 +1,9 @@
 package com.huanchengfly.tieba.post.ui.widgets.compose
 
 import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -35,20 +38,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp as lerpFloat
 import androidx.core.content.ContextCompat
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.huanchengfly.tieba.post.R
@@ -170,6 +180,7 @@ fun AccountNavIcon(
 @Composable
 private fun FloatingCircleIconButton(onClick: () -> Unit, content: @Composable () -> Unit) {
     val colors = ExtendedTheme.colors
+    val nightTint = lerp(Color.White, colors.primary, 0.35f)
     Box(
         modifier = Modifier.padding(horizontal = 4.dp),
         contentAlignment = Alignment.Center
@@ -179,12 +190,12 @@ private fun FloatingCircleIconButton(onClick: () -> Unit, content: @Composable (
                 .size(38.dp)
                 .clip(CircleShape)
                 .background(
-                    if (colors.isNightMode) Color.White.copy(alpha = 0.08f)
+                    if (colors.isNightMode) nightTint.copy(alpha = 0.11f)
                     else Color.Black.copy(alpha = 0.045f)
                 )
                 .border(
                     width = 0.75.dp,
-                    color = if (colors.isNightMode) Color.White.copy(alpha = 0.13f)
+                    color = if (colors.isNightMode) nightTint.copy(alpha = 0.20f)
                     else Color.Black.copy(alpha = 0.07f),
                     shape = CircleShape
                 )
@@ -241,6 +252,65 @@ fun BackNavigationIcon(onBackPressed: () -> Unit) {
     }
 }
 
+@Composable
+fun EditorialPageHeader(
+    title: String,
+    eyebrow: String,
+    animateKey: Any? = Unit,
+    centered: Boolean = false,
+    modifier: Modifier = Modifier,
+) {
+    val progress = rememberEditorialHeaderProgress(animateKey)
+    Column(
+        modifier = modifier,
+        horizontalAlignment = if (centered) Alignment.CenterHorizontally else Alignment.Start,
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.graphicsLayer {
+                val p = progress.value
+                alpha = 0.45f + 0.55f * p
+                if (centered) {
+                    scaleX = 0.94f + 0.06f * p
+                } else {
+                    translationX = (1f - p) * 10.dp.toPx()
+                }
+            },
+            color = ExtendedTheme.colors.onTopBar,
+            fontSize = 19.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = lerpFloat(3.6f, 0.4f, progress.value).sp,
+            lineHeight = 23.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        EditorialEyebrow(eyebrow, progress.value)
+    }
+}
+
+@Composable
+private fun rememberEditorialHeaderProgress(animateKey: Any?): State<Float> {
+    val animation = remember { Animatable(0f) }
+    LaunchedEffect(animateKey) {
+        animation.snapTo(0f)
+        animation.animateTo(1f, tween(460, easing = FastOutSlowInEasing))
+    }
+    return animation.asState()
+}
+
+@Composable
+private fun EditorialEyebrow(eyebrow: String, progress: Float) {
+    Text(
+        text = eyebrow.uppercase(),
+        color = ExtendedTheme.colors.textSecondary,
+        fontSize = 10.sp,
+        letterSpacing = lerpFloat(0.3f, 1.5f, progress).sp,
+        lineHeight = 12.sp,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
 @Deprecated(
     "Use the non deprecated overload",
     ReplaceWith(
@@ -283,6 +353,7 @@ fun TitleCentredToolbar(
     insets: Boolean = true,
     navigationIcon: (@Composable () -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    eyebrow: String? = null,
     content: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val barBg = editorialTopBarColor()
@@ -317,7 +388,15 @@ fun TitleCentredToolbar(
                     ) {
                         ProvideTextStyle(value = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Medium)) {
                             ProvideContentColor(color = ExtendedTheme.colors.onTopBar) {
-                                title()
+                                if (eyebrow == null) {
+                                    title()
+                                } else {
+                                    val progress = rememberEditorialHeaderProgress(eyebrow)
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        title()
+                                        EditorialEyebrow(eyebrow, progress.value)
+                                    }
+                                }
                             }
                         }
                     }
@@ -336,11 +415,17 @@ fun Toolbar(
     title: String,
     navigationIcon: (@Composable () -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    eyebrow: String? = null,
+    animateKey: Any? = Unit,
     content: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     Toolbar(
         title = {
-            Text(text = title)
+            if (eyebrow == null) {
+                Text(text = title)
+            } else {
+                EditorialPageHeader(title, eyebrow, animateKey)
+            }
         },
         navigationIcon = navigationIcon,
         actions = actions,

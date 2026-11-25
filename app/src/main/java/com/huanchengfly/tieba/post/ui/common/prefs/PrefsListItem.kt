@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 
 @Composable
 @ExperimentalMaterialApi
@@ -19,7 +21,7 @@ fun PrefsListItem(
     icon: @Composable (() -> Unit)? = null,
     secondaryText: @Composable (() -> Unit)? = null,
     trailing: @Composable (() -> Unit)? = null,
-    textColor: Color = MaterialTheme.colors.onBackground,
+    textColor: Color = ExtendedTheme.colors.text,
     minimalHeight: Boolean = false,
     text: @Composable () -> Unit
 ) {
@@ -47,9 +49,9 @@ fun PrefsListItem(
     )!!
     val styledSecondaryText = applyTextStyle(
         typography.body2,
-        textColor,
+        ExtendedTheme.colors.textSecondary,
         when {
-            enabled || !darkenOnDisable -> ContentAlpha.medium
+            enabled || !darkenOnDisable -> ContentAlpha.high
             else -> ContentAlpha.disabled
         },
         secondaryText
@@ -64,14 +66,21 @@ fun PrefsListItem(
         trailing
     )
 
-    AnyLine.CustomListItem(
-        modifier = modifier,
-        minimalHeight,
-        styledIcon,
-        styledSecondaryText,
-        styledTrailing,
-        styledText
-    )
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .feedCardSurface(),
+    ) {
+        AnyLine.CustomListItem(
+            modifier = modifier,
+            minimalHeight,
+            styledIcon,
+            styledSecondaryText,
+            styledTrailing,
+            styledText
+        )
+    }
 }
 
 private object AnyLine {

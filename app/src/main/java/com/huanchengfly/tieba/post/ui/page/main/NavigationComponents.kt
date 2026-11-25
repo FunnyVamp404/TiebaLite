@@ -10,8 +10,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,6 +65,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import androidx.compose.ui.unit.sp
@@ -392,6 +396,24 @@ fun BottomNavigation(
     navigationItems: ImmutableList<NavigationItem>,
     themeColors: ExtendedColors = ExtendedTheme.colors
 ) {
+    val tabInteractions = navigationItems.map { item ->
+        key(item.id) {
+            val source = remember { MutableInteractionSource() }
+            source to source.collectIsPressedAsState()
+        }
+    }
+    val anyPressed = tabInteractions.any { (_, isPressed) -> isPressed.value }
+    val dockSpring = remember { spring<Float>(dampingRatio = 0.72f, stiffness = 270f) }
+    val pressure by animateFloatAsState(
+        targetValue = if (anyPressed) 1f else 0f,
+        animationSpec = dockSpring,
+        label = "Dock press pressure",
+    )
+    val animatedPosition by animateFloatAsState(
+        targetValue = currentPosition.toFloat(),
+        animationSpec = dockSpring,
+        label = "Dock highlight position",
+    )
     val dockColor = if (themeColors.isNightMode) {
         lerp(themeColors.card, themeColors.primary, 0.14f).copy(alpha = 0.93f)
     } else {
@@ -410,11 +432,16 @@ fun BottomNavigation(
             .padding(horizontal = 24.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Row(
+        BoxWithConstraints(
             modifier = Modifier
                 .widthIn(min = 240.dp, max = 336.dp)
                 .fillMaxWidth()
                 .height(58.dp)
+                .graphicsLayer {
+                    scaleX = 1f + pressure * 0.022f
+                    scaleY = 1f + pressure * 0.065f
+                    translationY = -pressure * 0.6.dp.toPx()
+                }
                 .shadow(
                     elevation = if (themeColors.isNightMode) 14.dp else 10.dp,
                     shape = CircleShape,
@@ -424,106 +451,130 @@ fun BottomNavigation(
                 .clip(CircleShape)
                 .background(dockColor)
                 .border(width = 0.75.dp, color = rimColor, shape = CircleShape)
-                .padding(horizontal = 10.dp)
-                .selectableGroup(),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(horizontal = 10.dp),
         ) {
-            navigationItems.fastForEachIndexed { index, navigationItem ->
-                val isSelected = index == currentPosition
-                val indicatorWidth by animateDpAsState(
-                    targetValue = if (isSelected) 18.dp else 0.dp,
-                    label = "NavIndicatorWidth",
-                )
-                val labelLetterSpacing by animateFloatAsState(
-                    targetValue = if (isSelected) 1.4f else 0f,
-                    animationSpec = spring(dampingRatio = 0.55f, stiffness = 360f),
-                    label = "Navigation label letter spacing",
-                )
-                val labelScaleX by animateFloatAsState(
-                    targetValue = if (isSelected) 1.06f else 1f,
-                    animationSpec = spring(dampingRatio = 0.55f, stiffness = 360f),
-                    label = "Navigation label horizontal scale",
-                )
-                val animatedContentColor by animateColorAsState(
-                    targetValue = if (isSelected) {
-                        themeColors.primary
-                    } else {
-                        themeColors.textSecondary.copy(
-                            alpha = if (themeColors.isNightMode) 0.65f else 0.70f
-                        )
-                    },
-                    label = "Navigation content color",
-                )
-
-                Column(
+            if (navigationItems.isNotEmpty()) {
+                val segmentWidth = maxWidth / navigationItems.size
+                Box(
                     modifier = Modifier
-                        .weight(1f)
+                        .offset { IntOffset((segmentWidth * animatedPosition).roundToPx(), 0) }
+                        .width(segmentWidth)
                         .fillMaxHeight()
-                        .clip(CircleShape)
-                        .semantics { selected = isSelected }
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            role = Role.Tab,
-                        ) {
-                            if (isSelected) {
-                                onReselected(index)
-                            } else {
-                                onChangePosition(index)
-                            }
-                            navigationItem.onClick?.invoke()
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Box(modifier = Modifier.size(21.dp)) {
-                        EditorialNavIcon(
-                            id = navigationItem.id,
-                            selected = isSelected,
-                            tint = animatedContentColor,
-                            modifier = Modifier.size(21.dp),
+                        .padding(horizontal = 2.dp, vertical = 4.dp)
+                        .background(
+                            color = themeColors.primary.copy(
+                                alpha = if (themeColors.isNightMode) 0.16f else 0.11f
+                            ),
+                            shape = CircleShape,
                         )
-                        if (navigationItem.badge) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .offset(x = 14.dp, y = (-5).dp)
-                                    .wrapContentWidth(Alignment.Start, unbounded = true)
-                                    .defaultMinSize(minWidth = 16.dp, minHeight = 16.dp)
-                                    .background(color = themeColors.accent, shape = CircleShape)
-                                    .padding(horizontal = 4.dp),
-                                contentAlignment = Alignment.Center,
+                        .border(
+                            width = 0.6.dp,
+                            color = themeColors.primary.copy(alpha = 0.25f),
+                            shape = CircleShape,
+                        ),
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxSize().selectableGroup(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                navigationItems.fastForEachIndexed { index, navigationItem ->
+                    val isSelected = index == currentPosition
+                    val indicatorWidth by animateDpAsState(
+                        targetValue = if (isSelected) 18.dp else 0.dp,
+                        label = "NavIndicatorWidth",
+                    )
+                    val labelLetterSpacing by animateFloatAsState(
+                        targetValue = if (isSelected) 1.4f else 0f,
+                        animationSpec = spring(dampingRatio = 0.55f, stiffness = 360f),
+                        label = "Navigation label letter spacing",
+                    )
+                    val labelScaleX by animateFloatAsState(
+                        targetValue = if (isSelected) 1.06f else 1f,
+                        animationSpec = spring(dampingRatio = 0.55f, stiffness = 360f),
+                        label = "Navigation label horizontal scale",
+                    )
+                    val animatedContentColor by animateColorAsState(
+                        targetValue = if (isSelected) {
+                            themeColors.primary
+                        } else {
+                            themeColors.textSecondary.copy(
+                                alpha = if (themeColors.isNightMode) 0.65f else 0.70f
+                            )
+                        },
+                        label = "Navigation content color",
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(CircleShape)
+                            .semantics { selected = isSelected }
+                            .clickable(
+                                interactionSource = tabInteractions[index].first,
+                                indication = null,
+                                role = Role.Tab,
                             ) {
-                                Text(
-                                    text = navigationItem.badgeText.orEmpty(),
-                                    color = White,
-                                    fontSize = 10.sp,
-                                    lineHeight = 12.sp,
-                                    maxLines = 1,
-                                )
+                                if (isSelected) {
+                                    onReselected(index)
+                                } else {
+                                    onChangePosition(index)
+                                }
+                                navigationItem.onClick?.invoke()
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Box(modifier = Modifier.size(21.dp)) {
+                            EditorialNavIcon(
+                                id = navigationItem.id,
+                                selected = isSelected,
+                                tint = animatedContentColor,
+                                modifier = Modifier.size(21.dp),
+                            )
+                            if (navigationItem.badge) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopStart)
+                                        .offset(x = 14.dp, y = (-5).dp)
+                                        .wrapContentWidth(Alignment.Start, unbounded = true)
+                                        .defaultMinSize(minWidth = 16.dp, minHeight = 16.dp)
+                                        .background(color = themeColors.accent, shape = CircleShape)
+                                        .padding(horizontal = 4.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = navigationItem.badgeText.orEmpty(),
+                                        color = White,
+                                        fontSize = 10.sp,
+                                        lineHeight = 12.sp,
+                                        maxLines = 1,
+                                    )
+                                }
                             }
                         }
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = navigationItem.title(isSelected),
+                            modifier = Modifier.graphicsLayer { scaleX = labelScaleX },
+                            fontSize = 10.sp,
+                            letterSpacing = labelLetterSpacing.sp,
+                            lineHeight = 12.sp,
+                            maxLines = 1,
+                            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                            color = animatedContentColor,
+                            style = MaterialTheme.typography.caption,
+                        )
+                        Spacer(Modifier.height(3.dp))
+                        Box(
+                            modifier = Modifier
+                                .width(indicatorWidth)
+                                .height(2.dp)
+                                .clip(CircleShape)
+                                .background(if (isSelected) animatedContentColor else Color.Transparent),
+                        )
                     }
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = navigationItem.title(isSelected),
-                        modifier = Modifier.graphicsLayer { scaleX = labelScaleX },
-                        fontSize = 10.sp,
-                        letterSpacing = labelLetterSpacing.sp,
-                        lineHeight = 12.sp,
-                        maxLines = 1,
-                        fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-                        color = animatedContentColor,
-                        style = MaterialTheme.typography.caption,
-                    )
-                    Spacer(Modifier.height(3.dp))
-                    Box(
-                        modifier = Modifier
-                            .width(indicatorWidth)
-                            .height(2.dp)
-                            .clip(CircleShape)
-                            .background(if (isSelected) animatedContentColor else Color.Transparent),
-                    )
                 }
             }
         }

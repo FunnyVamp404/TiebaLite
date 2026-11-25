@@ -21,7 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
@@ -251,35 +250,6 @@ private fun LoginTipCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun UserSectionHeader(eyebrow: String) {
-    val colors = ExtendedTheme.colors
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 18.dp, top = 14.dp, end = 18.dp, bottom = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = eyebrow,
-            fontSize = 11.sp,
-            letterSpacing = 1.sp,
-            color = colors.textSecondary,
-        )
-        Divider(
-            modifier = Modifier.weight(1f),
-            color = colors.divider,
-            thickness = 0.5.dp,
-        )
-        Box(
-            modifier = Modifier
-                .size(4.dp)
-                .background(colors.primary, CircleShape),
-        )
-    }
-}
-
-@Composable
 private fun UserMenuCard(
     iconKind: String,
     title: String,
@@ -293,7 +263,7 @@ private fun UserMenuCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 5.dp)
             .feedCardSurface()
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 13.dp),
@@ -469,7 +439,7 @@ fun UserPage(
                             .padding(horizontal = 16.dp, vertical = 16.dp),
                     )
                 }
-                UserSectionHeader(eyebrow = "01 / LIBRARY")
+                Spacer(Modifier.height(10.dp))
                 if (account != null) {
                     UserMenuCard(
                         iconKind = "collect",
@@ -495,7 +465,6 @@ fun UserPage(
                     },
                 )
 
-                UserSectionHeader(eyebrow = "02 / APPEARANCE")
                 UserMenuCard(
                     iconKind = "theme",
                     title = stringResource(id = R.string.title_theme),
@@ -542,7 +511,6 @@ fun UserPage(
                     )
                 }
 
-                UserSectionHeader(eyebrow = "03 / SYSTEM")
                 UserMenuCard(
                     iconKind = "settings",
                     title = stringResource(id = R.string.my_info_settings),

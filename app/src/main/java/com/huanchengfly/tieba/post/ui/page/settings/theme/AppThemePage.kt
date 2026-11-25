@@ -2,7 +2,9 @@ package com.huanchengfly.tieba.post.ui.page.settings.theme
 
 import android.os.Build
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,9 +12,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -32,10 +34,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Checkbox
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
@@ -58,6 +63,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -74,6 +80,7 @@ import com.huanchengfly.tieba.post.R
 import com.huanchengfly.tieba.post.activities.TranslucentThemeActivity
 import com.huanchengfly.tieba.post.components.dialogs.CustomThemeDialog
 import com.huanchengfly.tieba.post.goToActivity
+import com.huanchengfly.tieba.post.putString
 import com.huanchengfly.tieba.post.rememberPreferenceAsMutableState
 import com.huanchengfly.tieba.post.rememberPreferenceAsState
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
@@ -84,7 +91,9 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.Dialog
 import com.huanchengfly.tieba.post.ui.widgets.compose.DialogNegativeButton
 import com.huanchengfly.tieba.post.ui.widgets.compose.DialogPositiveButton
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
+import com.huanchengfly.tieba.post.ui.widgets.compose.Switch
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberDialogState
 import com.huanchengfly.tieba.post.utils.ThemeUtil
@@ -304,12 +313,12 @@ fun AppThemePage(
     }
 
     MyScaffold(
-        backgroundColor = ExtendedTheme.colors.background,
+        backgroundColor = feedBackdropColor(),
         topBar = {
             TitleCentredToolbar(
                 title = {
                     Text(
-                        text = stringResource(id = R.string.title_theme),
+                        text = "主题配色",
                         fontWeight = FontWeight.SemiBold,
                         style = MaterialTheme.typography.h6,
                     )
@@ -326,21 +335,22 @@ fun AppThemePage(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .navigationBarsPadding(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             item {
-                ThemeSection(
-                    eyebrow = "01 / TONAL PALETTE",
-                    title = "莫奈配色",
-                    subtitle = "浅色与深色自动配套，页面与控件温和保持一致",
-                ) {
+                Column {
+                    ArchiveSectionHeader(
+                        code = "01 / TONAL PALETTE",
+                        title = "莫奈配色",
+                        subtitle = "浅色与深色自动配套，页面与控件温和保持一致。",
+                    )
+                    Spacer(Modifier.height(12.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth().selectableGroup(),
+                        modifier = Modifier.selectableGroup(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         ThemePill(
-                            modifier = Modifier.weight(1f),
                             label = "原色",
                             selected = !isDynamicTheme && selectedPreset == MonetPreset.NONE,
                             onClick = {
@@ -350,7 +360,6 @@ fun AppThemePage(
                         )
                         if (supportsDynamicTheme) {
                             ThemePill(
-                                modifier = Modifier.weight(1f),
                                 label = "系统取色",
                                 selected = isDynamicTheme,
                                 onClick = {
@@ -360,8 +369,7 @@ fun AppThemePage(
                             )
                         }
                         ThemePill(
-                            modifier = Modifier.weight(1f),
-                            label = "莫奈配色",
+                            label = "自选配色",
                             selected = !isDynamicTheme && selectedPreset != MonetPreset.NONE,
                             onClick = {
                                 ThemeUtil.setUseDynamicTheme(false)
@@ -371,141 +379,162 @@ fun AppThemePage(
                             },
                         )
                     }
+                    Spacer(Modifier.height(14.dp))
                     TonalPalettePreview()
                 }
             }
             item {
-                ThemeSection(
-                    eyebrow = "02 / SOURCE COLOR",
-                    title = "选择主色",
-                    subtitle = "6 套低饱和东方莫奈色板，点击即刻生效",
-                ) {
-                    Column(
-                        modifier = Modifier.selectableGroup(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        MonetPreset.selectablePresets.chunked(3).forEach { presets ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            ) {
-                                presets.forEach { preset ->
-                                    PresetSwatch(
-                                        modifier = Modifier.weight(1f),
-                                        preset = preset,
-                                        selected = !isDynamicTheme && selectedPreset == preset,
-                                        onClick = {
-                                            ThemeUtil.setUseDynamicTheme(false)
-                                            MonetPresetState.setPreset(preset)
-                                        },
-                                    )
+                AnimatedVisibility(visible = !isDynamicTheme && selectedPreset != MonetPreset.NONE) {
+                    Column {
+                        ArchiveSectionHeader(code = "02 / SOURCE COLOR", title = "选择主色")
+                        Spacer(Modifier.height(12.dp))
+                        Column(
+                            modifier = Modifier.selectableGroup(),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            MonetPreset.selectablePresets.chunked(3).forEach { presets ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                ) {
+                                    presets.forEach { preset ->
+                                        PresetSwatch(
+                                            modifier = Modifier.weight(1f),
+                                            preset = preset,
+                                            selected = selectedPreset == preset,
+                                            onClick = { MonetPresetState.setPreset(preset) },
+                                        )
+                                    }
                                 }
                             }
                         }
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        ThemeTile(
-                            modifier = Modifier.weight(1f),
-                            label = "自选颜色",
-                            previewColor = customPrimaryColor,
-                            selected = !isDynamicTheme && currentTheme == ThemeUtil.THEME_CUSTOM,
-                            onClick = { customPrimaryColorDialogState.show() },
-                            isAction = true,
-                        )
-                        ThemeTile(
-                            modifier = Modifier.weight(1f),
-                            label = "半透明壁纸",
-                            previewColor = ExtendedTheme.colors.primary.copy(alpha = 0.28f),
-                            selected = ThemeUtil.isTranslucentTheme(currentTheme),
-                            onClick = { context.goToActivity<TranslucentThemeActivity>() },
-                            isAction = true,
-                            previewShape = RoundedCornerShape(3.dp),
+                        Spacer(Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            ThemeAction(
+                                modifier = Modifier.weight(1f),
+                                label = "自选颜色",
+                                onClick = { customPrimaryColorDialogState.show() },
+                            )
+                            ThemeAction(
+                                modifier = Modifier.weight(1f),
+                                label = "半透明壁纸",
+                                onClick = { context.goToActivity<TranslucentThemeActivity>() },
+                            )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        val colors = ExtendedTheme.colors
+                        Text(
+                            text = "当前主色 ${colors.primary.toHexString().uppercase()}",
+                            fontSize = 10.sp,
+                            fontFamily = FontFamily.Monospace,
+                            color = colors.textSecondary,
                         )
                     }
                 }
             }
             item {
-                ThemeSection(
-                    eyebrow = "03 / APPEARANCE MODE",
-                    title = "深浅与经典外观",
-                ) {
-                    val darkThemes = listOf(
-                        Triple(ThemeUtil.THEME_BLUE_DARK, "静谧蓝", colorResource(R.color.theme_color_background_blue_dark)),
-                        Triple(ThemeUtil.THEME_GREY_DARK, "深邃灰", colorResource(R.color.theme_color_background_grey_dark)),
-                        Triple(ThemeUtil.THEME_AMOLED_DARK, "纯黑", colorResource(R.color.theme_color_background_amoled_dark)),
-                    )
-                    ThemeModeGroup(
-                        title = "深色模式（可叠加莫奈配色）",
-                        themes = darkThemes,
-                        selectedTheme = currentTheme.takeUnless { isDynamicTheme },
-                        onThemeSelected = { value ->
-                            ThemeUtil.setUseDynamicTheme(false)
-                            ThemeUtil.switchTheme(value)
-                        },
-                    )
-
-                    val classicThemes = listOf(
-                        Triple(ThemeUtil.THEME_DEFAULT, "深海蓝", colorResource(R.color.theme_color_primary_tieba)),
-                        Triple(ThemeUtil.THEME_BLUE, "清新蓝", colorResource(R.color.theme_color_primary_blue)),
-                        Triple(ThemeUtil.THEME_BLACK, "高级黑", colorResource(R.color.theme_color_primary_black)),
-                        Triple(ThemeUtil.THEME_PINK, "少女粉", colorResource(R.color.theme_color_primary_pink)),
-                        Triple(ThemeUtil.THEME_RED, "新年红", colorResource(R.color.theme_color_primary_red)),
-                        Triple(ThemeUtil.THEME_PURPLE, "星空紫", colorResource(R.color.theme_color_primary_purple)),
-                    )
-                    ThemeModeGroup(
-                        title = "经典浅色主题（切换后展示原色）",
-                        themes = classicThemes,
-                        selectedTheme = currentTheme.takeUnless { isDynamicTheme },
-                        onThemeSelected = { value ->
-                            ThemeUtil.setUseDynamicTheme(false)
-                            MonetPresetState.setPreset(MonetPreset.NONE)
-                            ThemeUtil.switchTheme(value)
-                        },
-                    )
+                val isNightMode = ThemeUtil.isNightMode(currentTheme)
+                val colors = ExtendedTheme.colors
+                Column {
+                    ArchiveSectionHeader(code = "03 / APPEARANCE MODE", title = "外观模式")
+                    Spacer(Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "深色模式",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = colors.text,
+                            )
+                            Text(
+                                text = "切换夜间底色与浅色外观",
+                                fontSize = 12.sp,
+                                color = colors.textSecondary,
+                            )
+                        }
+                        Switch(
+                            checked = isNightMode,
+                            onCheckedChange = { ThemeUtil.switchNightMode() },
+                        )
+                    }
+                    if (isNightMode) {
+                        Spacer(Modifier.height(12.dp))
+                        ThemeModeGroup(
+                            themes = listOf(
+                                Triple(ThemeUtil.THEME_BLUE_DARK, "静谧蓝", colorResource(R.color.theme_color_background_blue_dark)),
+                                Triple(ThemeUtil.THEME_GREY_DARK, "深邃灰", colorResource(R.color.theme_color_background_grey_dark)),
+                                Triple(ThemeUtil.THEME_AMOLED_DARK, "纯黑", colorResource(R.color.theme_color_background_amoled_dark)),
+                            ),
+                            selectedTheme = currentTheme,
+                            onThemeSelected = { theme ->
+                                ThemeUtil.dataStore.putString(ThemeUtil.KEY_DARK_THEME, theme)
+                                ThemeUtil.switchTheme(theme)
+                            },
+                        )
+                    } else if (!isDynamicTheme && selectedPreset == MonetPreset.NONE) {
+                        Spacer(Modifier.height(12.dp))
+                        ThemeModeGroup(
+                            themes = listOf(
+                                Triple(ThemeUtil.THEME_DEFAULT, "深海蓝", colorResource(R.color.theme_color_primary_tieba)),
+                                Triple(ThemeUtil.THEME_BLUE, "清新蓝", colorResource(R.color.theme_color_primary_blue)),
+                                Triple(ThemeUtil.THEME_BLACK, "高级黑", colorResource(R.color.theme_color_primary_black)),
+                                Triple(ThemeUtil.THEME_PINK, "少女粉", colorResource(R.color.theme_color_primary_pink)),
+                                Triple(ThemeUtil.THEME_RED, "新年红", colorResource(R.color.theme_color_primary_red)),
+                                Triple(ThemeUtil.THEME_PURPLE, "星空紫", colorResource(R.color.theme_color_primary_purple)),
+                            ),
+                            selectedTheme = currentTheme,
+                            onThemeSelected = { ThemeUtil.switchTheme(it) },
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ArchiveSectionHeader(code: String, title: String, subtitle: String? = null) {
+    val colors = ExtendedTheme.colors
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = code,
+                fontSize = 10.sp,
+                letterSpacing = 1.sp,
+                color = colors.textSecondary,
+                fontFamily = FontFamily.Monospace,
+            )
+            Spacer(Modifier.width(8.dp))
+            Divider(
+                modifier = Modifier.weight(1f),
+                thickness = 0.6.dp,
+                color = colors.divider,
+            )
+            Spacer(Modifier.width(6.dp))
+            Box(Modifier.size(3.dp).background(colors.text))
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = colors.text,
+        )
+        if (subtitle != null) {
+            Text(text = subtitle, fontSize = 12.sp, color = colors.textSecondary)
         }
     }
 }
 
 @Composable
 private fun themeHairline(): Color = ExtendedTheme.colors.text.copy(alpha = 0.16f)
-
-@Composable
-private fun ThemeSection(
-    eyebrow: String,
-    title: String,
-    subtitle: String? = null,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    val colors = ExtendedTheme.colors
-    Column(
-        modifier = Modifier.fillMaxWidth().feedCardSurface().padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = eyebrow,
-                fontSize = 11.sp,
-                letterSpacing = 1.sp,
-                color = colors.textSecondary,
-            )
-            Text(
-                text = title,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Medium,
-                color = colors.text,
-            )
-            if (subtitle != null) {
-                Text(text = subtitle, fontSize = 12.sp, color = colors.textSecondary)
-            }
-        }
-        content()
-    }
-}
 
 @Composable
 private fun Modifier.themeChoiceSurface(
@@ -524,18 +553,13 @@ private fun Modifier.themeChoiceSurface(
 }
 
 @Composable
-private fun ThemePill(
-    modifier: Modifier,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
+private fun ThemePill(label: String, selected: Boolean, onClick: () -> Unit) {
     Box(
-        modifier = modifier
+        modifier = Modifier
             .themeChoiceSurface(CircleShape, selected)
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .heightIn(min = 48.dp)
-            .padding(horizontal = 4.dp, vertical = 8.dp),
+            .heightIn(min = 36.dp)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -552,26 +576,26 @@ private fun ThemePill(
 private fun TonalPalettePreview() {
     val colors = ExtendedTheme.colors
     val hairline = themeHairline()
-    val shape = RoundedCornerShape(10.dp)
-    val swatchShape = RoundedCornerShape(6.dp)
+    val swatchShape = RoundedCornerShape(4.dp)
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(colors.background.copy(alpha = 0.45f), shape)
-            .border(0.75.dp, hairline, shape)
-            .padding(12.dp),
+        modifier = Modifier.fillMaxWidth().feedCardSurface().padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
-                text = "贴吧，自有它的颜色。",
-                fontSize = 16.sp,
+                text = "当前色板",
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = colors.text,
             )
             Text(
-                text = "页面、玻璃与控件，温和地保持一致。",
-                fontSize = 12.sp,
+                text = colors.primary.toHexString().uppercase(),
+                fontFamily = FontFamily.Monospace,
+                fontSize = 11.sp,
                 color = colors.textSecondary,
             )
         }
@@ -584,7 +608,7 @@ private fun TonalPalettePreview() {
                     Box(
                         Modifier
                             .weight(1f)
-                            .height(28.dp)
+                            .height(26.dp)
                             .background(color, swatchShape)
                             .border(0.5.dp, hairline, swatchShape),
                     )
@@ -601,26 +625,30 @@ private fun PresetSwatch(
     onClick: () -> Unit,
 ) {
     Column(
-        modifier = modifier
-            .themeChoiceSurface(RoundedCornerShape(10.dp), selected, tintSelected = false)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
+        modifier = modifier.selectable(
+            selected = selected,
+            role = Role.RadioButton,
+            onClick = onClick,
+        ),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(42.dp)
-                .padding(4.dp)
-                .clip(RoundedCornerShape(6.dp)),
+                .height(46.dp)
+                .themeChoiceSurface(RoundedCornerShape(5.dp), selected, tintSelected = false)
+                .padding(4.dp),
         ) {
-            val stripe = Modifier.weight(1f).fillMaxHeight()
-            Box(stripe.background(preset.swatch1))
-            Box(stripe.background(preset.swatch2))
-            Box(stripe.background(preset.swatch3))
+            Row(modifier = Modifier.clip(RoundedCornerShape(2.dp))) {
+                val stripe = Modifier.weight(1f).fillMaxHeight()
+                Box(stripe.background(preset.swatch1))
+                Box(stripe.background(preset.swatch2))
+                Box(stripe.background(preset.swatch3))
+            }
         }
+        Spacer(Modifier.height(4.dp))
         Text(
             text = preset.label,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
             fontSize = 12.sp,
             fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
             color = ExtendedTheme.colors.text,
@@ -630,22 +658,32 @@ private fun PresetSwatch(
 }
 
 @Composable
+private fun ThemeAction(modifier: Modifier, label: String, onClick: () -> Unit) {
+    OutlinedButton(
+        modifier = modifier,
+        onClick = onClick,
+        shape = CircleShape,
+        border = BorderStroke(0.75.dp, themeHairline()),
+        colors = ButtonDefaults.outlinedButtonColors(
+            backgroundColor = Color.Transparent,
+            contentColor = ExtendedTheme.colors.text,
+        ),
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+    ) {
+        Text(text = label, fontSize = 12.sp, textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
 private fun ThemeModeGroup(
-    title: String,
     themes: List<Triple<String, String, Color>>,
-    selectedTheme: String?,
+    selectedTheme: String,
     onThemeSelected: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier.selectableGroup(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
-            text = title,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = ExtendedTheme.colors.textSecondary,
-        )
         themes.chunked(3).forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -672,18 +710,11 @@ private fun ThemeTile(
     previewColor: Color,
     selected: Boolean,
     onClick: () -> Unit,
-    isAction: Boolean = false,
-    previewShape: Shape = CircleShape,
 ) {
-    val shape = RoundedCornerShape(if (isAction) 10.dp else 8.dp)
     Row(
         modifier = modifier
-            .themeChoiceSurface(shape, selected)
-            .selectable(
-                selected = selected,
-                role = if (isAction) Role.Button else Role.RadioButton,
-                onClick = onClick,
-            )
+            .themeChoiceSurface(RoundedCornerShape(8.dp), selected)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .heightIn(min = 48.dp)
             .padding(horizontal = 4.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -691,9 +722,9 @@ private fun ThemeTile(
     ) {
         Box(
             Modifier
-                .size(if (isAction) 12.dp else 14.dp)
-                .background(previewColor, previewShape)
-                .border(0.75.dp, themeHairline(), previewShape),
+                .size(14.dp)
+                .background(previewColor, CircleShape)
+                .border(0.75.dp, themeHairline(), CircleShape),
         )
         Text(
             text = label,

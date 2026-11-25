@@ -2,10 +2,12 @@ package com.huanchengfly.tieba.post.ui.page.main
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,22 +16,31 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import com.huanchengfly.tieba.post.LocalDevicePosture
 import com.huanchengfly.tieba.post.LocalNotificationCountFlow
@@ -51,15 +62,19 @@ import com.huanchengfly.tieba.post.ui.page.main.user.UserPage
 import com.huanchengfly.tieba.post.ui.utils.DevicePosture
 import com.huanchengfly.tieba.post.ui.utils.MainNavigationContentPosition
 import com.huanchengfly.tieba.post.ui.utils.MainNavigationType
-import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoadHorizontalPager
+import com.huanchengfly.tieba.post.ui.widgets.compose.LocalArchiveMotionProgress
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalFloatingBottomBarPadding
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
+import com.huanchengfly.tieba.post.ui.widgets.compose.ProvideShouldLoad
+import com.huanchengfly.tieba.post.ui.widgets.compose.archivePlaneTransition
 import com.huanchengfly.tieba.post.utils.appPreferences
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 val LocalMainTabActive = compositionLocalOf { true }
@@ -101,7 +116,7 @@ private fun NavigationWrapper(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationGraphicsApi::class)
+@OptIn(ExperimentalAnimationGraphicsApi::class)
 @RootNavGraph(start = true)
 @Destination
 @Composable
@@ -130,21 +145,49 @@ fun MainPage(
         key = booleanPreferencesKey("hideExplore"),
         defaultValue = LocalContext.current.appPreferences.hideExplore
     )
-    val tabIds = remember(hideExplore) {
-        if (hideExplore) listOf("home", "notification", "user")
-        else listOf("home", "explore", "notification", "user")
+    val tabIds by remember {
+        derivedStateOf {
+            if (hideExplore) listOf("home", "notification", "user")
+            else listOf("home", "explore", "notification", "user")
+        }
     }
     val defaultTab = LocalContext.current.appPreferences.defaultTab ?: "home"
     val initialPage = tabIds.indexOf(defaultTab).coerceAtLeast(0)
-    val pageCount = tabIds.size
-    val pagerState = rememberPagerState(initialPage = initialPage) { pageCount }
-    LaunchedEffect(hideExplore) {
-        if (pagerState.currentPage == 3 && hideExplore) {
-            pagerState.scrollToPage(2)
+    var currentTab by rememberSaveable { mutableIntStateOf(initialPage) }
+    var outgoingTab by remember { mutableStateOf<Int?>(null) }
+    var tabDirection by remember { mutableFloatStateOf(1f) }
+    val activeTab = currentTab.coerceIn(tabIds.indices)
+    val visitedTabs = remember { mutableStateListOf(tabIds[activeTab]) }
+    val pageTransition = remember { Animatable(1f) }
+    var transitionJob by remember { mutableStateOf<Job?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+
+    fun selectTab(index: Int) {
+        val previousTab = currentTab.coerceIn(tabIds.indices)
+        if (index == previousTab || index !in tabIds.indices) return
+
+        transitionJob?.cancel()
+        tabDirection = if (index > previousTab) 1f else -1f
+        outgoingTab = previousTab
+        currentTab = index
+        val tabId = tabIds[index]
+        if (tabId !in visitedTabs) visitedTabs.add(tabId)
+        transitionJob = coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            pageTransition.snapTo(0f)
+            pageTransition.animateTo(1f, tween(durationMillis = 420, easing = LinearEasing))
+            outgoingTab = null
         }
     }
 
-    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(tabIds) {
+        transitionJob?.cancel()
+        outgoingTab = null
+        currentTab = currentTab.coerceIn(tabIds.indices)
+        val tabId = tabIds[currentTab]
+        if (tabId !in visitedTabs) visitedTabs.add(tabId)
+        pageTransition.snapTo(1f)
+    }
+
     val themeColors = ExtendedTheme.colors
     val navigationItems by remember {
         derivedStateOf {
@@ -155,11 +198,9 @@ fun MainPage(
                     title = { stringResource(id = R.string.title_main) },
                     content = {
                         HomePage(
-                            canOpenExplore = !LocalContext.current.appPreferences.hideExplore
+                            canOpenExplore = !hideExplore
                         ) {
-                            coroutineScope.launch {
-                                pagerState.scrollToPage(1)
-                            }
+                            selectTab(tabIds.indexOf("explore"))
                         }
                     }
                 ),
@@ -264,8 +305,8 @@ fun MainPage(
     }
     ProvideNavigator(navigator = navigator) {
         NavigationWrapper(
-            currentPosition = pagerState.currentPage,
-            onChangePosition = { coroutineScope.launch { pagerState.scrollToPage(it) } },
+            currentPosition = activeTab,
+            onChangePosition = ::selectTab,
             onReselected = onReselected,
             navigationItems = navigationItems,
             navigationType = navigationType,
@@ -277,16 +318,48 @@ fun MainPage(
                     modifier = Modifier.fillMaxSize(),
                 ) { paddingValues ->
                     Box(modifier = Modifier.fillMaxSize()) {
-                        LazyLoadHorizontalPager(
-                            contentPadding = paddingValues,
-                            state = pagerState,
-                            key = { navigationItems[it].id },
-                            modifier = Modifier.fillMaxSize(),
-                            verticalAlignment = Alignment.Top,
-                            userScrollEnabled = false
-                        ) { pageIndex ->
-                            CompositionLocalProvider(LocalMainTabActive provides (pagerState.currentPage == pageIndex)) {
-                                navigationItems[pageIndex].content()
+                        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                            for (pageIndex in navigationItems.indices) {
+                                val item = navigationItems[pageIndex]
+                                val active = pageIndex == activeTab
+                                if (!active && item.id !in visitedTabs) continue
+
+                                key(item.id) {
+                                    val outgoing = !active && pageIndex == outgoingTab
+                                    val progress = if (active || outgoing) pageTransition.value else 1f
+                                    val transition = if (active || outgoing) {
+                                        Modifier.archivePlaneTransition(progress, outgoing, tabDirection)
+                                    } else {
+                                        Modifier
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .zIndex(
+                                                when {
+                                                    active -> 2f
+                                                    outgoing -> 1f
+                                                    else -> 0f
+                                                }
+                                            )
+                                            .layout { measurable, constraints ->
+                                                val placeable = measurable.measure(constraints)
+                                                layout(placeable.width, placeable.height) {
+                                                    if (active || outgoing) placeable.place(0, 0)
+                                                }
+                                            }
+                                            .then(transition),
+                                    ) {
+                                        CompositionLocalProvider(
+                                            LocalMainTabActive provides active,
+                                            LocalArchiveMotionProgress provides if (active) progress else 1f,
+                                        ) {
+                                            ProvideShouldLoad(shouldLoad = active) {
+                                                item.content()
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                         AnimatedVisibility(
@@ -294,10 +367,8 @@ fun MainPage(
                             modifier = Modifier.align(Alignment.BottomCenter),
                         ) {
                             BottomNavigation(
-                                currentPosition = pagerState.currentPage,
-                                onChangePosition = {
-                                    coroutineScope.launch { pagerState.scrollToPage(it) }
-                                },
+                                currentPosition = activeTab,
+                                onChangePosition = ::selectTab,
                                 onReselected = onReselected,
                                 navigationItems = navigationItems,
                                 themeColors = themeColors,
@@ -308,10 +379,8 @@ fun MainPage(
             }
         }
     }
-    BackHandler(enabled = pagerState.currentPage != initialPage) {
-        coroutineScope.launch {
-            pagerState.scrollToPage(initialPage)
-        }
+    BackHandler(enabled = activeTab != initialPage) {
+        selectTab(initialPage)
     }
 }
 

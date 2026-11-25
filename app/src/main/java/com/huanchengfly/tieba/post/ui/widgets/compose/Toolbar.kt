@@ -284,7 +284,11 @@ fun EditorialPageHeader(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        EditorialEyebrow(eyebrow, progress.value)
+        EditorialEyebrow(
+            eyebrow,
+            progress.value,
+            modifier = Modifier.archiveReveal(start = 0.16f, end = 0.88f),
+        )
     }
 }
 
@@ -299,9 +303,14 @@ private fun rememberEditorialHeaderProgress(animateKey: Any?): State<Float> {
 }
 
 @Composable
-private fun EditorialEyebrow(eyebrow: String, progress: Float) {
+private fun EditorialEyebrow(
+    eyebrow: String,
+    progress: Float,
+    modifier: Modifier = Modifier,
+) {
     Text(
         text = eyebrow.uppercase(),
+        modifier = modifier,
         color = ExtendedTheme.colors.textSecondary,
         fontSize = 10.sp,
         letterSpacing = lerpFloat(0.3f, 1.5f, progress).sp,

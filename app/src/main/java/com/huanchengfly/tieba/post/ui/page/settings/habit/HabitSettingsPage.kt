@@ -304,7 +304,7 @@ fun HabitSettingsPage(
                 SwitchPref(
                     key = "postOrReplyWarning",
                     title = stringResource(id = R.string.title_post_or_reply_warning),
-                    defaultChecked = false,
+                    defaultChecked = true,
                 ) {
                     LeadingIcon {
                         EditorialSettingIcon(

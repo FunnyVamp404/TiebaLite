@@ -10,7 +10,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +30,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.utils.AppIconUtil
 import com.huanchengfly.tieba.post.utils.LauncherIcons
 import com.ramcosta.composedestinations.annotation.Destination
@@ -44,15 +44,17 @@ fun CustomSettingsPage(
 ) {
     val context = LocalContext.current
     MyScaffold(
-        backgroundColor = Color.Transparent,
+        backgroundColor = feedBackdropColor(),
         topBar = {
             TitleCentredToolbar(
                 title = {
                     Text(
                         text = stringResource(id = R.string.title_settings_custom),
-                        fontWeight = FontWeight.Bold, style = MaterialTheme.typography.h6
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.h6,
                     )
                 },
+                eyebrow = "SETTINGS / PERSONALIZE",
                 navigationIcon = {
                     BackNavigationIcon(onBackPressed = { navigator.navigateUp() })
                 }
@@ -74,7 +76,7 @@ fun CustomSettingsPage(
                             EditorialSettingIcon(
                                 kind = "font",
                                 tint = ExtendedTheme.colors.primary,
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier.size(22.dp),
                                 delayMillis = 0,
                             )
                         }
@@ -94,15 +96,27 @@ fun CustomSettingsPage(
                             EditorialSettingIcon(
                                 kind = "apps",
                                 tint = ExtendedTheme.colors.primary,
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier.size(22.dp),
                                 delayMillis = 60,
                             )
                         }
                     },
                     entries = mapOf(
+                        LauncherIcons.NEW_ICON to "自定义图标",
                         LauncherIcons.OLD_ICON to "旧图标",
                     ),
                     icons = mapOf(
+                        LauncherIcons.NEW_ICON to {
+                            Image(
+                                painter = rememberDrawablePainter(
+                                    drawable = LocalContext.current.getDrawable(
+                                        R.drawable.ic_launcher_new_round
+                                    )
+                                ),
+                                contentDescription = "自定义图标",
+                                modifier = Modifier.size(Sizes.Medium)
+                            )
+                        },
                         LauncherIcons.OLD_ICON to {
                             Image(
                                 painter = rememberDrawablePainter(
@@ -129,7 +143,7 @@ fun CustomSettingsPage(
                         EditorialSettingIcon(
                             kind = "compass",
                             tint = ExtendedTheme.colors.primary,
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(22.dp),
                             delayMillis = 120,
                         )
                     }

@@ -8,7 +8,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 
@@ -39,7 +41,10 @@ fun PrefsListItem(
     }
 
     val styledText = applyTextStyle(
-        typography.subtitle1,
+        typography.subtitle1.copy(
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+        ),
         textColor,
         when {
             enabled || !darkenOnDisable -> ContentAlpha.high
@@ -48,7 +53,10 @@ fun PrefsListItem(
         text
     )!!
     val styledSecondaryText = applyTextStyle(
-        typography.body2,
+        typography.body2.copy(
+            fontSize = 11.sp,
+            lineHeight = 15.sp,
+        ),
         ExtendedTheme.colors.textSecondary,
         when {
             enabled || !darkenOnDisable -> ContentAlpha.high
@@ -69,7 +77,7 @@ fun PrefsListItem(
     Box(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 5.dp)
             .feedCardSurface(),
     ) {
         AnyLine.CustomListItem(
@@ -86,10 +94,8 @@ fun PrefsListItem(
 private object AnyLine {
     private val MinHeight = 48.dp
     private val MinHeightSmaller = 32.dp
-    private val IconMinPaddedWidth = 40.dp
-    private val ContentPadding = 16.dp
-    private val VerticalPadding = 16.dp
-    private val SingleLinePadding = 16.dp //used when no secondary text is supplied
+    private val HorizontalPadding = 14.dp
+    private val VerticalPadding = 13.dp
 
     @Composable
     fun CustomListItem(
@@ -104,32 +110,19 @@ private object AnyLine {
             modifier
                 .heightIn(min = if (minimalHeight) MinHeightSmaller else MinHeight)
                 .padding(
-                    start = ContentPadding,
-                    end = ContentPadding,
-                    top = when {
-                        secondaryText == null && !minimalHeight -> SingleLinePadding
-                        else -> VerticalPadding
-                    },
-                    bottom = when {
-                        minimalHeight -> 0.dp
-                        secondaryText == null -> SingleLinePadding
-                        else -> VerticalPadding
-                    }
+                    horizontal = HorizontalPadding,
+                    vertical = if (minimalHeight) 8.dp else VerticalPadding,
                 )
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (icon != null) {
-                val minSize = IconMinPaddedWidth
-                Box(
-                    Modifier.sizeIn(minWidth = minSize, minHeight = minSize),
-                    contentAlignment = Alignment.CenterStart
-                ) { icon() }
+                Box(contentAlignment = Alignment.Center) { icon() }
             }
 
             Column(
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier.weight(1f)
             ) {
                 text()
@@ -137,7 +130,6 @@ private object AnyLine {
             }
 
             if (trailing != null) {
-                Spacer(modifier = Modifier.width(24.dp))
                 trailing.invoke()
             }
         }

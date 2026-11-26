@@ -8,6 +8,7 @@ import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.DisplayMetrics
@@ -24,6 +25,8 @@ import androidx.annotation.Keep
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.gyf.immersionbar.ImmersionBar
 import com.huanchengfly.tieba.post.App
 import com.huanchengfly.tieba.post.App.Companion.INSTANCE
@@ -114,6 +117,18 @@ abstract class BaseActivity : AppCompatActivity(), ExtraRefreshable, CoroutineSc
         }
         if (getLayoutId() != -1) {
             setContentView(getLayoutId())
+            if (Build.VERSION.SDK_INT >= 35) {
+                val contentRoot = findViewById<View>(android.R.id.content)
+                ViewCompat.setOnApplyWindowInsetsListener(contentRoot) { v, windowInsets ->
+                    val insets = windowInsets.getInsets(
+                        WindowInsetsCompat.Type.systemBars() or
+                            WindowInsetsCompat.Type.displayCutout() or
+                            WindowInsetsCompat.Type.ime()
+                    )
+                    v.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+                    windowInsets
+                }
+            }
         }
     }
 

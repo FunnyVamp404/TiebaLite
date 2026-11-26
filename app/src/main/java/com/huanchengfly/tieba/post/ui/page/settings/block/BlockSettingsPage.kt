@@ -25,6 +25,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
@@ -36,15 +37,17 @@ fun BlockSettingsPage(
 ) {
     val context = LocalContext.current
     MyScaffold(
-        backgroundColor = Color.Transparent,
+        backgroundColor = feedBackdropColor(),
         topBar = {
             TitleCentredToolbar(
                 title = {
                     Text(
                         text = stringResource(id = R.string.title_block_settings),
-                        fontWeight = FontWeight.Bold, style = MaterialTheme.typography.h6
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.h6,
                     )
                 },
+                eyebrow = "SETTINGS / CONTENT FILTER",
                 navigationIcon = {
                     BackNavigationIcon(onBackPressed = { navigator.navigateUp() })
                 }

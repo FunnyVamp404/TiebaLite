@@ -50,8 +50,7 @@ android {
         applicationId = "com.huanchengfly.tieba.post"
         applicationIdSuffix = ".custom"
         minSdk = 24
-        //noinspection OldTargetApi
-        targetSdk = 34
+        targetSdk = 35
         versionCode = applicationVersionCode
         versionName = applicationVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

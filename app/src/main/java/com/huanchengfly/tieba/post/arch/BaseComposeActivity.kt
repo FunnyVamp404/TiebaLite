@@ -1,10 +1,13 @@
 package com.huanchengfly.tieba.post.arch
 
 import android.content.Intent
+import android.graphics.Color as AndroidColor
 import android.os.Bundle
 import android.os.Parcelable
 import android.widget.Toast
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -59,21 +62,50 @@ abstract class BaseComposeActivity : BaseActivity() {
     override val isNeedSetTheme: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge(
+            statusBarStyle = if (ThemeUtil.isStatusBarFontDark()) {
+                SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
+            } else {
+                SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+            },
+            navigationBarStyle = if (ThemeUtil.isNavigationBarFontDark()) {
+                SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
+            } else {
+                SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+            },
+        )
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             TiebaLiteTheme {
                 val systemUiController = rememberSystemUiController()
+                val currentTheme = ThemeUtil.themeState.value
                 SideEffect {
+                    // Observe currentTheme so edge-to-edge bar icon polarity updates on theme switch
+                    currentTheme.hashCode()
+                    val darkStatusIcons = ThemeUtil.isStatusBarFontDark()
+                    val darkNavIcons = ThemeUtil.isNavigationBarFontDark()
+                    enableEdgeToEdge(
+                        statusBarStyle = if (darkStatusIcons) {
+                            SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
+                        } else {
+                            SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+                        },
+                        navigationBarStyle = if (darkNavIcons) {
+                            SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
+                        } else {
+                            SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+                        },
+                    )
                     systemUiController.apply {
                         setStatusBarColor(
                             Color.Transparent,
-                            darkIcons = ThemeUtil.isStatusBarFontDark()
+                            darkIcons = darkStatusIcons
                         )
                         setNavigationBarColor(
                             Color.Transparent,
-                            darkIcons = ThemeUtil.isNavigationBarFontDark(),
+                            darkIcons = darkNavIcons,
                             navigationBarContrastEnforced = false
                         )
                     }

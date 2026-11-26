@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,6 +36,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalSnackbarHostState
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.utils.isIgnoringBatteryOptimizations
 import com.huanchengfly.tieba.post.utils.powerManager
 import com.huanchengfly.tieba.post.utils.requestIgnoreBatteryOptimizations
@@ -50,10 +52,17 @@ fun OKSignSettingsPage(
 ) {
     val coroutineScope = rememberCoroutineScope()
     MyScaffold(
-        backgroundColor = Color.Transparent,
+        backgroundColor = feedBackdropColor(),
         topBar = {
             TitleCentredToolbar(
-                title = stringResource(id = R.string.title_oksign),
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.title_oksign),
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.h6,
+                    )
+                },
+                eyebrow = "SETTINGS / AUTO SIGN",
                 navigationIcon = {
                     BackNavigationIcon(onBackPressed = { navigator.navigateUp() })
                 }

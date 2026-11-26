@@ -36,6 +36,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.LocalSnackbarHostState
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.utils.ImageCacheUtil
 import com.huanchengfly.tieba.post.utils.appPreferences
 import com.ramcosta.composedestinations.annotation.Destination
@@ -51,15 +52,17 @@ fun MoreSettingsPage(
 ) {
     val coroutineScope = rememberCoroutineScope()
     MyScaffold(
-        backgroundColor = Color.Transparent,
+        backgroundColor = feedBackdropColor(),
         topBar = {
             TitleCentredToolbar(
                 title = {
                     Text(
                         text = stringResource(id = R.string.title_settings_more),
-                        fontWeight = FontWeight.Bold, style = MaterialTheme.typography.h6
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.h6,
                     )
                 },
+                eyebrow = "SETTINGS / ADVANCED",
                 navigationIcon = {
                     BackNavigationIcon(onBackPressed = { navigator.navigateUp() })
                 }

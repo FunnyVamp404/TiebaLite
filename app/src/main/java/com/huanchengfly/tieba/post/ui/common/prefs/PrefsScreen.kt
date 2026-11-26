@@ -45,7 +45,7 @@ fun PrefsScreen(
                     .fillMaxSize()
                     .background(feedBackdropColor())
                     .navigationBarsPadding(),
-                contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
+                contentPadding = PaddingValues(top = 9.dp, bottom = 24.dp),
             ) {
                 items(prefsScope.prefsItems.size) { index ->
                     prefsScope.getPrefsItem(index)()

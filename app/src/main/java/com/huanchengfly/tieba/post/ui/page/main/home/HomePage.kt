@@ -291,21 +291,15 @@ private fun ForumItemLayout(
             level()
         }
     } else {
-        Column(
+        Row(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = CenterVertically,
-            ) {
-                avatar()
-                Spacer(modifier = Modifier.weight(1f))
-                level()
-            }
-            Box(modifier = Modifier.fillMaxWidth()) { name() }
+            Box(modifier = Modifier.weight(1f)) { name() }
+            level()
         }
     }
 }

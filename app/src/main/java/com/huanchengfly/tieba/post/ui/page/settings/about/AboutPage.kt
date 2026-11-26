@@ -47,7 +47,7 @@ import com.huanchengfly.tieba.post.utils.launchUrl
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
-private const val SOURCE_CODE_URL = "https://github.com/HuanCheng65/TiebaLite"
+private const val SOURCE_CODE_URL = "https://github.com/FunnyVamp404/TiebaLitePlus"
 
 @Destination
 @Composable

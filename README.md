@@ -1,11 +1,11 @@
-# <p align="center">贴吧 Lite+ (TiebaLite Fork)</p>
+# <p align="center">贴吧 Lite+ (TiebaLitePlus)</p>
 
 <p align="center">
-    <a href="https://github.com/FunnyVamp404/TiebaLite/actions/workflows/build.yml">
-        <img alt="Build Status" src="https://github.com/FunnyVamp404/TiebaLite/actions/workflows/build.yml/badge.svg?branch=4.0-dev">
+    <a href="https://github.com/FunnyVamp404/TiebaLitePlus/actions/workflows/build.yml">
+        <img alt="Build Status" src="https://github.com/FunnyVamp404/TiebaLitePlus/actions/workflows/build.yml/badge.svg?branch=4.0-dev">
     </a>
-    <a href="https://github.com/FunnyVamp404/TiebaLite/releases">
-        <img alt="GitHub Release" src="https://img.shields.io/github/v/release/FunnyVamp404/TiebaLite?include_prereleases&label=Release&color=1F4B7A">
+    <a href="https://github.com/FunnyVamp404/TiebaLitePlus/releases">
+        <img alt="GitHub Release" src="https://img.shields.io/github/v/release/FunnyVamp404/TiebaLitePlus?include_prereleases&label=Release&color=1F4B7A">
     </a>
     <img alt="Target SDK" src="https://img.shields.io/badge/Android-15%20(API%2035)-3DDC84?logo=android&logoColor=white">
 </p>
@@ -17,13 +17,14 @@
 ## 界面预览
 
 <p align="center">
-    <img src="docs/screenshots/screenshot_1.jpg" width="200" alt="界面预览 1" />
-    &nbsp;
-    <img src="docs/screenshots/screenshot_2.jpg" width="200" alt="界面预览 2" />
-    &nbsp;
-    <img src="docs/screenshots/screenshot_3.jpg" width="200" alt="界面预览 3" />
-    &nbsp;
-    <img src="docs/screenshots/screenshot_4.jpg" width="200" alt="界面预览 4" />
+    <img src="docs/screenshots/screenshot_1.jpg" width="300" alt="界面预览 1" />
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="docs/screenshots/screenshot_2.jpg" width="300" alt="界面预览 2" />
+</p>
+<p align="center">
+    <img src="docs/screenshots/screenshot_3.jpg" width="300" alt="界面预览 3" />
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="docs/screenshots/screenshot_4.jpg" width="300" alt="界面预览 4" />
 </p>
 
 ---
@@ -51,8 +52,8 @@
 
 ## 下载与安装
 
-- **正式 / 预览版**：前往 [Releases](https://github.com/FunnyVamp404/TiebaLite/releases) 页面下载最新 APK 直接安装。
-- **最新构建**：前往 [GitHub Actions](https://github.com/FunnyVamp404/TiebaLite/actions/workflows/build.yml) 下载最新 `release-*.apk` 构建产物。
+- **正式 / 预览版**：前往 [Releases](https://github.com/FunnyVamp404/TiebaLitePlus/releases) 页面下载最新 APK 直接安装。
+- **最新构建**：前往 [GitHub Actions](https://github.com/FunnyVamp404/TiebaLitePlus/actions/workflows/build.yml) 下载最新 `release-*.apk` 构建产物。
 
 ---
 

@@ -1,17 +1,19 @@
 package com.huanchengfly.tieba.post.ui.page.user.likeforum
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -22,7 +24,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.huanchengfly.tieba.post.api.models.UserLikeForumBean
 import com.huanchengfly.tieba.post.arch.GlobalEvent
 import com.huanchengfly.tieba.post.arch.collectPartialAsState
@@ -39,7 +44,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.ErrorScreen
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.LoadMoreLayout
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyColumn
-import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.states.StateScreen
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -155,7 +160,11 @@ private fun UserLikeForumList(
     fluid: Boolean = false,
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
-    MyLazyColumn(state = lazyListState) {
+    MyLazyColumn(
+        state = lazyListState,
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         items(
             items = data,
             key = { it.id }
@@ -166,9 +175,6 @@ private fun UserLikeForumList(
                     onClick = {
                         onClickForum(it)
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
         }
@@ -179,31 +185,59 @@ private fun UserLikeForumList(
 private fun UserLikeForumItem(
     item: UserLikeForumBean.ForumBean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
+    val colors = ExtendedTheme.colors
+
     Row(
         modifier = Modifier
+            .fillMaxWidth()
+            .feedCardSurface()
             .clickable(onClick = onClick)
-            .then(modifier),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Avatar(
             data = item.avatar,
-            size = Sizes.Medium,
-            contentDescription = null
+            size = 38.dp,
+            shape = RoundedCornerShape(10.dp),
+            contentDescription = null,
         )
         Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
-            Text(text = item.name.orEmpty(), style = MaterialTheme.typography.subtitle1)
+            Text(
+                text = item.name.orEmpty(),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = colors.text,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             item.slogan.takeUnless { it.isNullOrEmpty() }?.let {
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.body2,
-                    color = ExtendedTheme.colors.textSecondary
+                    fontSize = 12.sp,
+                    color = colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
+        }
+        if (!item.levelId.isNullOrEmpty()) {
+            Text(
+                text = "Lv.${item.levelId}",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = colors.primary,
+                modifier = Modifier
+                    .background(
+                        color = colors.primary.copy(alpha = if (colors.isNightMode) 0.18f else 0.12f),
+                        shape = RoundedCornerShape(6.dp),
+                    )
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            )
         }
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -53,6 +53,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -91,7 +92,6 @@ import com.huanchengfly.tieba.post.ui.page.user.post.UserPostPage
 import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.Button
-import com.huanchengfly.tieba.post.ui.widgets.compose.Chip
 import com.huanchengfly.tieba.post.ui.widgets.compose.ClickMenu
 import com.huanchengfly.tieba.post.ui.widgets.compose.ErrorScreen
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoad
@@ -532,7 +532,6 @@ private fun UserProfileContentNormal(
                         user = user,
                         pages = pages,
                         pagerState = pagerState,
-//                                    modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
                     LazyLoadHorizontalPager(
@@ -645,7 +644,7 @@ private fun UserProfileContentExpanded(
                     UserProfileDetail(
                         user = user,
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(1.5f)
                             .align(Alignment.Top)
                             .padding(top = 8.dp),
                         showBtn = showActionBtn,
@@ -722,46 +721,53 @@ private fun UserProfileTabRow(
     val coroutineScope = rememberCoroutineScope()
 
     val tabTextStyle = MaterialTheme.typography.button.copy(
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 13.sp,
         letterSpacing = 0.sp
     )
 
-    ScrollableTabRow(
-        selectedTabIndex = pagerState.currentPage,
-        indicator = { tabPositions ->
-            PagerTabIndicator(
-                pagerState = pagerState,
-                tabPositions = tabPositions
-            )
-        },
-        divider = {},
-        backgroundColor = Color.Transparent,
-        contentColor = ExtendedTheme.colors.primary,
-        edgePadding = 0.dp,
-        modifier = modifier.wrapContentWidth(align = Alignment.Start),
-    ) {
-        pages.fastForEachIndexed { i, pageData ->
-            Tab(
-                selected = pagerState.currentPage == i,
-                onClick = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(i)
-                    }
-                },
-                selectedContentColor = ExtendedTheme.colors.primary,
-                unselectedContentColor = ExtendedTheme.colors.textSecondary,
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(48.dp)
-                        .padding(horizontal = 16.dp)
+    Column(modifier = modifier.fillMaxWidth()) {
+        ScrollableTabRow(
+            selectedTabIndex = pagerState.currentPage,
+            indicator = { tabPositions ->
+                PagerTabIndicator(
+                    pagerState = pagerState,
+                    tabPositions = tabPositions
+                )
+            },
+            divider = {},
+            backgroundColor = Color.Transparent,
+            contentColor = ExtendedTheme.colors.primary,
+            edgePadding = 12.dp,
+        ) {
+            pages.fastForEachIndexed { i, pageData ->
+                Tab(
+                    selected = pagerState.currentPage == i,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(i)
+                        }
+                    },
+                    selectedContentColor = ExtendedTheme.colors.primary,
+                    unselectedContentColor = ExtendedTheme.colors.textSecondary,
                 ) {
-                    Text(text = pageData.title(user), style = tabTextStyle)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .height(44.dp)
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Text(text = pageData.title(user), style = tabTextStyle)
+                    }
                 }
             }
         }
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(0.6.dp)
+                .background(ExtendedTheme.colors.divider.copy(alpha = 0.5f))
+        )
     }
 }
 
@@ -802,38 +808,98 @@ private fun UserProfileDetail(
     onBtnClick: () -> Unit = {},
     onCopyIdClick: () -> Unit = {},
 ) {
+    val colors = ExtendedTheme.colors
+    val intro = user.get { intro }
+    val ipAddress = user.get { ip_address }
+    val tiebaAge = user.get { tb_age }
+    val isFollowing = user.get { has_concerned } != 0
+    val navigator = LocalNavigator.current
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .feedCardSurface()
-            .padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             Avatar(
                 data = StringUtil.getBigAvatarUrl(user.get { portrait }),
-                size = Sizes.Large,
-                contentDescription = null
+                size = 64.dp,
+                contentDescription = null,
+                modifier = Modifier.border(
+                    width = 0.8.dp,
+                    color = colors.divider.copy(alpha = 0.6f),
+                    shape = CircleShape,
+                )
             )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = StringUtil.getUsernameAnnotatedString(
+                        LocalContext.current,
+                        user.get { name },
+                        user.get { nameShow },
+                        colors.text,
+                    ),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.text,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                val verification = user.getNullableImmutable { bazhu_grade }?.get { desc }
+                    ?: user.getNullableImmutable { new_god_data }
+                        ?.takeIf { it.get { status } != 0 }
+                        ?.let {
+                            stringResource(id = R.string.text_god_verify, it.get { field_name })
+                        }
+                if (verification != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Verified,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = colors.primary,
+                        )
+                        Text(
+                            text = verification,
+                            fontSize = 12.sp,
+                            color = colors.primary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
             if (showBtn) {
-                val colors = ExtendedTheme.colors
                 Button(
                     onClick = onBtnClick,
                     elevation = null,
                     shape = RoundedCornerShape(100),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = colors.primary.copy(
-                            alpha = if (colors.isNightMode) 0.18f else 0.12f
-                        ),
-                        contentColor = colors.primary,
+                        backgroundColor = if (isSelf || isFollowing) {
+                            colors.chip.copy(alpha = 0.7f)
+                        } else {
+                            colors.primary
+                        },
+                        contentColor = when {
+                            isSelf -> colors.text
+                            isFollowing -> colors.textSecondary
+                            else -> colors.onAccent
+                        },
                     ),
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                 ) {
-                    val isFollowing = user.get { has_concerned } != 0
                     if (isSelf || !isFollowing) {
                         Icon(
                             imageVector = if (isSelf) Icons.Rounded.Edit else Icons.Rounded.Add,
@@ -852,24 +918,64 @@ private fun UserProfileDetail(
                         ),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
+                        maxLines = 1,
                     )
                 }
             }
         }
         Text(
-            text = StringUtil.getUsernameAnnotatedString(
-                LocalContext.current,
-                user.get { name },
-                user.get { nameShow },
-                LocalContentColor.current
-            ),
-            style = MaterialTheme.typography.h6,
-            maxLines = 1,
+            text = intro.takeIf { it.isNotEmpty() } ?: stringResource(id = R.string.tip_no_intro),
+            fontSize = 13.sp,
+            lineHeight = 19.sp,
+            color = if (intro.isNotEmpty()) colors.textSecondary else colors.textDisabled,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            fontWeight = FontWeight.Bold
         )
-        val navigator = LocalNavigator.current
-        Row(modifier = Modifier.fillMaxWidth()) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            when (user.get { sex }) {
+                1 -> ProfileMetaPill(text = "♂")
+                2 -> ProfileMetaPill(text = "♀")
+            }
+            ProfileMetaPill(
+                text = stringResource(
+                    id = R.string.text_profile_user_id,
+                    user.get { tieba_uid }.toString()
+                ),
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.ContentCopy,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
+                        tint = colors.textSecondary,
+                    )
+                },
+                onClick = onCopyIdClick,
+            )
+            if (ipAddress.isNotEmpty()) {
+                ProfileMetaPill(
+                    text = stringResource(id = R.string.text_profile_ip_location, ipAddress),
+                )
+            }
+            if (tiebaAge.isNotEmpty()) {
+                ProfileMetaPill(
+                    text = stringResource(id = R.string.text_profile_tb_age, tiebaAge),
+                )
+            }
+        }
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(0.6.dp)
+                .background(colors.divider.copy(alpha = 0.5f))
+        )
+        val statDivider = Modifier
+            .width(0.6.dp)
+            .height(20.dp)
+            .background(colors.divider.copy(alpha = 0.45f))
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             UserProfileStat(
                 number = user.get { concern_num }.getShortNumString(),
                 label = stringResource(id = R.string.text_stat_follow),
@@ -883,6 +989,7 @@ private fun UserProfileDetail(
                         )
                     }
             )
+            Box(statDivider)
             UserProfileStat(
                 number = user.get { fans_num }.getShortNumString(),
                 label = stringResource(id = R.string.text_stat_fans),
@@ -896,98 +1003,36 @@ private fun UserProfileDetail(
                         )
                     }
             )
+            Box(statDivider)
             UserProfileStat(
                 number = user.get { total_agree_num }.getShortNumString(),
                 label = stringResource(id = R.string.text_stat_agrees),
                 modifier = Modifier.weight(1f),
             )
         }
-        Text(
-            text = user.get { intro }.takeIf { it.isNotEmpty() }
-                ?: stringResource(id = R.string.tip_no_intro),
-            style = MaterialTheme.typography.body2,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        user.getNullableImmutable { bazhu_grade }?.let {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Verified,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = ExtendedTheme.colors.primary,
-                )
-                Text(
-                    text = it.get { desc },
-                    style = MaterialTheme.typography.body2,
-                    color = ExtendedTheme.colors.primary,
-                )
-            }
-        } ?: user.getNullableImmutable { new_god_data }
-            ?.takeIf { it.get { status } != 0 }
-            ?.let {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Verified,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = ExtendedTheme.colors.primary,
-                    )
-                    Text(
-                        text = stringResource(id = R.string.text_god_verify, it.get { field_name }),
-                        style = MaterialTheme.typography.body2,
-                        color = ExtendedTheme.colors.primary,
-                    )
-                }
-            }
-        val sexEmoji = when (user.get { sex }) {
-            1 -> "♂"
-            2 -> "♀"
-            else -> "?"
-        }
-        val chipShape = RoundedCornerShape(6.dp)
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Chip(text = sexEmoji, shape = chipShape)
-            Chip(
-                text = stringResource(
-                    id = R.string.text_profile_user_id,
-                    user.get { tieba_uid }.toString()
-                ),
-                appendIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.ContentCopy,
-                        contentDescription = null
-                    )
-                },
-                onClick = onCopyIdClick,
-                shape = chipShape,
-            )
-            if (user.get { ip_address }.isNotEmpty()) {
-                Chip(
-                    text = stringResource(
-                        id = R.string.text_profile_ip_location,
-                        user.get { ip_address }
-                    ),
-                    shape = chipShape,
-                )
-            }
-            Chip(
-                text = stringResource(
-                    id = R.string.text_profile_tb_age,
-                    user.get { tb_age }
-                ),
-                shape = chipShape,
-            )
-        }
+    }
+}
+
+@Composable
+private fun ProfileMetaPill(
+    text: String,
+    trailingIcon: (@Composable () -> Unit)? = null,
+    onClick: (() -> Unit)? = null,
+) {
+    val colors = ExtendedTheme.colors
+    val clickModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
+
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(colors.chip.copy(alpha = 0.55f))
+            .then(clickModifier)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(text = text, fontSize = 11.sp, color = colors.textSecondary)
+        trailingIcon?.invoke()
     }
 }
 
@@ -1000,13 +1045,13 @@ private fun UserProfileStat(number: String, label: String, modifier: Modifier = 
     ) {
         Text(
             text = number,
-            style = MaterialTheme.typography.body2,
+            fontSize = 17.sp,
             color = ExtendedTheme.colors.text,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.Bold,
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.caption,
+            fontSize = 11.sp,
             color = ExtendedTheme.colors.textSecondary,
         )
     }

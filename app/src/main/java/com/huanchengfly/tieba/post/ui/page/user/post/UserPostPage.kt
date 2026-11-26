@@ -52,7 +52,6 @@ import com.huanchengfly.tieba.post.ui.page.destinations.SubPostsPageDestination
 import com.huanchengfly.tieba.post.ui.page.destinations.ThreadPageDestination
 import com.huanchengfly.tieba.post.ui.page.destinations.UserProfilePageDestination
 import com.huanchengfly.tieba.post.ui.widgets.compose.Button
-import com.huanchengfly.tieba.post.ui.widgets.compose.Card
 import com.huanchengfly.tieba.post.ui.widgets.compose.Container
 import com.huanchengfly.tieba.post.ui.widgets.compose.ErrorScreen
 import com.huanchengfly.tieba.post.ui.widgets.compose.FeedCard
@@ -62,6 +61,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.LoadMoreLayout
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyColumn
 import com.huanchengfly.tieba.post.ui.widgets.compose.TipScreen
 import com.huanchengfly.tieba.post.ui.widgets.compose.UserHeader
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.states.StateScreen
 import com.huanchengfly.tieba.post.utils.DateTimeUtils
 import kotlinx.collections.immutable.ImmutableList
@@ -303,7 +303,11 @@ private fun UserPostList(
     onClickForum: (name: String) -> Unit = {},
     onClickOriginThread: (threadId: Long) -> Unit = {},
 ) {
-    MyLazyColumn(state = lazyListState) {
+    MyLazyColumn(
+        state = lazyListState,
+        contentPadding = PaddingValues(vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         items(
             items = data,
             key = {
@@ -349,68 +353,71 @@ fun UserPostItem(
             onClickOriginThread = { onClickOriginThread(it.tid.toLong()) },
         )
     } else {
-        Card(
-            header = {
-                UserHeader(
-                    nameProvider = { item.get { user_name } },
-                    nameShowProvider = { item.get { name_show } },
-                    portraitProvider = { item.get { user_portrait } },
-                    onClick = {
-                        onClickUser(item.get { user_id })
-                    },
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            },
-            content = {
-                Column {
-                    post.contents.fastForEach {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onClick(
-                                        item.get { thread_id },
-                                        it.postId,
-                                        it.isSubPost
-                                    )
-                                }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Text(
-                                text = it.contentText,
-                                style = MaterialTheme.typography.body1,
-                                color = ExtendedTheme.colors.text,
-                            )
+        Column(
+            modifier = modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .feedCardSurface()
+                .padding(vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            UserHeader(
+                nameProvider = { item.get { user_name } },
+                nameShowProvider = { item.get { name_show } },
+                portraitProvider = { item.get { user_portrait } },
+                onClick = {
+                    onClickUser(item.get { user_id })
+                },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
 
-                            Text(
-                                text = DateTimeUtils.getRelativeTimeString(
-                                    LocalContext.current,
-                                    it.createTime
-                                ),
-                                style = MaterialTheme.typography.caption,
-                                color = ExtendedTheme.colors.textSecondary,
-                            )
-                        }
+            Column {
+                post.contents.fastForEach {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onClick(
+                                    item.get { thread_id },
+                                    it.postId,
+                                    it.isSubPost
+                                )
+                            }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = it.contentText,
+                            style = MaterialTheme.typography.body1,
+                            color = ExtendedTheme.colors.text,
+                        )
+
+                        Text(
+                            text = DateTimeUtils.getRelativeTimeString(
+                                LocalContext.current,
+                                it.createTime
+                            ),
+                            style = MaterialTheme.typography.caption,
+                            color = ExtendedTheme.colors.textSecondary,
+                        )
                     }
                 }
+            }
 
-                Text(
-                    text = item.get { title },
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(ExtendedTheme.colors.floorCard)
-                        .clickable {
-                            onClickOriginThread(item.get { thread_id })
-                        }
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.body2,
-                )
-            },
-            modifier = modifier,
-            contentPadding = PaddingValues(0.dp),
-        )
+            Text(
+                text = item.get { title },
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(ExtendedTheme.colors.floorCard)
+                    .clickable {
+                        onClickOriginThread(item.get { thread_id })
+                    }
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.body2,
+                color = ExtendedTheme.colors.text,
+            )
+        }
     }
 }

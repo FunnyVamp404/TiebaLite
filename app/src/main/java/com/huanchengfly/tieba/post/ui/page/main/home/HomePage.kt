@@ -1,6 +1,5 @@
 package com.huanchengfly.tieba.post.ui.page.main.home
 
-import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -21,9 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -84,7 +80,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialActionIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.ErrorScreen
 import com.huanchengfly.tieba.post.ui.widgets.compose.LongClickMenu
 import com.huanchengfly.tieba.post.ui.widgets.compose.MenuState
-import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyVerticalGrid
+import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyColumn
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.TextButton
 import com.huanchengfly.tieba.post.ui.widgets.compose.TipScreen
@@ -101,15 +97,7 @@ import com.huanchengfly.tieba.post.utils.TiebaUtil
 import com.huanchengfly.tieba.post.utils.appPreferences
 import kotlinx.collections.immutable.persistentListOf
 
-private val forumGridPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 96.dp)
-
-private fun getGridCells(context: Context, listSingle: Boolean = context.appPreferences.listSingle): GridCells {
-    return if (listSingle) {
-        GridCells.Fixed(1)
-    } else {
-        GridCells.Adaptive(160.dp)
-    }
-}
+private val forumListPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 96.dp)
 
 @Preview("SearchBoxPreview")
 @Composable
@@ -170,33 +158,30 @@ private fun Header(
 }
 
 @Composable
-private fun ForumItemPlaceholder(
-    listSingle: Boolean,
-) {
+private fun ForumItemPlaceholder() {
     val color = ExtendedTheme.colors.chip
     ForumItemLayout(
-        listSingle = listSingle,
         modifier = Modifier.fillMaxWidth().feedCardSurface(),
         avatar = {
             Spacer(
                 modifier = Modifier
-                    .size(if (listSingle) 38.dp else 32.dp)
+                    .size(38.dp)
                     .background(color, RoundedCornerShape(10.dp))
             )
         },
         name = {
             Spacer(
                 modifier = Modifier
-                    .fillMaxWidth(if (listSingle) 0.5f else 0.8f)
-                    .height(if (listSingle) 18.dp else 17.dp)
+                    .fillMaxWidth(0.5f)
+                    .height(18.dp)
                     .background(color, RoundedCornerShape(4.dp))
             )
         },
         level = {
             Spacer(
                 modifier = Modifier
-                    .width(if (listSingle) 48.dp else 35.dp)
-                    .height(if (listSingle) 22.dp else 16.dp)
+                    .width(48.dp)
+                    .height(22.dp)
                     .background(color, RoundedCornerShape(6.dp))
             )
         },
@@ -249,14 +234,12 @@ private fun ForumItemMenuContent(
 @Composable
 private fun ForumItemContent(
     item: HomeUiState.Forum,
-    listSingle: Boolean,
 ) {
     ForumItemLayout(
-        listSingle = listSingle,
         avatar = {
             Avatar(
                 data = item.avatar,
-                size = if (listSingle) 38.dp else 32.dp,
+                size = 38.dp,
                 contentDescription = null,
                 shape = RoundedCornerShape(10.dp),
             )
@@ -265,59 +248,38 @@ private fun ForumItemContent(
             Text(
                 text = item.forumName,
                 color = ExtendedTheme.colors.text,
-                fontSize = if (listSingle) 15.sp else 14.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         },
-        level = { ForumLevelBadge(item, compact = !listSingle) },
+        level = { ForumLevelBadge(item) },
     )
 }
 
 @Composable
 private fun ForumItemLayout(
-    listSingle: Boolean,
     modifier: Modifier = Modifier,
     avatar: @Composable () -> Unit,
     name: @Composable () -> Unit,
     level: @Composable () -> Unit,
 ) {
-    if (listSingle) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            avatar()
-            Box(modifier = Modifier.weight(1f)) { name() }
-            level()
-        }
-    } else {
-        // 双列：纸感瓷砖布局 —— 头像居左、等级徽章居右同一行，吧名独占下方整行
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = CenterVertically,
-            ) {
-                avatar()
-                Spacer(modifier = Modifier.weight(1f))
-                level()
-            }
-            Box(modifier = Modifier.fillMaxWidth()) { name() }
-        }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        avatar()
+        Box(modifier = Modifier.weight(1f)) { name() }
+        level()
     }
 }
 
 @Composable
-private fun ForumLevelBadge(item: HomeUiState.Forum, compact: Boolean) {
+private fun ForumLevelBadge(item: HomeUiState.Forum) {
     val colors = ExtendedTheme.colors
     val contentColor = if (item.isSign) colors.primary else colors.textSecondary
     val backgroundColor = if (item.isSign) {
@@ -328,17 +290,14 @@ private fun ForumLevelBadge(item: HomeUiState.Forum, compact: Boolean) {
     Row(
         modifier = Modifier
             .background(backgroundColor, RoundedCornerShape(6.dp))
-            .padding(
-                horizontal = if (compact) 6.dp else 8.dp,
-                vertical = if (compact) 2.dp else 4.dp,
-            ),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             text = "Lv.${item.levelId}",
             color = contentColor,
-            fontSize = if (compact) 10.sp else 11.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
             maxLines = 1,
         )
@@ -346,7 +305,7 @@ private fun ForumLevelBadge(item: HomeUiState.Forum, compact: Boolean) {
             Icon(
                 imageVector = Icons.Rounded.Check,
                 contentDescription = stringResource(id = R.string.tip_signed),
-                modifier = Modifier.size(if (compact) 10.dp else 12.dp),
+                modifier = Modifier.size(12.dp),
                 tint = contentColor,
             )
         }
@@ -356,7 +315,6 @@ private fun ForumLevelBadge(item: HomeUiState.Forum, compact: Boolean) {
 @Composable
 private fun ForumItem(
     item: HomeUiState.Forum,
-    listSingle: Boolean,
     onClick: (HomeUiState.Forum) -> Unit,
     onUnfollow: (HomeUiState.Forum) -> Unit,
     onAddTopForum: (HomeUiState.Forum) -> Unit,
@@ -384,7 +342,7 @@ private fun ForumItem(
             onClick(item)
         }
     ) {
-        ForumItemContent(item = item, listSingle = listSingle)
+        ForumItemContent(item = item)
     }
 }
 
@@ -401,7 +359,6 @@ fun HomePage(
     val isTabActive = LocalMainTabActive.current
     var enterTrigger by remember { mutableIntStateOf(0) }
     var signTrigger by remember { mutableIntStateOf(0) }
-    var layoutTrigger by remember { mutableIntStateOf(0) }
     var searchTrigger by remember { mutableIntStateOf(0) }
     LaunchedEffect(isTabActive) {
         if (isTabActive) enterTrigger++
@@ -435,9 +392,7 @@ fun HomePage(
     val isEmpty by remember { derivedStateOf { forums.isEmpty() } }
     val hasTopForum by remember { derivedStateOf { topForums.isNotEmpty() } }
     val showHistoryForum by remember { derivedStateOf { context.appPreferences.homePageShowHistoryForum && historyForums.isNotEmpty() } }
-    var listSingle by remember { mutableStateOf(context.appPreferences.listSingle) }
     val isError by remember { derivedStateOf { error != null } }
-    val gridCells by remember { derivedStateOf { getGridCells(context, listSingle) } }
 
     onGlobalEvent<GlobalEvent.Refresh>(
         filter = { it.key == "home" }
@@ -489,21 +444,6 @@ fun HomePage(
                             trigger = enterTrigger + signTrigger,
                         )
                     }
-                    ActionItem(
-                        contentDescription = stringResource(id = R.string.title_switch_list_single),
-                        onClick = {
-                            layoutTrigger++
-                            context.appPreferences.listSingle = !listSingle
-                            listSingle = !listSingle
-                        },
-                    ) {
-                        EditorialActionIcon(
-                            kind = if (listSingle) "layout_single" else "layout_grid",
-                            tint = ExtendedTheme.colors.onTopBar,
-                            trigger = enterTrigger + layoutTrigger,
-                            delayMillis = 45,
-                        )
-                    }
                 }
             )
         },
@@ -544,21 +484,19 @@ fun HomePage(
                         )
                     },
                     loadingScreen = {
-                        HomePageSkeletonScreen(listSingle = listSingle, gridCells = gridCells)
+                        HomePageSkeletonScreen()
                     },
                     errorScreen = {
                         error?.let { ErrorScreen(error = it) }
                     }
                 ) {
-                    MyLazyVerticalGrid(
-                        columns = gridCells,
-                        contentPadding = forumGridPadding,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    MyLazyColumn(
+                        contentPadding = forumListPadding,
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         if (showHistoryForum) {
-                            item(key = "HistoryForums", span = { GridItemSpan(maxLineSpan) }) {
+                            item(key = "HistoryForums") {
                                 val rotate by animateFloatAsState(
                                     targetValue = if (expandHistoryForum) 90f else 0f,
                                     label = "rotate"
@@ -599,7 +537,6 @@ fun HomePage(
                                         val pillShape = RoundedCornerShape(100)
                                         val colors = ExtendedTheme.colors
                                         LazyRow(
-                                            // The grid already supplies the horizontal insets.
                                             contentPadding = PaddingValues(vertical = 2.dp),
                                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         ) {
@@ -652,7 +589,7 @@ fun HomePage(
                             }
                         }
                         if (hasTopForum) {
-                            item(key = "TopForumHeader", span = { GridItemSpan(maxLineSpan) }) {
+                            item(key = "TopForumHeader") {
                                 Header(
                                     text = stringResource(id = R.string.title_top_forum),
                                     invert = true,
@@ -664,7 +601,6 @@ fun HomePage(
                             ) { item ->
                                 ForumItem(
                                     item,
-                                    listSingle,
                                     onClick = {
                                         navigator.navigate(ForumPageDestination(it.forumName))
                                     },
@@ -683,7 +619,7 @@ fun HomePage(
                             }
                         }
                         if (showHistoryForum || hasTopForum) {
-                            item(key = "ForumHeader", span = { GridItemSpan(maxLineSpan) }) {
+                            item(key = "ForumHeader") {
                                 Header(text = stringResource(id = R.string.forum_list_title))
                             }
                         }
@@ -693,7 +629,6 @@ fun HomePage(
                         ) { item ->
                             ForumItem(
                                 item,
-                                listSingle,
                                 onClick = {
                                     navigator.navigate(ForumPageDestination(it.forumName))
                                 },
@@ -725,18 +660,13 @@ fun HomePage(
 }
 
 @Composable
-private fun HomePageSkeletonScreen(
-    listSingle: Boolean,
-    gridCells: GridCells
-) {
-    MyLazyVerticalGrid(
-        columns = gridCells,
-        contentPadding = forumGridPadding,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+private fun HomePageSkeletonScreen() {
+    MyLazyColumn(
+        contentPadding = forumListPadding,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
-        item(key = "TopForumHeaderPlaceholder", span = { GridItemSpan(maxLineSpan) }) {
+        item(key = "TopForumHeaderPlaceholder") {
             Header(
                 text = stringResource(id = R.string.title_top_forum),
                 modifier = Modifier.placeholder(
@@ -748,9 +678,9 @@ private fun HomePageSkeletonScreen(
             )
         }
         items(6, key = { "TopPlaceholder$it" }) {
-            ForumItemPlaceholder(listSingle)
+            ForumItemPlaceholder()
         }
-        item(key = "ForumHeaderPlaceholder", span = { GridItemSpan(maxLineSpan) }) {
+        item(key = "ForumHeaderPlaceholder") {
             Header(
                 text = stringResource(id = R.string.forum_list_title),
                 modifier = Modifier.placeholder(
@@ -761,7 +691,7 @@ private fun HomePageSkeletonScreen(
             )
         }
         items(12, key = { "Placeholder$it" }) {
-            ForumItemPlaceholder(listSingle)
+            ForumItemPlaceholder()
         }
     }
 }

@@ -269,22 +269,6 @@ fun CustomSettingsPage(
             }
             prefsItem {
                 SwitchPref(
-                    key = "listSingle",
-                    title = stringResource(id = R.string.settings_forum_single),
-                    defaultChecked = false,
-                ) {
-                    LeadingIcon {
-                        EditorialSettingIcon(
-                            kind = "agenda",
-                            tint = ExtendedTheme.colors.primary,
-                            modifier = Modifier.size(24.dp),
-                            delayMillis = 420,
-                        )
-                    }
-                }
-            }
-            prefsItem {
-                SwitchPref(
                     key = "hideExplore",
                     title = stringResource(id = R.string.title_hide_explore),
                     defaultChecked = false,

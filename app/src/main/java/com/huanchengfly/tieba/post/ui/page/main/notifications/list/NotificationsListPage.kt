@@ -44,6 +44,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.LoadMoreLayout
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyColumn
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.UserHeader
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.utils.DateTimeUtils
 import com.huanchengfly.tieba.post.utils.StringUtil
 import kotlinx.collections.immutable.persistentListOf
@@ -61,7 +63,6 @@ fun NotificationsListPage(
         viewModel.send(NotificationsListUiIntent.Refresh)
         viewModel.initialized = true
     }
-    val context = LocalContext.current
     val navigator = LocalNavigator.current
     val isRefreshing by viewModel.uiState.collectPartialAsState(
         prop1 = NotificationsListUiState::isRefreshing,
@@ -89,7 +90,9 @@ fun NotificationsListPage(
     )
     val lazyListState = rememberLazyListState()
     Box(
-        modifier = Modifier.pullRefresh(pullRefreshState)
+        modifier = Modifier
+            .background(feedBackdropColor())
+            .pullRefresh(pullRefreshState)
     ) {
         LoadMoreLayout(
             isLoading = isLoadingMore,
@@ -98,7 +101,7 @@ fun NotificationsListPage(
             lazyListState = lazyListState,
         ) {
             MyLazyColumn(
-                contentPadding = PaddingValues(vertical = 4.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                 state = lazyListState,
             ) {
                 items(
@@ -106,6 +109,10 @@ fun NotificationsListPage(
                     key = { "${it.info.postId}_${it.info.replyer?.id}_${it.info.time}" },
                 ) { (info, blocked) ->
                     Container {
+                        val cardModifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .feedCardSurface()
                         BlockableContent(
                             blocked = blocked,
                             blockedTip = {
@@ -115,11 +122,10 @@ fun NotificationsListPage(
                                     )
                                 }
                             },
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                            modifier = cardModifier.padding(12.dp)
                         ) {
                             Column(
-                                modifier = Modifier
+                                modifier = cardModifier
                                     .clickable {
                                         if (info.isFloor == "1") {
                                             navigator.navigate(
@@ -138,7 +144,7 @@ fun NotificationsListPage(
                                             )
                                         }
                                     }
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    .padding(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 if (info.replyer != null) {
@@ -160,11 +166,14 @@ fun NotificationsListPage(
                                             navigator.navigate(UserProfilePageDestination(info.replyer.id!!.toLong()))
                                         },
                                         desc = {
+                                            val time = DateTimeUtils.getRelativeTimeString(
+                                                LocalContext.current,
+                                                info.time!!
+                                            )
+                                            val forum = info.forumName
                                             Text(
-                                                text = DateTimeUtils.getRelativeTimeString(
-                                                    LocalContext.current,
-                                                    info.time!!
-                                                )
+                                                text = if (forum.isNullOrBlank()) time else "$time · $forum",
+                                                color = ExtendedTheme.colors.textSecondary,
                                             )
                                         },
                                     ) {}
@@ -187,7 +196,8 @@ fun NotificationsListPage(
                                         text = quoteText,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .clip(RoundedCornerShape(6.dp))
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(ExtendedTheme.colors.chip.copy(alpha = 0.65f))
                                             .clickable {
                                                 if ("1" == info.isFloor && info.quotePid != null) {
                                                     // quote_pid may point to either the floor or a sub-post,
@@ -207,10 +217,6 @@ fun NotificationsListPage(
                                                     )
                                                 }
                                             }
-                                            .background(
-                                                ExtendedTheme.colors.chip,
-                                                RoundedCornerShape(6.dp)
-                                            )
                                             .padding(8.dp),
                                         color = ExtendedTheme.colors.onChip,
                                         fontSize = 12.sp,

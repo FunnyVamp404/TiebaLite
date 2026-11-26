@@ -5,11 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.huanchengfly.tieba.post.R
@@ -41,6 +44,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.LongClickMenu
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyLazyColumn
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.UserHeader
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberMenuState
 import com.huanchengfly.tieba.post.utils.DateTimeUtils
 import com.huanchengfly.tieba.post.utils.HistoryUtil
@@ -94,9 +99,11 @@ fun HistoryListPage(
         snackbarHostState.showSnackbar(context.getString(R.string.delete_history_success))
     }
     val lazyListState = rememberLazyListState()
+    val backdropColor = feedBackdropColor()
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(backdropColor)
     ) {
         LoadMoreLayout(
             isLoading = isLoadingMore,
@@ -106,16 +113,17 @@ fun HistoryListPage(
             isEmpty = todayHistoryData.isEmpty() && beforeHistoryData.isEmpty()
         ) {
             MyLazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
-                state = lazyListState
+                modifier = Modifier.fillMaxSize(),
+                state = lazyListState,
+                contentPadding = PaddingValues(bottom = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 if (todayHistoryData.isNotEmpty()) {
                     stickyHeader(key = "TodayHistoryHeader") {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(ExtendedTheme.colors.background)
+                                .background(backdropColor)
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Chip(
@@ -161,7 +169,7 @@ fun HistoryListPage(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(ExtendedTheme.colors.background)
+                                .background(backdropColor)
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Chip(text = stringResource(id = R.string.title_history_before))
@@ -212,7 +220,13 @@ private fun HistoryItem(
     onDelete: (History) -> Unit = {},
 ) {
     val menuState = rememberMenuState()
+    val colors = ExtendedTheme.colors
+    val isThread = info.type == HistoryUtil.TYPE_THREAD
     LongClickMenu(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .feedCardSurface(),
         menuContent = {
             DropdownMenuItem(onClick = {
                 onDelete(info)
@@ -225,8 +239,7 @@ private fun HistoryItem(
         onClick = { onClick(info) }
     ) {
         Column(
-            modifier = modifier
-                .padding(16.dp),
+            modifier = Modifier.padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             UserHeader(
@@ -234,13 +247,14 @@ private fun HistoryItem(
                     Avatar(
                         data = info.avatar,
                         size = Sizes.Small,
-                        contentDescription = null
+                        contentDescription = null,
+                        shape = RoundedCornerShape(8.dp)
                     )
                 },
                 name = {
                     Text(
-                        text = (if (info.type == HistoryUtil.TYPE_THREAD) info.username else info.title)
-                            ?: ""
+                        text = (if (isThread) info.username else info.title).orEmpty(),
+                        color = if (isThread) colors.textSecondary else colors.text,
                     )
                 },
             ) {
@@ -249,15 +263,16 @@ private fun HistoryItem(
                         LocalContext.current,
                         info.timestamp
                     ),
-                    fontSize = 15.sp,
-                    color = ExtendedTheme.colors.text,
+                    fontSize = 12.sp,
+                    color = colors.textSecondary,
                 )
             }
-            if (info.type == HistoryUtil.TYPE_THREAD) {
+            if (isThread) {
                 Text(
                     text = info.title,
                     fontSize = 15.sp,
-                    color = ExtendedTheme.colors.text,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.text,
                 )
             }
         }

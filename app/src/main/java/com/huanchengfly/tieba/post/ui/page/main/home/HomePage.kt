@@ -283,28 +283,35 @@ private fun ForumItemLayout(
     name: @Composable () -> Unit,
     level: @Composable () -> Unit,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = if (listSingle) 14.dp else 12.dp,
-                vertical = if (listSingle) 12.dp else 10.dp,
-            ),
-        verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(if (listSingle) 12.dp else 10.dp),
-    ) {
-        avatar()
-        if (listSingle) {
+    if (listSingle) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            avatar()
             Box(modifier = Modifier.weight(1f)) { name() }
             level()
-        } else {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(3.dp),
+        }
+    } else {
+        // 双列：纸感瓷砖布局 —— 头像居左、等级徽章居右同一行，吧名独占下方整行
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = CenterVertically,
             ) {
-                name()
+                avatar()
+                Spacer(modifier = Modifier.weight(1f))
                 level()
             }
+            Box(modifier = Modifier.fillMaxWidth()) { name() }
         }
     }
 }

@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenuItem
@@ -56,7 +56,6 @@ import com.huanchengfly.tieba.post.arch.wrapImmutable
 import com.huanchengfly.tieba.post.ui.common.PbContentText
 import com.huanchengfly.tieba.post.ui.common.TextContentRender
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
-import com.huanchengfly.tieba.post.ui.common.theme.compose.threadBottomBar
 import com.huanchengfly.tieba.post.ui.page.LocalNavigator
 import com.huanchengfly.tieba.post.ui.page.ProvideNavigator
 import com.huanchengfly.tieba.post.ui.page.destinations.CopyTextDialogPageDestination
@@ -80,7 +79,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.ui.widgets.compose.UserHeader
-import com.huanchengfly.tieba.post.ui.widgets.compose.VerticalDivider
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberDialogState
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberMenuState
 import com.huanchengfly.tieba.post.ui.widgets.compose.states.StateScreen
@@ -299,13 +299,14 @@ internal fun SubPostsContent(
     }
 
     StateScreen(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(feedBackdropColor()),
         isEmpty = subPosts.isEmpty(),
         isError = false,
         isLoading = isRefreshing
     ) {
         MyScaffold(
             modifier = Modifier.fillMaxSize(),
+            backgroundColor = feedBackdropColor(),
             topBar = {
                 TitleCentredToolbar(
                     title = {
@@ -347,7 +348,7 @@ internal fun SubPostsContent(
             bottomBar = {
                 if (account != null && !LocalContext.current.appPreferences.hideReply) {
                     Column(
-                        modifier = Modifier.background(ExtendedTheme.colors.threadBottomBar)
+                        modifier = Modifier.background(ExtendedTheme.colors.bottomBar)
                     ) {
                         Row(
                             modifier = Modifier
@@ -425,7 +426,12 @@ internal fun SubPostsContent(
                 MyLazyColumn(state = lazyListState) {
                     item(key = "Post$postId") {
                         post?.let {
-                            Column {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                                    .feedCardSurface()
+                            ) {
                                 PostCard(
                                     postHolder = it,
                                     contentRenders = postContentRenders,
@@ -468,10 +474,6 @@ internal fun SubPostsContent(
                                     deleteSubPost = null
                                     confirmDeleteDialogState.show()
                                 }
-                                VerticalDivider(
-                                    color = ExtendedTheme.colors.divider.copy(alpha = 0.55f),
-                                    thickness = 0.5.dp
-                                )
                             }
                         }
                     }
@@ -479,7 +481,7 @@ internal fun SubPostsContent(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(ExtendedTheme.colors.background)
+                                .background(feedBackdropColor())
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Text(
@@ -491,10 +493,10 @@ internal fun SubPostsContent(
                             )
                         }
                     }
-                    itemsIndexed(
+                    items(
                         items = subPosts,
-                        key = { _, subPost -> subPost.id }
-                    ) { index, item ->
+                        key = { subPost -> subPost.id }
+                    ) { item ->
                         SubPostItem(
                             item = item,
                             canDelete = { it.resolvedAuthorId == account?.uid?.toLongOrNull() },
@@ -582,14 +584,18 @@ private fun SubPostItem(
         subPost.get { agree?.diffAgreeNum ?: 0L }
     }
     val menuState = rememberMenuState()
+    val cardModifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 12.dp, vertical = 4.dp)
+        .feedCardSurface()
+
     BlockableContent(
         blocked = blocked,
         blockedTip = { BlockTip(text = { Text(text = stringResource(id = R.string.tip_blocked_sub_post)) }) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier = cardModifier.padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
         LongClickMenu(
+            modifier = cardModifier,
             menuState = menuState,
             indication = null,
             menuContent = {

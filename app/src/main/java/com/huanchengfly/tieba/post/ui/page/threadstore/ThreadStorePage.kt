@@ -4,17 +4,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -26,8 +27,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -44,8 +45,6 @@ import com.huanchengfly.tieba.post.api.models.ThreadStoreBean
 import com.huanchengfly.tieba.post.arch.collectPartialAsState
 import com.huanchengfly.tieba.post.arch.onEvent
 import com.huanchengfly.tieba.post.arch.pageViewModel
-import com.huanchengfly.tieba.post.dpToPxFloat
-import com.huanchengfly.tieba.post.pxToSp
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.common.theme.compose.pullRefreshIndicator
 import com.huanchengfly.tieba.post.ui.page.destinations.ThreadPageDestination
@@ -55,6 +54,7 @@ import com.huanchengfly.tieba.post.ui.page.thread.ThreadPageFromStoreExtra
 import com.huanchengfly.tieba.post.ui.page.thread.ThreadSortType
 import com.huanchengfly.tieba.post.ui.widgets.compose.Avatar
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialPageHeader
 import com.huanchengfly.tieba.post.ui.widgets.compose.ErrorScreen
 import com.huanchengfly.tieba.post.ui.widgets.compose.LazyLoad
 import com.huanchengfly.tieba.post.ui.widgets.compose.LoadMoreLayout
@@ -64,6 +64,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.ui.widgets.compose.UserHeader
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.states.StateScreen
 import com.huanchengfly.tieba.post.utils.StringUtil
 import com.huanchengfly.tieba.post.utils.StringUtil.getUsernameAnnotatedString
@@ -129,14 +131,15 @@ fun ThreadStorePage(
         scaffoldState.snackbarHostState.showSnackbar(context.getString(R.string.delete_store_success))
     }
     MyScaffold(
-        backgroundColor = Color.Transparent,
+        backgroundColor = feedBackdropColor(),
         scaffoldState = scaffoldState,
         topBar = {
             TitleCentredToolbar(
                 title = {
-                    Text(
-                        text = stringResource(id = R.string.title_my_collect),
-                        fontWeight = FontWeight.Bold, style = MaterialTheme.typography.h6
+                    EditorialPageHeader(
+                        title = stringResource(id = R.string.title_my_collect),
+                        eyebrow = "TIEBA / FAVORITES",
+                        centered = true
                     )
                 },
                 navigationIcon = {
@@ -176,7 +179,11 @@ fun ThreadStorePage(
                     loadEnd = !hasMore,
                     lazyListState = lazyListState
                 ) {
-                    MyLazyColumn(state = lazyListState) {
+                    MyLazyColumn(
+                        state = lazyListState,
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
                         items(
                             items = data,
                             key = { it.threadId }
@@ -238,8 +245,12 @@ private fun StoreItem(
 ) {
     val hasUpdate = remember(info) { info.count != "0" && info.postNo != "0" }
     val isDeleted = remember(info) { info.isDeleted == "1" }
+    val colors = ExtendedTheme.colors
     val textMeasurer = rememberTextMeasurer()
     LongClickMenu(
+        modifier = modifier
+            .fillMaxWidth()
+            .feedCardSurface(),
         menuContent = {
             DropdownMenuItem(onClick = onDelete) {
                 Text(text = stringResource(id = R.string.title_collect_on))
@@ -248,8 +259,7 @@ private fun StoreItem(
         onClick = onClick
     ) {
         Column(
-            modifier = modifier
-                .padding(16.dp),
+            modifier = Modifier.padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             UserHeader(
@@ -257,7 +267,8 @@ private fun StoreItem(
                     Avatar(
                         data = StringUtil.getAvatarUrl(info.author.userPortrait),
                         size = Sizes.Small,
-                        contentDescription = null
+                        contentDescription = null,
+                        shape = RoundedCornerShape(8.dp)
                     )
                 },
                 name = {
@@ -266,8 +277,9 @@ private fun StoreItem(
                             LocalContext.current,
                             info.author.name ?: "",
                             info.author.nameShow,
-                            LocalContentColor.current
-                        )
+                            colors.textSecondary
+                        ),
+                        color = colors.textSecondary
                     )
                 },
                 onClick = onUserClick,
@@ -285,23 +297,31 @@ private fun StoreItem(
                 id = R.string.tip_thread_store_update,
                 info.postNo
             )
-            val result = remember {
+            val result = remember(textMeasurer, updateTip) {
                 textMeasurer.measure(
                     AnnotatedString(updateTip),
                     style = UpdateTipTextStyle
                 ).size
             }
-            val width = result.width.pxToSp() + 12F.dpToPxFloat().pxToSp() * 2 + 1
-            val height = result.height.pxToSp() + 4F.dpToPxFloat().pxToSp() * 2
+            val badgeHorizontalPadding = 8.dp
+            val badgeVerticalPadding = 2.dp
+            val density = LocalDensity.current
+            val width = with(density) {
+                (result.width + 2 * badgeHorizontalPadding.roundToPx() + 1).toSp()
+            }
+            val height = with(density) {
+                (result.height + 2 * badgeVerticalPadding.roundToPx() + 1).toSp()
+            }
             Text(
                 text = title,
                 fontSize = 15.sp,
-                color = if (isDeleted) ExtendedTheme.colors.textDisabled else ExtendedTheme.colors.text,
+                fontWeight = FontWeight.SemiBold,
+                color = if (isDeleted) colors.textDisabled else colors.text,
                 inlineContent = mapOf(
                     "Update" to InlineTextContent(
                         placeholder = Placeholder(
-                            width = width.sp,
-                            height = height.sp,
+                            width = width,
+                            height = height,
                             placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
                         ),
                         children = {
@@ -309,15 +329,20 @@ private fun StoreItem(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(
-                                        color = ExtendedTheme.colors.chip,
-                                        shape = RoundedCornerShape(3.dp)
+                                        color = colors.primary.copy(
+                                            alpha = if (colors.isNightMode) 0.18f else 0.12f
+                                        ),
+                                        shape = CircleShape
                                     )
-                                    .padding(vertical = 4.dp, horizontal = 12.dp)
+                                    .padding(
+                                        horizontal = badgeHorizontalPadding,
+                                        vertical = badgeVerticalPadding
+                                    )
                             ) {
                                 Text(
                                     text = updateTip,
                                     style = UpdateTipTextStyle,
-                                    color = ExtendedTheme.colors.onChip,
+                                    color = colors.primary,
                                     modifier = Modifier.align(Alignment.Center)
                                 )
                             }
@@ -329,7 +354,7 @@ private fun StoreItem(
                 Text(
                     text = stringResource(id = R.string.tip_thread_store_deleted),
                     fontSize = 12.sp,
-                    color = ExtendedTheme.colors.textDisabled
+                    color = colors.textSecondary
                 )
             }
         }

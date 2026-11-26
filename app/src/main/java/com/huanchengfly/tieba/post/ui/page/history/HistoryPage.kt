@@ -1,13 +1,13 @@
 package com.huanchengfly.tieba.post.ui.page.history
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Tab
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -17,10 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.huanchengfly.tieba.post.R
@@ -29,11 +27,14 @@ import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.page.ProvideNavigator
 import com.huanchengfly.tieba.post.ui.page.history.list.HistoryListPage
 import com.huanchengfly.tieba.post.ui.page.history.list.HistoryListUiEvent
+import com.huanchengfly.tieba.post.ui.widgets.compose.ActionItem
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
+import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialPageHeader
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.PagerTabIndicator
 import com.huanchengfly.tieba.post.ui.widgets.compose.TabRow
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.utils.HistoryUtil
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
@@ -53,43 +54,44 @@ fun HistoryPage(
     val pagerState = rememberPagerState { 2 }
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
+    val backdropColor = feedBackdropColor()
+    val colors = ExtendedTheme.colors
 
     val context = LocalContext.current
 
     MyScaffold(
-        backgroundColor = Color.Transparent,
+        backgroundColor = backdropColor,
         scaffoldState = scaffoldState,
         topBar = {
             TitleCentredToolbar(
                 title = {
-                    Text(
-                        text = stringResource(id = R.string.title_history),
-                        fontWeight = FontWeight.Bold, style = MaterialTheme.typography.h6
+                    EditorialPageHeader(
+                        title = stringResource(id = R.string.title_history),
+                        eyebrow = "TIEBA / HISTORY",
+                        centered = true
                     )
                 },
                 navigationIcon = {
                     BackNavigationIcon(onBackPressed = { navigator.navigateUp() })
                 },
                 actions = {
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            HistoryUtil.deleteAll()
-                            emitGlobalEvent(HistoryListUiEvent.DeleteAll)
-                            launch {
-                                scaffoldState.snackbarHostState.showSnackbar(
-                                    context.getString(
-                                        R.string.toast_clear_success
+                    ActionItem(
+                        icon = Icons.Outlined.Delete,
+                        contentDescription = stringResource(id = R.string.title_history_delete),
+                        onClick = {
+                            coroutineScope.launch {
+                                HistoryUtil.deleteAll()
+                                emitGlobalEvent(HistoryListUiEvent.DeleteAll)
+                                launch {
+                                    scaffoldState.snackbarHostState.showSnackbar(
+                                        context.getString(
+                                            R.string.toast_clear_success
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Delete,
-                            contentDescription = stringResource(id = R.string.title_history_delete),
-                            tint = ExtendedTheme.colors.onTopBar
-                        )
-                    }
+                    )
                 },
                 content = {
                     TabRow(
@@ -101,11 +103,13 @@ fun HistoryPage(
                             )
                         },
                         divider = {},
-                        backgroundColor = Color.Transparent,
-                        contentColor = ExtendedTheme.colors.primary,
+                        backgroundColor = backdropColor,
+                        contentColor = colors.primary,
                         modifier = Modifier
+                            .fillMaxWidth()
+                            .background(backdropColor)
+                            .wrapContentWidth()
                             .width(100.dp * 2)
-                            .align(Alignment.CenterHorizontally)
                     ) {
                         Tab(
                             text = {
@@ -120,8 +124,8 @@ fun HistoryPage(
                                     pagerState.animateScrollToPage(0)
                                 }
                             },
-                            selectedContentColor = ExtendedTheme.colors.onTopBar,
-                            unselectedContentColor = ExtendedTheme.colors.onTopBarSecondary
+                            selectedContentColor = colors.text,
+                            unselectedContentColor = colors.textSecondary
                         )
                         Tab(
                             text = {
@@ -136,8 +140,8 @@ fun HistoryPage(
                                     pagerState.animateScrollToPage(1)
                                 }
                             },
-                            selectedContentColor = ExtendedTheme.colors.onTopBar,
-                            unselectedContentColor = ExtendedTheme.colors.onTopBarSecondary
+                            selectedContentColor = colors.text,
+                            unselectedContentColor = colors.textSecondary
                         )
                     }
                 }

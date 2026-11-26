@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -26,12 +26,12 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Tab
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -104,6 +104,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.ScrollableTabRow
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.Toolbar
 import com.huanchengfly.tieba.post.ui.widgets.compose.UserHeader
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
+import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.ui.widgets.compose.states.StateScreen
 import com.huanchengfly.tieba.post.utils.AccountUtil.LocalAccount
 import com.huanchengfly.tieba.post.utils.BlockManager
@@ -165,7 +167,7 @@ fun UserProfilePage(
 
     ProvideNavigator(navigator = navigator) {
         StateScreen(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().background(feedBackdropColor()),
             isEmpty = isEmpty,
             isError = isError,
             isLoading = isRefreshing,
@@ -351,6 +353,7 @@ private fun UserProfileContentNormal(
     }
 
     MyScaffold(
+        backgroundColor = feedBackdropColor(),
         topBar = {
             UserProfileToolbar(
                 user = user,
@@ -430,7 +433,7 @@ private fun UserProfileContentNormal(
                                     )
                                 },
                                 content = { user, fluid ->
-                                    UserPostPage(
+                                    UserProfilePostList(
                                         uid = user.get { id },
                                         isThread = true,
                                         fluid = fluid,
@@ -446,7 +449,7 @@ private fun UserProfileContentNormal(
                                     )
                                 },
                                 content = { user, fluid ->
-                                    UserPostPage(
+                                    UserProfilePostList(
                                         uid = user.get { id },
                                         isThread = false,
                                         fluid = fluid,
@@ -500,8 +503,7 @@ private fun UserProfileContentNormal(
                             UserProfileDetail(
                                 user = user,
                                 modifier = Modifier
-                                    .padding(16.dp)
-                                    .padding(top = 8.dp),
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
                                 showBtn = showActionBtn,
                                 isSelf = isSelf,
                                 onBtnClick = {
@@ -562,6 +564,7 @@ private fun UserProfileContentExpanded(
     val context = LocalContext.current
 
     MyScaffold(
+        backgroundColor = feedBackdropColor(),
         topBar = {
             UserProfileToolbar(
                 user = user,
@@ -594,11 +597,10 @@ private fun UserProfileContentExpanded(
                                     )
                                 },
                                 content = { user, expanded ->
-                                    UserPostPage(
+                                    UserProfilePostList(
                                         uid = user.get { id },
                                         isThread = true,
                                         fluid = expanded,
-                                        enablePullRefresh = expanded,
                                     )
                                 }
                             ),
@@ -611,11 +613,10 @@ private fun UserProfileContentExpanded(
                                     )
                                 },
                                 content = { user, expanded ->
-                                    UserPostPage(
+                                    UserProfilePostList(
                                         uid = user.get { id },
                                         isThread = false,
                                         fluid = expanded,
-                                        enablePullRefresh = expanded,
                                     )
                                 }
                             ).takeIf { isSelf },
@@ -645,7 +646,8 @@ private fun UserProfileContentExpanded(
                         user = user,
                         modifier = Modifier
                             .weight(1f)
-                            .align(Alignment.Top),
+                            .align(Alignment.Top)
+                            .padding(top = 8.dp),
                         showBtn = showActionBtn,
                         isSelf = isSelf,
                         onBtnClick = {
@@ -697,6 +699,17 @@ data class UserProfilePageData(
     val title: @Composable (ImmutableHolder<User>) -> String,
     val content: @Composable (ImmutableHolder<User>, Boolean) -> Unit,
 )
+
+@Composable
+private fun UserProfilePostList(uid: Long, isThread: Boolean, fluid: Boolean) {
+    // UserPostPage 内部的 FeedCard 已是独立纸感卡片，这里不再额外套卡片，避免卡中卡
+    UserPostPage(
+        uid = uid,
+        isThread = isThread,
+        fluid = fluid,
+        enablePullRefresh = fluid,
+    )
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -790,48 +803,56 @@ private fun UserProfileDetail(
     onCopyIdClick: () -> Unit = {},
 ) {
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .feedCardSurface()
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Avatar(
                 data = StringUtil.getBigAvatarUrl(user.get { portrait }),
-                size = 96.dp,
-                contentDescription = null,
-                modifier = Modifier.padding(bottom = 16.dp)
+                size = Sizes.Large,
+                contentDescription = null
             )
-            Spacer(modifier = Modifier.weight(1f))
             if (showBtn) {
+                val colors = ExtendedTheme.colors
                 Button(
                     onClick = onBtnClick,
-                    colors = if (user.get { has_concerned } == 0 || isSelf) {
-                        ButtonDefaults.buttonColors()
-                    } else {
-                        ButtonDefaults.outlinedButtonColors()
-                    },
-                    border = if (user.get { has_concerned } == 0 || isSelf) {
-                        null
-                    } else {
-                        ButtonDefaults.outlinedBorder
-                    },
+                    elevation = null,
+                    shape = RoundedCornerShape(100),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = colors.primary.copy(
+                            alpha = if (colors.isNightMode) 0.18f else 0.12f
+                        ),
+                        contentColor = colors.primary,
+                    ),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        if (isSelf) {
-                            Icon(imageVector = Icons.Rounded.Edit, contentDescription = null)
-                            Text(text = stringResource(id = R.string.menu_edit_info))
-                        } else if (user.get { has_concerned } == 0) {
-                            Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
-                            Text(text = stringResource(id = R.string.button_follow))
-                        } else {
-                            Text(text = stringResource(id = R.string.button_unfollow))
-                        }
+                    val isFollowing = user.get { has_concerned } != 0
+                    if (isSelf || !isFollowing) {
+                        Icon(
+                            imageVector = if (isSelf) Icons.Rounded.Edit else Icons.Rounded.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
                     }
+                    Text(
+                        text = stringResource(
+                            id = when {
+                                isSelf -> R.string.menu_edit_info
+                                isFollowing -> R.string.button_unfollow
+                                else -> R.string.button_follow
+                            }
+                        ),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                    )
                 }
             }
         }
@@ -848,71 +869,38 @@ private fun UserProfileDetail(
             fontWeight = FontWeight.Bold
         )
         val navigator = LocalNavigator.current
-        ProvideTextStyle(value = MaterialTheme.typography.body2) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.height(IntrinsicSize.Min)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.clickable {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            UserProfileStat(
+                number = user.get { concern_num }.getShortNumString(),
+                label = stringResource(id = R.string.text_stat_follow),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
                         navigator.navigate(
                             WebViewPageDestination(
                                 initialUrl = "https://tieba.baidu.com/home/concern?id=${user.get { portrait }}&fr=home"
                             )
                         )
                     }
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.text_stat_follow),
-                        color = ExtendedTheme.colors.textSecondary
-                    )
-                    Text(
-                        text = user.get { concern_num }.getShortNumString(),
-                        color = ExtendedTheme.colors.text,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                HorizontalDivider(modifier = Modifier.fillMaxHeight())
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.clickable {
+            )
+            UserProfileStat(
+                number = user.get { fans_num }.getShortNumString(),
+                label = stringResource(id = R.string.text_stat_fans),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
                         navigator.navigate(
                             WebViewPageDestination(
                                 initialUrl = "https://tieba.baidu.com/home/fans?id=${user.get { portrait }}&fr=home"
                             )
                         )
                     }
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.text_stat_fans),
-                        color = ExtendedTheme.colors.textSecondary
-                    )
-                    Text(
-                        text = user.get { fans_num }.getShortNumString(),
-                        color = ExtendedTheme.colors.text,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                HorizontalDivider(modifier = Modifier.fillMaxHeight())
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.text_stat_agrees),
-                        color = ExtendedTheme.colors.textSecondary
-                    )
-                    Text(
-                        text = user.get { total_agree_num }.getShortNumString(),
-                        color = ExtendedTheme.colors.text,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            )
+            UserProfileStat(
+                number = user.get { total_agree_num }.getShortNumString(),
+                label = stringResource(id = R.string.text_stat_agrees),
+                modifier = Modifier.weight(1f),
+            )
         }
         Text(
             text = user.get { intro }.takeIf { it.isNotEmpty() }
@@ -963,11 +951,12 @@ private fun UserProfileDetail(
             2 -> "♀"
             else -> "?"
         }
+        val chipShape = RoundedCornerShape(6.dp)
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Chip(text = sexEmoji, invertColor = true)
+            Chip(text = sexEmoji, shape = chipShape)
             Chip(
                 text = stringResource(
                     id = R.string.text_profile_user_id,
@@ -979,7 +968,8 @@ private fun UserProfileDetail(
                         contentDescription = null
                     )
                 },
-                onClick = onCopyIdClick
+                onClick = onCopyIdClick,
+                shape = chipShape,
             )
             if (user.get { ip_address }.isNotEmpty()) {
                 Chip(
@@ -987,24 +977,37 @@ private fun UserProfileDetail(
                         id = R.string.text_profile_ip_location,
                         user.get { ip_address }
                     ),
+                    shape = chipShape,
                 )
             }
             Chip(
                 text = stringResource(
                     id = R.string.text_profile_tb_age,
                     user.get { tb_age }
-                )
+                ),
+                shape = chipShape,
             )
         }
     }
 }
 
 @Composable
-private fun HorizontalDivider(modifier: Modifier = Modifier) {
-    Box(
-        modifier = Modifier
-            .background(ExtendedTheme.colors.divider)
-            .width(1.dp)
-            .then(modifier)
-    )
+private fun UserProfileStat(number: String, label: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            text = number,
+            style = MaterialTheme.typography.body2,
+            color = ExtendedTheme.colors.text,
+            fontWeight = FontWeight.Medium,
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.caption,
+            color = ExtendedTheme.colors.textSecondary,
+        )
+    }
 }

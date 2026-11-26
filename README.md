@@ -14,6 +14,18 @@
 
 ---
 
+## 界面预览
+
+<p align="center">
+    <img src="docs/screenshots/screenshot_1.jpg" width="260" alt="界面预览 1" />
+    &nbsp;&nbsp;
+    <img src="docs/screenshots/screenshot_2.jpg" width="260" alt="界面预览 2" />
+    &nbsp;&nbsp;
+    <img src="docs/screenshots/screenshot_3.jpg" width="260" alt="界面预览 3" />
+</p>
+
+---
+
 ## 核心特性
 
 - **共存安装**：独立包名后缀 `.custom`、应用名 `贴吧 Lite+`，可与原版贴吧 Lite 或官方贴吧共存。

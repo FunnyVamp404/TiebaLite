@@ -102,7 +102,7 @@ fun CustomSettingsPage(
                         }
                     },
                     entries = mapOf(
-                        LauncherIcons.NEW_ICON to "自定义图标",
+                        LauncherIcons.NEW_ICON to "默认图标",
                         LauncherIcons.OLD_ICON to "旧图标",
                     ),
                     icons = mapOf(
@@ -113,7 +113,7 @@ fun CustomSettingsPage(
                                         R.drawable.ic_launcher_new_round
                                     )
                                 ),
-                                contentDescription = "自定义图标",
+                                contentDescription = "默认图标",
                                 modifier = Modifier.size(Sizes.Medium)
                             )
                         },

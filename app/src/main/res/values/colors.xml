@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_new_background">#FF15212F</color>
+    <color name="ic_launcher_new_background">#FF1F4B7A</color>
     <color name="ic_launcher_new_invert_background">#FFFFFFFF</color>
     <color name="ic_launcher_background">#FF2E60B0</color>
 
@@ -285,7 +285,7 @@
 
     <color name="color_divider">#FFF7FBFE</color>
 
-    <color name="colorSplashBg">#ffffff</color>
+    <color name="colorSplashBg">#FFF6F5F1</color>
     <color name="icon_blue">#FF3373EE</color>
     <color name="icon_purple">#FF8E6DCA</color>
     <color name="black_trans">#50000000</color>

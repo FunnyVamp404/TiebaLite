@@ -12,16 +12,9 @@
         </shape>
     </item>
     <item
-        android:width="120dp"
-        android:height="120dp"
+        android:width="144dp"
+        android:height="144dp"
         android:gravity="center">
-        <bitmap android:src="@drawable/ic_splash" />
-    </item>
-    <item
-        android:width="200dp"
-        android:height="80dp"
-        android:bottom="35dp"
-        android:gravity="bottom|center_horizontal">
-        <bitmap android:src="@drawable/ic_splash_text" />
+        <bitmap android:src="@drawable/ic_splash_logo" />
     </item>
 </layer-list>

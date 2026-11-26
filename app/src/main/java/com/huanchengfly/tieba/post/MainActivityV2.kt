@@ -1,5 +1,9 @@
 package com.huanchengfly.tieba.post
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
@@ -13,6 +17,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
+import android.view.animation.PathInterpolator
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.AnimationSpec
@@ -302,7 +308,24 @@ class MainActivityV2 : BaseComposeActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
+        splashScreen.setOnExitAnimationListener { splashScreenViewProvider ->
+            val splashView = splashScreenViewProvider.view
+            val liftPx = resources.displayMetrics.density * 14f
+            val fadeOut = ObjectAnimator.ofFloat(splashView, View.ALPHA, 1f, 0f)
+            val liftUp = ObjectAnimator.ofFloat(splashView, View.TRANSLATION_Y, 0f, -liftPx)
+            AnimatorSet().apply {
+                duration = 220L
+                interpolator = PathInterpolator(0.2f, 0f, 0f, 1f)
+                playTogether(fadeOut, liftUp)
+                addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        splashScreenViewProvider.remove()
+                    }
+                })
+                start()
+            }
+        }
         super.onCreate(savedInstanceState)
         window.decorView.setBackgroundColor(0)
         window.setBackgroundDrawable(ColorDrawable(0))

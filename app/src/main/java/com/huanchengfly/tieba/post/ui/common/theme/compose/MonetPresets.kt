@@ -177,7 +177,7 @@ enum class MonetPreset(
                 bottomBarSurface = darkCard,
                 chip = darkChip,
                 divider = darkPrimary.copy(alpha = 0.20f),
-                indicator = darkPrimary,
+                indicator = darkCard,
             )
         } else {
             base.copy(
@@ -193,7 +193,7 @@ enum class MonetPreset(
                 bottomBarSurface = lightCard,
                 chip = lightChip,
                 divider = lightPrimary.copy(alpha = 0.16f),
-                indicator = lightPrimary,
+                indicator = lightCard,
             )
         }
     }

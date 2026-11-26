@@ -1,6 +1,5 @@
 package com.huanchengfly.tieba.post.ui.page.settings.custom
 
-import android.os.Build
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,24 +8,18 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.huanchengfly.tieba.post.R
 import com.huanchengfly.tieba.post.activities.AppFontSizeActivity
 import com.huanchengfly.tieba.post.dataStore
 import com.huanchengfly.tieba.post.goToActivity
-import com.huanchengfly.tieba.post.rememberPreferenceAsState
 import com.huanchengfly.tieba.post.ui.common.prefs.PrefsScreen
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.ListPref
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.SwitchPref
@@ -40,10 +33,8 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.utils.AppIconUtil
 import com.huanchengfly.tieba.post.utils.LauncherIcons
-import com.huanchengfly.tieba.post.utils.ThemeUtil
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.collections.immutable.persistentListOf
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Destination
@@ -94,31 +85,6 @@ fun CustomSettingsPage(
                 )
             }
             prefsItem {
-                val darkThemeValues = stringArrayResource(id = R.array.dark_theme_values)
-                val darkThemeNames = stringArrayResource(id = R.array.dark_theme_names)
-                ListPref(
-                    key = "dark_theme",
-                    title = stringResource(id = R.string.settings_night_mode),
-                    defaultValue = ThemeUtil.THEME_AMOLED_DARK,
-                    leadingIcon = {
-                        LeadingIcon {
-                            EditorialSettingIcon(
-                                kind = "moon",
-                                tint = ExtendedTheme.colors.primary,
-                                modifier = Modifier.size(24.dp),
-                                delayMillis = 60,
-                            )
-                        }
-                    },
-                    entries = darkThemeValues.associateWith { value ->
-                        darkThemeNames[darkThemeValues.indexOf(
-                            value
-                        )]
-                    },
-                    useSelectedAsSummary = true,
-                )
-            }
-            prefsItem {
                 ListPref(
                     key = "app_icon",
                     title = stringResource(id = R.string.settings_app_icon),
@@ -129,38 +95,14 @@ fun CustomSettingsPage(
                                 kind = "apps",
                                 tint = ExtendedTheme.colors.primary,
                                 modifier = Modifier.size(24.dp),
-                                delayMillis = 120,
+                                delayMillis = 60,
                             )
                         }
                     },
                     entries = mapOf(
-                        LauncherIcons.NEW_ICON to "新图标",
-                        LauncherIcons.NEW_ICON_INVERT to "新图标（反色）",
                         LauncherIcons.OLD_ICON to "旧图标",
                     ),
                     icons = mapOf(
-                        LauncherIcons.NEW_ICON to {
-                            Image(
-                                painter = rememberDrawablePainter(
-                                    drawable = LocalContext.current.getDrawable(
-                                        R.drawable.ic_launcher_new_round
-                                    )
-                                ),
-                                contentDescription = "新图标",
-                                modifier = Modifier.size(Sizes.Medium)
-                            )
-                        },
-                        LauncherIcons.NEW_ICON_INVERT to {
-                            Image(
-                                painter = rememberDrawablePainter(
-                                    drawable = LocalContext.current.getDrawable(
-                                        R.drawable.ic_launcher_new_invert_round
-                                    )
-                                ),
-                                contentDescription = "新图标（反色）",
-                                modifier = Modifier.size(Sizes.Medium)
-                            )
-                        },
                         LauncherIcons.OLD_ICON to {
                             Image(
                                 painter = rememberDrawablePainter(
@@ -177,96 +119,6 @@ fun CustomSettingsPage(
                     useSelectedAsSummary = true,
                 )
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                prefsItem {
-                    val supportThemedIcons = remember {
-                        persistentListOf(
-                            LauncherIcons.NEW_ICON,
-//                            LauncherIcons.NEW_ICON_INVERT,
-                        )
-                    }
-                    val currentLauncherIcon by rememberPreferenceAsState(
-                        key = stringPreferencesKey("app_icon"),
-                        defaultValue = LauncherIcons.NEW_ICON
-                    )
-                    val isCurrentSupportThemedIcon by remember {
-                        derivedStateOf {
-                            supportThemedIcons.contains(currentLauncherIcon)
-                        }
-                    }
-                    SwitchPref(
-                        key = "useThemedIcon",
-                        title = stringResource(id = R.string.title_settings_use_themed_icon),
-                        defaultChecked = false,
-                        enabled = isCurrentSupportThemedIcon,
-                        leadingIcon = {
-                            LeadingIcon {
-                                EditorialSettingIcon(
-                                    kind = "palette",
-                                    tint = ExtendedTheme.colors.primary,
-                                    modifier = Modifier.size(24.dp),
-                                    delayMillis = 180,
-                                )
-                            }
-                        },
-                        onCheckedChange = {
-                            AppIconUtil.setIcon(isThemed = it)
-                        },
-                        summary = stringResource(id = R.string.tip_settings_use_themed_icon_summary_not_supported).takeUnless { isCurrentSupportThemedIcon },
-                    )
-                }
-            }
-            prefsItem {
-                SwitchPref(
-                    key = "follow_system_night",
-                    title = stringResource(id = R.string.title_settings_follow_system_night),
-                    defaultChecked = true,
-                ) {
-                    LeadingIcon {
-                        EditorialSettingIcon(
-                            kind = "auto_brightness",
-                            tint = ExtendedTheme.colors.primary,
-                            modifier = Modifier.size(24.dp),
-                            delayMillis = 240,
-                        )
-                    }
-                }
-            }
-            prefsItem {
-                SwitchPref(
-                    key = "status_bar_darker",
-                    title = stringResource(id = R.string.title_settings_status_bar_darker),
-                    summary = stringResource(id = R.string.summary_settings_status_bar_darker),
-                    defaultChecked = true,
-                ) {
-                    LeadingIcon {
-                        EditorialSettingIcon(
-                            kind = "flask",
-                            tint = ExtendedTheme.colors.primary,
-                            modifier = Modifier.size(24.dp),
-                            delayMillis = 300,
-                        )
-                    }
-                }
-            }
-            prefsItem {
-                SwitchPref(
-                    key = "custom_toolbar_primary_color",
-                    title = stringResource(id = R.string.tip_toolbar_primary_color),
-                    defaultChecked = false,
-                    leadingIcon = {
-                        LeadingIcon {
-                            EditorialSettingIcon(
-                                kind = "fill",
-                                tint = ExtendedTheme.colors.primary,
-                                modifier = Modifier.size(24.dp),
-                                delayMillis = 360,
-                            )
-                        }
-                    },
-                    summary = stringResource(id = R.string.tip_toolbar_primary_color_summary),
-                )
-            }
             prefsItem {
                 SwitchPref(
                     key = "hideExplore",
@@ -278,28 +130,10 @@ fun CustomSettingsPage(
                             kind = "compass",
                             tint = ExtendedTheme.colors.primary,
                             modifier = Modifier.size(24.dp),
-                            delayMillis = 480,
+                            delayMillis = 120,
                         )
                     }
                 }
-            }
-            prefsItem {
-                SwitchPref(
-                    key = "liftUpBottomBar",
-                    title = stringResource(id = R.string.title_lift_up_bottom_bar),
-                    defaultChecked = true,
-                    leadingIcon = {
-                        LeadingIcon {
-                            EditorialSettingIcon(
-                                kind = "layout",
-                                tint = ExtendedTheme.colors.primary,
-                                modifier = Modifier.size(24.dp),
-                                delayMillis = 540,
-                            )
-                        }
-                    },
-                    summary = stringResource(id = R.string.summary_lift_up_bottom_bar),
-                )
             }
         }
     }

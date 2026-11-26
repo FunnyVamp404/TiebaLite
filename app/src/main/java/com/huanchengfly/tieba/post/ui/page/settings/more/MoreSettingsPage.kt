@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.huanchengfly.tieba.post.BuildConfig
 import com.huanchengfly.tieba.post.R
 import com.huanchengfly.tieba.post.dataStore
 import com.huanchengfly.tieba.post.ui.common.prefs.PrefsScreen
@@ -31,7 +30,6 @@ import com.huanchengfly.tieba.post.ui.common.prefs.dependNot
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.SwitchPref
 import com.huanchengfly.tieba.post.ui.common.prefs.widgets.TextPref
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
-import com.huanchengfly.tieba.post.ui.page.destinations.AboutPageDestination
 import com.huanchengfly.tieba.post.ui.page.settings.LeadingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
@@ -177,26 +175,6 @@ fun MoreSettingsPage(
                         }
                     },
                     summary = stringResource(id = R.string.tip_cache, cacheSize)
-                )
-            }
-            prefsItem {
-                TextPref(
-                    leadingIcon = {
-                        LeadingIcon {
-                            EditorialSettingIcon(
-                                kind = "info",
-                                tint = ExtendedTheme.colors.primary,
-                                modifier = Modifier.size(24.dp),
-                                delayMillis = 240,
-                            )
-                        }
-                    },
-                    enabled = true,
-                    title = stringResource(id = R.string.title_about),
-                    onClick = {
-                        navigator.navigate(AboutPageDestination)
-                    },
-                    summary = stringResource(id = R.string.tip_about, BuildConfig.VERSION_NAME)
                 )
             }
         }

@@ -26,7 +26,6 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.EditorialSettingIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
-import com.huanchengfly.tieba.post.utils.isPhotoPickerAvailable
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
@@ -329,33 +328,6 @@ fun HabitSettingsPage(
                         )
                     }
                 }
-            }
-            prefsItem {
-                SwitchPref(
-                    key = "doNotUsePhotoPicker",
-                    title = stringResource(id = R.string.title_do_not_use_photo_picker),
-                    summary = {
-                        if (!isPhotoPickerAvailable()) {
-                            context.getString(R.string.summary_photo_picker_not_supported)
-                        } else if (it) {
-                            context.getString(R.string.summary_do_not_use_photo_picker)
-                        } else {
-                            context.getString(R.string.summary_use_photo_picker)
-                        }
-                    },
-                    defaultChecked = false,
-                    leadingIcon = {
-                        LeadingIcon {
-                            EditorialSettingIcon(
-                                kind = "default",
-                                tint = ExtendedTheme.colors.primary,
-                                modifier = Modifier.size(24.dp),
-                                delayMillis = 780,
-                            )
-                        }
-                    },
-                    enabled = isPhotoPickerAvailable()
-                )
             }
         }
     }

@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +55,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
 import com.huanchengfly.tieba.post.utils.ThemeUtil
+import com.huanchengfly.tieba.post.utils.appPreferences
 import com.huanchengfly.tieba.post.utils.extension.toHexString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -181,11 +183,44 @@ fun AppThemePage(
                 }
             }
             item {
+                val context = LocalContext.current
                 val isNightMode = ThemeUtil.isNightMode(currentTheme)
+                val followSystemNight by rememberPreferenceAsState(
+                    key = booleanPreferencesKey("follow_system_night"),
+                    defaultValue = true,
+                )
                 val colors = ExtendedTheme.colors
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     ArchiveSectionHeader(code = "03 / APPEARANCE MODE", title = "外观模式")
-                    Spacer(Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "跟随系统深色模式",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = colors.text,
+                            )
+                            Text(
+                                text = "自动随系统浅色或深色外观切换",
+                                fontSize = 12.sp,
+                                color = colors.textSecondary,
+                            )
+                        }
+                        Switch(
+                            checked = followSystemNight,
+                            onCheckedChange = { enabled ->
+                                context.appPreferences.followSystemNight = enabled
+                            },
+                        )
+                    }
+                    Divider(
+                        thickness = 0.6.dp,
+                        color = colors.divider.copy(alpha = 0.5f),
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -199,7 +234,7 @@ fun AppThemePage(
                                 color = colors.text,
                             )
                             Text(
-                                text = "切换夜间底色与浅色外观",
+                                text = "手动切换夜间底色与浅色外观",
                                 fontSize = 12.sp,
                                 color = colors.textSecondary,
                             )
@@ -207,6 +242,9 @@ fun AppThemePage(
                         Switch(
                             checked = isNightMode,
                             onCheckedChange = { enabled ->
+                                if (followSystemNight) {
+                                    context.appPreferences.followSystemNight = false
+                                }
                                 if (enabled) {
                                     ThemeUtil.dataStore.putString(
                                         ThemeUtil.KEY_DARK_THEME,

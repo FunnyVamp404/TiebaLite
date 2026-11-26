@@ -96,7 +96,7 @@ fun AboutPage(
             ) {
                 Image(
                     painter = rememberDrawablePainter(
-                        drawable = context.getDrawable(R.mipmap.ic_launcher_new)
+                        drawable = context.getDrawable(R.mipmap.ic_launcher)
                     ),
                     contentDescription = null,
                     modifier = Modifier.size(76.dp).clip(RoundedCornerShape(18.dp)),

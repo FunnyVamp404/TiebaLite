@@ -13,14 +13,13 @@ object LauncherIcons {
     const val NEW_ICON_INVERT = "com.huanchengfly.tieba.post.MainActivityIconInvert"
     const val OLD_ICON = "com.huanchengfly.tieba.post.MainActivityIconOld"
 
-    const val DEFAULT_ICON = NEW_ICON
+    const val DEFAULT_ICON = OLD_ICON
 
     val ICONS = persistentListOf(NEW_ICON, NEW_ICON_THEMED, NEW_ICON_INVERT, OLD_ICON)
+    val AVAILABLE_ICONS = persistentListOf(OLD_ICON)
 
-    val SUPPORT_THEMED_ICON = persistentListOf(NEW_ICON)
-    val THEMED_ICON_MAPPING = mapOf(
-        NEW_ICON to NEW_ICON_THEMED,
-    )
+    val SUPPORT_THEMED_ICON = persistentListOf<String>()
+    val THEMED_ICON_MAPPING = emptyMap<String, String>()
 
     const val OLD_LAUNCHER_ICON = "com.huanchengfly.tieba.post.activities.MainActivity"
 }
@@ -35,13 +34,16 @@ object AppIconUtil {
         get() = context.appPreferences
 
     fun setIcon(
-        icon: String = appPreferences.appIcon ?: LauncherIcons.NEW_ICON,
-        isThemed: Boolean = appPreferences.useThemedIcon,
+        icon: String = appPreferences.appIcon ?: LauncherIcons.DEFAULT_ICON,
+        isThemed: Boolean = false,
     ) {
         val useThemedIcon = isThemed && LauncherIcons.SUPPORT_THEMED_ICON.contains(icon)
-        var newIcon = if (LauncherIcons.ICONS.contains(icon)) {
+        var newIcon = if (LauncherIcons.AVAILABLE_ICONS.contains(icon)) {
             icon
         } else LauncherIcons.DEFAULT_ICON
+        if (appPreferences.appIcon != newIcon) {
+            appPreferences.appIcon = newIcon
+        }
         if (useThemedIcon) {
             newIcon = LauncherIcons.THEMED_ICON_MAPPING[newIcon] ?: newIcon
         }

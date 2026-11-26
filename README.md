@@ -17,11 +17,13 @@
 ## 界面预览
 
 <p align="center">
-    <img src="docs/screenshots/screenshot_1.jpg" width="260" alt="界面预览 1" />
-    &nbsp;&nbsp;
-    <img src="docs/screenshots/screenshot_2.jpg" width="260" alt="界面预览 2" />
-    &nbsp;&nbsp;
-    <img src="docs/screenshots/screenshot_3.jpg" width="260" alt="界面预览 3" />
+    <img src="docs/screenshots/screenshot_1.jpg" width="200" alt="界面预览 1" />
+    &nbsp;
+    <img src="docs/screenshots/screenshot_2.jpg" width="200" alt="界面预览 2" />
+    &nbsp;
+    <img src="docs/screenshots/screenshot_3.jpg" width="200" alt="界面预览 3" />
+    &nbsp;
+    <img src="docs/screenshots/screenshot_4.jpg" width="200" alt="界面预览 4" />
 </p>
 
 ---

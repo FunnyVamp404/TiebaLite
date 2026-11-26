@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -70,6 +72,15 @@ jobs:
         with:
           name: mapping
           path: ./app/build/outputs/mapping/release
+
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "贴吧 Lite+ ${{ github.ref_name }}"
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: ./app/build/outputs/apk/release/*.apk
 
       - name: Post to channel
         if: contains(github.event.head_commit.message, '[skip post]') == false && github.event_name != 'pull_request'

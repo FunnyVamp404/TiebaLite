@@ -1,6 +1,8 @@
 package com.huanchengfly.tieba.post.utils
 
 import android.content.Context
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -9,6 +11,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.huanchengfly.tieba.post.App
 import com.huanchengfly.tieba.post.dataStore
 import com.huanchengfly.tieba.post.getBoolean
 import com.huanchengfly.tieba.post.getFloat
@@ -121,6 +124,8 @@ open class AppPreferencesUtils private constructor(ctx: Context) {
     var hideMedia by DataStoreDelegates.boolean(defaultValue = false)
 
     var hideReply by DataStoreDelegates.boolean(defaultValue = false)
+
+    var homeForumGridMode by DataStoreDelegates.boolean(defaultValue = false)
 
     var homePageScroll by DataStoreDelegates.boolean(defaultValue = false)
 
@@ -415,3 +420,14 @@ open class AppPreferencesUtils private constructor(ctx: Context) {
 
 val Context.appPreferences: AppPreferencesUtils
     get() = AppPreferencesUtils.getInstance(this)
+
+object HomeForumLayoutState {
+    val gridModeState: MutableState<Boolean> by lazy {
+        mutableStateOf(App.INSTANCE.appPreferences.homeForumGridMode)
+    }
+
+    fun setGridMode(gridMode: Boolean) {
+        gridModeState.value = gridMode
+        App.INSTANCE.appPreferences.homeForumGridMode = gridMode
+    }
+}

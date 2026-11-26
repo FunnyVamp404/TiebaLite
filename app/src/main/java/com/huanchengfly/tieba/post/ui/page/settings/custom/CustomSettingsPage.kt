@@ -32,6 +32,7 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.utils.AppIconUtil
+import com.huanchengfly.tieba.post.utils.HomeForumLayoutState
 import com.huanchengfly.tieba.post.utils.LauncherIcons
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -135,6 +136,23 @@ fun CustomSettingsPage(
             }
             prefsItem {
                 SwitchPref(
+                    key = "homeForumGridMode",
+                    title = stringResource(id = R.string.settings_forum_grid),
+                    defaultChecked = false,
+                    onCheckedChange = { HomeForumLayoutState.gridModeState.value = it },
+                ) {
+                    LeadingIcon {
+                        EditorialSettingIcon(
+                            kind = "layout",
+                            tint = ExtendedTheme.colors.primary,
+                            modifier = Modifier.size(22.dp),
+                            delayMillis = 120,
+                        )
+                    }
+                }
+            }
+            prefsItem {
+                SwitchPref(
                     key = "hideExplore",
                     title = stringResource(id = R.string.title_hide_explore),
                     defaultChecked = false,
@@ -144,7 +162,7 @@ fun CustomSettingsPage(
                             kind = "compass",
                             tint = ExtendedTheme.colors.primary,
                             modifier = Modifier.size(22.dp),
-                            delayMillis = 120,
+                            delayMillis = 180,
                         )
                     }
                 }

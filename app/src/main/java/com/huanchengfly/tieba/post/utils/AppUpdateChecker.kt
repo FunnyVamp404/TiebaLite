@@ -47,7 +47,7 @@ sealed interface UpdateCheckResult {
 object AppUpdateChecker {
     private const val RELEASES_API_URL =
         "https://api.github.com/repos/FunnyVamp404/TiebaLitePlus/releases?per_page=5"
-    private const val AUTO_CHECK_INTERVAL_MS = 6L * 60L * 60L * 1000L
+    private const val AUTO_CHECK_INTERVAL_MS = 24L * 60L * 60L * 1000L
 
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()

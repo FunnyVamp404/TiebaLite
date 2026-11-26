@@ -21,7 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,10 +44,16 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedBackdropColor
 import com.huanchengfly.tieba.post.ui.widgets.compose.feedCardSurface
+import com.huanchengfly.tieba.post.ui.widgets.compose.rememberDialogState
+import com.huanchengfly.tieba.post.utils.AppReleaseInfo
+import com.huanchengfly.tieba.post.utils.AppUpdateChecker
+import com.huanchengfly.tieba.post.utils.UpdateAvailableDialog
+import com.huanchengfly.tieba.post.utils.UpdateCheckResult
 import com.huanchengfly.tieba.post.utils.appPreferences
 import com.huanchengfly.tieba.post.utils.launchUrl
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 
 private const val SOURCE_CODE_URL = "https://github.com/FunnyVamp404/TiebaLitePlus"
 
@@ -56,8 +64,18 @@ fun AboutPage(
 ) {
     val context = LocalContext.current
     val colors = ExtendedTheme.colors
+    val coroutineScope = rememberCoroutineScope()
+    val updateDialogState = rememberDialogState()
+    var pendingRelease by remember { mutableStateOf<AppReleaseInfo?>(null) }
+    var isCheckingUpdate by remember { mutableStateOf(false) }
     var lastClickTime by remember { mutableLongStateOf(0L) }
     var clickCount by remember { mutableIntStateOf(0) }
+
+    UpdateAvailableDialog(
+        dialogState = updateDialogState,
+        release = pendingRelease,
+        showIgnoreButton = false,
+    )
 
     MyScaffold(
         backgroundColor = feedBackdropColor(),
@@ -161,6 +179,56 @@ fun AboutPage(
                     )
                     Text(
                         text = SOURCE_CODE_URL,
+                        fontSize = 11.sp,
+                        color = colors.textSecondary,
+                    )
+                }
+                EditorialChevronRightIcon(tint = colors.textSecondary.copy(alpha = 0.65f))
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .feedCardSurface()
+                    .clickable(enabled = !isCheckingUpdate) {
+                        isCheckingUpdate = true
+                        coroutineScope.launch {
+                            val result = AppUpdateChecker.checkForUpdate(
+                                context = context,
+                                isManual = true,
+                            )
+                            isCheckingUpdate = false
+                            when (result) {
+                                is UpdateCheckResult.Available -> {
+                                    pendingRelease = result.release
+                                    updateDialogState.show()
+                                }
+                                UpdateCheckResult.UpToDate -> {
+                                    context.toastShort(R.string.toast_already_latest_version)
+                                }
+                                is UpdateCheckResult.Error -> {
+                                    context.toastShort(R.string.toast_check_update_failed)
+                                }
+                            }
+                        }
+                    }
+                    .padding(horizontal = 14.dp, vertical = 13.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.title_check_update),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = colors.text,
+                    )
+                    Text(
+                        text = stringResource(
+                            if (isCheckingUpdate) R.string.summary_checking_update else R.string.summary_check_update
+                        ),
                         fontSize = 11.sp,
                         color = colors.textSecondary,
                     )

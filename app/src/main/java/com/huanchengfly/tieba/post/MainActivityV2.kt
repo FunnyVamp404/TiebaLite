@@ -49,7 +49,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -98,7 +100,11 @@ import com.huanchengfly.tieba.post.ui.widgets.compose.DialogPositiveButton
 import com.huanchengfly.tieba.post.ui.widgets.compose.Sizes
 import com.huanchengfly.tieba.post.ui.widgets.compose.rememberDialogState
 import com.huanchengfly.tieba.post.utils.AccountUtil
+import com.huanchengfly.tieba.post.utils.AppReleaseInfo
+import com.huanchengfly.tieba.post.utils.AppUpdateChecker
 import com.huanchengfly.tieba.post.utils.ClientUtils
+import com.huanchengfly.tieba.post.utils.UpdateAvailableDialog
+import com.huanchengfly.tieba.post.utils.UpdateCheckResult
 import com.huanchengfly.tieba.post.utils.JobServiceUtil
 import com.huanchengfly.tieba.post.utils.PermissionUtils
 import com.huanchengfly.tieba.post.utils.PickMediasRequest
@@ -431,7 +437,14 @@ class MainActivityV2 : BaseComposeActivity() {
     @Composable
     override fun Content() {
         val okSignAlertDialogState = rememberDialogState()
+        val updateDialogState = rememberDialogState()
+        var pendingRelease by remember { mutableStateOf<AppReleaseInfo?>(null) }
         ClipBoardDetectDialog()
+        UpdateAvailableDialog(
+            dialogState = updateDialogState,
+            release = pendingRelease,
+            showIgnoreButton = true,
+        )
         AlertDialog(
             dialogState = okSignAlertDialogState,
             title = { Text(text = stringResource(id = R.string.title_dialog_oksign_battery_optimization)) },
@@ -457,6 +470,14 @@ class MainActivityV2 : BaseComposeActivity() {
         LaunchedEffect(Unit) {
             if (appPreferences.autoSign && !isIgnoringBatteryOptimizations() && !appPreferences.ignoreBatteryOptimizationsDialog) {
                 okSignAlertDialogState.show()
+            }
+            val updateResult = AppUpdateChecker.checkForUpdate(
+                context = this@MainActivityV2,
+                isManual = false,
+            )
+            if (updateResult is UpdateCheckResult.Available) {
+                pendingRelease = updateResult.release
+                updateDialogState.show()
             }
         }
         onGlobalEvent<GlobalEvent.StartSelectImages> {
